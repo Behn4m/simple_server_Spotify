@@ -20,114 +20,72 @@
 #include <esp_https_server.h>
 #include "esp_tls.h"
 #include "sdkconfig.h"
+#include "mdns.h"
 
 /* A simple example that demonstrates how to create GET and POST
  * handlers and start an HTTPS server.
 */
+#define CONFIG_EXAMPLE_ENABLE_HTTPS_USER_CALLBACK 0
 
 static const char *TAG = "example";
+static const char *TAG_APP = "SPOTIFY";
+
+
+static const char *clientId = "2c2dadbd46244f2cb9f71251bc004caa";
+static const char *redirectUri = "http%3A%2F%2Fdeskhub.local%2Fcallback%2f";
 
 /* An HTTP GET handler */
 static esp_err_t root_get_handler(httpd_req_t *req)
 {
-    httpd_resp_set_type(req, "text/html");
-    httpd_resp_send(req, "<h1>Hello Secure World!</h1>", HTTPD_RESP_USE_STRLEN);
-
+    char loc_url[400];
+    ESP_LOGI("APPLOG", "here we are - root \n");
+    sprintf(loc_url,"https://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state", clientId,redirectUri);
+    httpd_resp_set_hdr(req,"Location",loc_url);
+    httpd_resp_set_type(req, "text/plain");
+    httpd_resp_set_status(req,"302");
+    httpd_resp_send(req, "", HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
 
-#if CONFIG_EXAMPLE_ENABLE_HTTPS_USER_CALLBACK
-#ifdef CONFIG_ESP_TLS_USING_MBEDTLS
-static void print_peer_cert_info(const mbedtls_ssl_context *ssl)
+static esp_err_t user_callback_func(httpd_req_t *req)
 {
-    const mbedtls_x509_crt *cert;
-    const size_t buf_size = 1024;
-    char *buf = calloc(buf_size, sizeof(char));
-    if (buf == NULL) {
-        ESP_LOGE(TAG, "Out of memory - Callback execution failed!");
-        return;
-    }
+    char message[1000];
+    char code[800];
 
-    // Logging the peer certificate info
-    cert = mbedtls_ssl_get_peer_cert(ssl);
-    if (cert != NULL) {
-        mbedtls_x509_crt_info((char *) buf, buf_size - 1, "    ", cert);
-        ESP_LOGI(TAG, "Peer certificate info:\n%s", buf);
-    } else {
-        ESP_LOGW(TAG, "Could not obtain the peer certificate!");
+    if (httpd_req_get_url_query_str(req,code,1000) == ESP_OK)
+    {
+        sprintf(message,"q=%s",code);
+        httpd_resp_set_type(req, "text/plain");
+        httpd_resp_set_status(req,"200");
+        httpd_resp_send(req, message, HTTPD_RESP_USE_STRLEN);
+        ESP_LOGI("TAG_APP", "code recevied \n");
     }
-
-    free(buf);
+    else
+    {
+        sprintf(message,"BAD ARGS");
+        httpd_resp_set_type(req, "text/plain");
+        httpd_resp_set_status(req,"500");
+        httpd_resp_send(req, message, HTTPD_RESP_USE_STRLEN);
+        ESP_LOGI("TAG_APP", "bad arguments \n");
+    }
+    return ESP_OK;
 }
-#endif
-/**
- * Example callback function to get the certificate of connected clients,
- * whenever a new SSL connection is created and closed
- *
- * Can also be used to other information like Socket FD, Connection state, etc.
- *
- * NOTE: This callback will not be able to obtain the client certificate if the
- * following config `Set minimum Certificate Verification mode to Optional` is
- * not enabled (enabled by default in this example).
- *
- * The config option is found here - Component config → ESP-TLS
- *
- */
-static void https_server_user_callback(esp_https_server_user_cb_arg_t *user_cb)
-{
-    ESP_LOGI(TAG, "User callback invoked!");
-#ifdef CONFIG_ESP_TLS_USING_MBEDTLS
-    mbedtls_ssl_context *ssl_ctx = NULL;
-#endif
-    switch(user_cb->user_cb_state) {
-        case HTTPD_SSL_USER_CB_SESS_CREATE:
-            ESP_LOGD(TAG, "At session creation");
 
-            // Logging the socket FD
-            int sockfd = -1;
-            esp_err_t esp_ret;
-            esp_ret = esp_tls_get_conn_sockfd(user_cb->tls, &sockfd);
-            if (esp_ret != ESP_OK) {
-                ESP_LOGE(TAG, "Error in obtaining the sockfd from tls context");
-                break;
-            }
-            ESP_LOGI(TAG, "Socket FD: %d", sockfd);
-#ifdef CONFIG_ESP_TLS_USING_MBEDTLS
-            ssl_ctx = (mbedtls_ssl_context *) esp_tls_get_ssl_context(user_cb->tls);
-            if (ssl_ctx == NULL) {
-                ESP_LOGE(TAG, "Error in obtaining ssl context");
-                break;
-            }
-            // Logging the current ciphersuite
-            ESP_LOGI(TAG, "Current Ciphersuite: %s", mbedtls_ssl_get_ciphersuite(ssl_ctx));
-#endif
-            break;
-
-        case HTTPD_SSL_USER_CB_SESS_CLOSE:
-            ESP_LOGD(TAG, "At session close");
-#ifdef CONFIG_ESP_TLS_USING_MBEDTLS
-            // Logging the peer certificate
-            ssl_ctx = (mbedtls_ssl_context *) esp_tls_get_ssl_context(user_cb->tls);
-            if (ssl_ctx == NULL) {
-                ESP_LOGE(TAG, "Error in obtaining ssl context");
-                break;
-            }
-            print_peer_cert_info(ssl_ctx);
-#endif
-            break;
-        default:
-            ESP_LOGE(TAG, "Illegal state!");
-            return;
-    }
-}
-#endif
-
+// Assign root handler to root uri
 static const httpd_uri_t root = {
     .uri       = "/",
     .method    = HTTP_GET,
     .handler   = root_get_handler
 };
 
+// Assign callback handler to callback uri
+static const httpd_uri_t user_callback = {
+    .uri       = "/callback/",
+    .method    = HTTP_GET,
+    .handler   = user_callback_func
+};
+
+// Config and Start webserver 
 static httpd_handle_t start_webserver(void)
 {
     httpd_handle_t server = NULL;
@@ -159,6 +117,7 @@ static httpd_handle_t start_webserver(void)
     // Set URI handlers
     ESP_LOGI(TAG, "Registering URI handlers");
     httpd_register_uri_handler(server, &root);
+    httpd_register_uri_handler(server, &user_callback);
     return server;
 }
 
@@ -190,6 +149,22 @@ static void connect_handler(void* arg, esp_event_base_t event_base,
     }
 }
 
+// Start mDSN to resolves hostnames to IP addresses within local network 
+void start_mdns_service()
+{
+    //initialize mDNS service
+    esp_err_t err = mdns_init();
+    if (err) {
+        ESP_LOGI(TAG_APP, "MDNS Init failed: %d\n", err);
+        return;
+    }
+
+    //set hostname
+    mdns_hostname_set("deskhub");
+    //set default instance
+    mdns_instance_name_set("Behnam's ESP32 Thing");
+}
+
 void app_main(void)
 {
     static httpd_handle_t server = NULL;
@@ -197,6 +172,7 @@ void app_main(void)
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
+    start_mdns_service();
 
     /* Register event handlers to start server when Wi-Fi or Ethernet is connected,
      * and stop server when disconnection happens.

@@ -25,7 +25,7 @@
 /* A simple example that demonstrates how to create GET and POST
  * handlers and start an HTTPS server.
 */
-#define CONFIG_EXAMPLE_ENABLE_HTTPS_USER_CALLBACK 0
+
 
 static const char *TAG = "example";
 static const char *TAG_APP = "SPOTIFY";
@@ -38,7 +38,7 @@ static const char *redirectUri = "http%3A%2F%2Fdeskhub.local%2Fcallback%2f";
 static esp_err_t root_get_handler(httpd_req_t *req)
 {
     char loc_url[400];
-    ESP_LOGI("APPLOG", "here we are - root \n");
+    ESP_LOGI("APPLOG", "here we are - root");
     sprintf(loc_url,"https://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state", clientId,redirectUri);
     httpd_resp_set_hdr(req,"Location",loc_url);
     httpd_resp_set_type(req, "text/plain");
@@ -58,7 +58,7 @@ static esp_err_t user_callback_func(httpd_req_t *req)
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_set_status(req,"200");
         httpd_resp_send(req, message, HTTPD_RESP_USE_STRLEN);
-        ESP_LOGI("TAG_APP", "code recevied \n");
+        ESP_LOGI(TAG_APP, "code recevied");
     }
     else
     {
@@ -66,7 +66,7 @@ static esp_err_t user_callback_func(httpd_req_t *req)
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_set_status(req,"500");
         httpd_resp_send(req, message, HTTPD_RESP_USE_STRLEN);
-        ESP_LOGI("TAG_APP", "bad arguments \n");
+        ESP_LOGI(TAG_APP, "bad arguments - the response does not include correct structure");
     }
     return ESP_OK;
 }
@@ -105,9 +105,6 @@ static httpd_handle_t start_webserver(void)
     conf.prvtkey_pem = prvtkey_pem_start;
     conf.prvtkey_len = prvtkey_pem_end - prvtkey_pem_start;
 
-#if CONFIG_EXAMPLE_ENABLE_HTTPS_USER_CALLBACK
-    conf.user_cb = https_server_user_callback;
-#endif
     esp_err_t ret = httpd_ssl_start(&server, &conf);
     if (ESP_OK != ret) {
         ESP_LOGI(TAG, "Error starting server!");
@@ -178,14 +175,8 @@ void app_main(void)
      * and stop server when disconnection happens.
      */
 
-#ifdef CONFIG_EXAMPLE_CONNECT_WIFI
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &connect_handler, &server));
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &disconnect_handler, &server));
-#endif // CONFIG_EXAMPLE_CONNECT_WIFI
-#ifdef CONFIG_EXAMPLE_CONNECT_ETHERNET
-    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_ETH_GOT_IP, &connect_handler, &server));
-    ESP_ERROR_CHECK(esp_event_handler_register(ETH_EVENT, ETHERNET_EVENT_DISCONNECTED, &disconnect_handler, &server));
-#endif // CONFIG_EXAMPLE_CONNECT_ETHERNET
 
     /* This helper function configures Wi-Fi or Ethernet, as selected in menuconfig.
      * Read "Establishing Wi-Fi or Ethernet Connection" section in

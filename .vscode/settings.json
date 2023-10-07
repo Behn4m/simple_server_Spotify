@@ -1,11 +1,12 @@
 {
-    "idf.adapterTargetName": "esp32c3",
+    "idf.adapterTargetName": "esp32s3",
     "idf.openOcdConfigs": [
-        "board/esp32c3-builtin.cfg"
+        "board/esp32s3-bridge.cfg"
     ],
     "idf.flashType": "UART",
-    "idf.port": "/dev/ttyUSB0",
+    "idf.port": "/dev/ttyACM0",
     "files.associations": {
-        "mdns.h": "c"
+        "mdns.h": "c",
+        "typeinfo": "c"
     }
 }

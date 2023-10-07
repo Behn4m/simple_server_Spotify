@@ -22,7 +22,7 @@
  */
 #include<Arduino.h>
 // WiFi settings
-const char* ssid = "Hardware";
+const char* ssid = "Hardware12";
 const char* password = "87654321";
 
 // Spotify settings
@@ -30,8 +30,17 @@ String clientId = "2c2dadbd46244f2cb9f71251bc004caa";
 String clientSecret = "d80bd7e8c1b04bfcacdb5ecf6a155215";
 // These next two lines have to match. A client clientSpotifierHostName makes the
 // node listen on http://ESP32.local. Spotify needs an exact match of the redirect url
-String espotifierNodeName = "ESP32";
-String redirectUri = "http%3A%2F%2F" + espotifierNodeName + ".local%2Fcallback%2F";
+String espotifierNodeName = "deskhub";
+// String redirectUri = "http%3A%2F%2F" + espotifierNodeName + ".local%2Fcallback%2F";
+String redirectUri ="http%3A%2F%2Fdeskhub.local%2Fcallback%2f";
+
+
+
+
+
+
+
+
 
 // UI Settings
 #define SHOW_TOUCH_POINT_MILLIS 1500

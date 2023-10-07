@@ -21,7 +21,7 @@
  SOFTWARE.
  */
 
-#include <mDNS.h>
+// #include <mDNS.h>
 #include <WiFi.h>
 #include <WiFiClientSecure.h>
 
@@ -105,7 +105,7 @@ void setup()
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
 
-    if (!MDNS.begin("ESP32"))
+    if (!MDNS.begin("deskhub"))
     { // Start the mDNS responder for ESP32.local
         Serial.println("Error setting up MDNS responder!");
     }
@@ -129,6 +129,7 @@ void setup()
         code = refreshToken;
         grantType = "refresh_token";
     }
+    Serial.println("Befor running get token");
     client.getToken(&auth, grantType, code);
     Serial.printf("Refresh token: %s\nAccess Token: %s\n", auth.refreshToken.c_str(), auth.accessToken.c_str());
     if (auth.refreshToken != "")

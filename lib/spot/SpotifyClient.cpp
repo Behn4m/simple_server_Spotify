@@ -233,15 +233,12 @@ void SpotifyClient::getToken(SpotifyAuth *auth, String grantType, String code)
   JsonStreamingParser parser;
   parser.setListener(this);
   WiFiClientSecure client;
-  const char* host = "accounts.spotify.com";
-  // const char *host = "https://accounts.spotify.com";
-  const int port = 443;
+
+  const char *host = "accounts.spotify.com";
+
+  const int port = 80;
   String url = "/api/token";
- if (!client.connect(host, port))
-  {
-    Serial.println("connection failed");
-    return;
-  }
+
   Serial.print("Requesting URL: ");
   // Serial.println(url);
   String codeParam = "code";
@@ -249,6 +246,7 @@ void SpotifyClient::getToken(SpotifyAuth *auth, String grantType, String code)
   {
     codeParam = "refresh_token";
   }
+  // + "&client_id=" + clientId + "&client_secret=" + clientSecret
   base64 base;
   String authorizationRaw = clientId + ":" + clientSecret;
   String authorization = base.encode(authorizationRaw);
@@ -274,9 +272,12 @@ void SpotifyClient::getToken(SpotifyAuth *auth, String grantType, String code)
   Serial.println();
   Serial.println();
   Serial.println();
- 
+  if (!client.connect(host, port))
+  {
+    Serial.println("connection failed");
+    return;
+  }
   client.print(request);
-
   int retryCounter = 0;
   while (!client.available())
   {

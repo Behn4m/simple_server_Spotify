@@ -21,6 +21,7 @@
  SOFTWARE.
  */
 #include<Arduino.h>
+#include <TZ.h>
 // WiFi settings
 const char* ssid = "Hardware12";
 const char* password = "87654321";
@@ -33,11 +34,7 @@ String clientSecret = "d80bd7e8c1b04bfcacdb5ecf6a155215";
 String espotifierNodeName = "deskhub";
 // String redirectUri = "http%3A%2F%2F" + espotifierNodeName + ".local%2Fcallback%2F";
 String redirectUri ="http%3A%2F%2Fdeskhub.local%2Fcallback%2f";
-
-
-
-
-
+#define TIMEZONE TZ_Europe_Zurich
 
 
 

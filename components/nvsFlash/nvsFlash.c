@@ -247,6 +247,8 @@ bool nvsFlashBlobRead(
         {
             isExist = true;
             err = nvs_get_blob(my_handle, key, value, length);
+            *length = required_size;                        
+            
             if (err != ESP_OK) 
                 printf("doneNvsFlashBlobRead Failed!\n");
         }

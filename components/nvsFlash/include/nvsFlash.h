@@ -46,23 +46,19 @@ typedef enum {
 
 /**
  * @brief      initialize nvs flash partition.
- * 
  * @param[in]  void   nothing
  * @param[out] void   nothing
- * 
  * @return nothing
  */
 void nvsFlashInit(void);
 
 /**
  * @brief      read 8/16/32/64 bit-digit from nvs
- * 
  * @param[in]   valueType        type value of digit from nvs_type_t enum.
  * @param[in]   namespace_name   Namespace name. Maximum length is (NVS_KEY_NAME_MAX_SIZE-1) characters. Shouldn't be empty.
  * @param[in]   key              Key name. Maximum length is (NVS_KEY_NAME_MAX_SIZE-1) characters. Shouldn't be empty.
  * @param[out]  uvalue           poiner to output value and it is valid if type is unsigned.
  * @param[out]  ivalue           poiner to output value and it is valid if type is signed.
- * 
  * @return nothing
  */
 void nvsFlashDigitRead(
@@ -74,12 +70,10 @@ void nvsFlashDigitRead(
 
 /**
  * @brief      write 8/16/32/64 bit-digit to nvs
- * 
  * @param[in]   valueType        type value of digit from nvs_type_t enum.
  * @param[in]   namespace_name   Namespace name. Maximum length is (NVS_KEY_NAME_MAX_SIZE-1) characters. Shouldn't be empty.
  * @param[in]   key              Key name. Maximum length is (NVS_KEY_NAME_MAX_SIZE-1) characters. Shouldn't be empty.
  * @param[out]  value           the value shold be witten.
- * 
  * @return nothing
  */
 void nvsFlashDigitWrite(
@@ -90,12 +84,10 @@ void nvsFlashDigitWrite(
 
 /**
  * @brief      read string from nvs
- *  
  * @param[in]   namespace_name   Namespace name. Maximum length is (NVS_KEY_NAME_MAX_SIZE-1) characters. Shouldn't be empty.
  * @param[in]   key              Key name. Maximum length is (NVS_KEY_NAME_MAX_SIZE-1) characters. Shouldn't be empty.
  * @param[out]  value           poiner to char array (cstring) that read from nvs
  * @param[inout]  length        A non-zero pointer to the variable holding the length of out_value.
- * 
  * @return[out] isExist         return true if the key is exist and value and length have valid values;
  *                              if return false the value and length not valid
  */
@@ -107,11 +99,9 @@ bool nvsFlashStringRead(
 
 /**
  * @brief      write string to nvs
- *  
  * @param[in]   namespace_name   Namespace name. Maximum length is (NVS_KEY_NAME_MAX_SIZE-1) characters. Shouldn't be empty.
  * @param[in]   key              Key name. Maximum length is (NVS_KEY_NAME_MAX_SIZE-1) characters. Shouldn't be empty.
  * @param[out]  value           poiner to char array (cstring) that should write to nvs.
- * 
  * @return nothing
  */
 void nvsFlashStringWrite(  
@@ -121,12 +111,10 @@ void nvsFlashStringWrite(
 
 /**
  * @brief      read blob from nvs
- *  
  * @param[in]   namespace_name   Namespace name. Maximum length is (NVS_KEY_NAME_MAX_SIZE-1) characters. Shouldn't be empty.
  * @param[in]   key              Key name. Maximum length is (NVS_KEY_NAME_MAX_SIZE-1) characters. Shouldn't be empty.
  * @param[out]  value           void poiner that read from nvs 
  * @param[inout]  length        A non-zero pointer to the variable holding the length of out_value.
- * 
  * @return[out]  isExist        return true if the key is exist and value and length have valid values;
  *                              if return false the value and length not valid
  */
@@ -138,12 +126,10 @@ bool nvsFlashBlobRead(
 
 /**
  * @brief      write blob to nvs
- *  
  * @param[in]   namespace_name   Namespace name. Maximum length is (NVS_KEY_NAME_MAX_SIZE-1) characters. Shouldn't be empty.
  * @param[in]   key              Key name. Maximum length is (NVS_KEY_NAME_MAX_SIZE-1) characters. Shouldn't be empty.
  * @param[out]  value           void poiner that write to nvs
  * @param[in]  length        the variable holding the length of out_value.
- * 
  * @return nothing
  */
 void nvsFlashBlobWrite(  

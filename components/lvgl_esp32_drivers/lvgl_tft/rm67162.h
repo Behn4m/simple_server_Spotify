@@ -1,0 +1,73 @@
+/**
+ * @file rm67162.h
+ * @author SEZ@Done(ehsan.ziyaee@gmail.com) 
+ * @brief a custom lvgl driver for rm67162 
+ *        init 2023.10.09
+ */
+
+#ifndef RM67162_H
+#define RM67162_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*********************
+ *      INCLUDES
+ *********************/
+#include <stdbool.h>
+
+#ifdef LV_LVGL_H_INCLUDE_SIMPLE
+#include "lvgl.h"
+#else
+#include "lvgl/lvgl.h"
+#endif
+#include "../lvgl_helpers.h"
+
+/*********************
+ *      DEFINES
+ *********************/
+#define RM67162_MADCTL      0x36
+#define RM67162_MAD_MY      0x80
+#define RM67162_MAD_MX      0x40
+#define RM67162_MAD_MV      0x20
+#define RM67162_MAD_ML      0x10
+#define RM67162_MAD_BGR     0x08
+#define RM67162_MAD_MH      0x04
+#define RM67162_MAD_RGB     0x00
+
+#define RM67162_INVOFF      0x20
+#define RM67162_INVON       0x21
+
+#define RM67162_DC      GPIO_NUM_7 //CONFIG_LV_DISP_PIN_DC
+#define RM67162_RST     GPIO_NUM_17//CONFIG_LV_DISP_PIN_RST
+#define RM67162_CS      GPIO_NUM_6
+#define RM67162_MOSI    GPIO_NUM_18
+#define RM67162_SCK     GPIO_NUM_47
+#define RM67162_USE_RST CONFIG_LV_DISP_USE_RST
+
+#define RM67162_QSPI_CS           GPIO_NUM_6
+#define RM67162_QSPI_SCK          GPIO_NUM_47
+#define RM67162_QSPI_D0           GPIO_NUM_18
+#define RM67162_QSPI_D1           GPIO_NUM_7
+#define RM67162_QSPI_D2           GPIO_NUM_48
+#define RM67162_QSPI_D3           GPIO_NUM_5
+#define RM67162_QSPI_RST          GPIO_NUM_17
+
+/**********************
+ * GLOBAL PROTOTYPES
+ **********************/
+
+void rm67162_init(void);
+void rm67162_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map);
+
+/**********************
+ *      MACROS
+ **********************/
+
+
+#ifdef __cplusplus
+} /* extern "C" */
+#endif
+
+#endif /* RM67162_H*/

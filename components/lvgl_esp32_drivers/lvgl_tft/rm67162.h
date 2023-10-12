@@ -54,6 +54,8 @@ extern "C" {
 #define RM67162_QSPI_D3           GPIO_NUM_5
 #define RM67162_QSPI_RST          GPIO_NUM_17
 
+#define LV_HOR_RES_MAX            536
+#define LV_VER_RES_MAX            240
 /**********************
  * GLOBAL PROTOTYPES
  **********************/

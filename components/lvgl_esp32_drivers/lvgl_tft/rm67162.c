@@ -13,7 +13,6 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-
 /*********************
  *      DEFINES
  *********************/
@@ -74,14 +73,14 @@ static void rm67162_set_orientation(uint8_t orientation);
 void rm67162_init(void)
 {
     //Initialize non-SPI GPIOs
-    gpio_pad_select_gpio(RM67162_DC);
+    esp_rom_gpio_pad_select_gpio(RM67162_DC);
 	gpio_set_direction(RM67162_DC, GPIO_MODE_OUTPUT);
 
-    gpio_pad_select_gpio(RM67162_CS);
+    esp_rom_gpio_pad_select_gpio(RM67162_CS);
 	gpio_set_direction(RM67162_CS, GPIO_MODE_OUTPUT);
 
 #if RM67162_USE_RST
-    gpio_pad_select_gpio(RM67162_RST);
+    esp_rom_gpio_pad_select_gpio(RM67162_RST);
 	gpio_set_direction(RM67162_RST, GPIO_MODE_OUTPUT);
 
 	//Reset the display
@@ -97,7 +96,7 @@ void rm67162_init(void)
 	uint16_t cmd = 0;
 	while (rm67162_init_cmd[cmd].databytes!=0xff) {
 		rm67162_send_cmd(rm67162_init_cmd[cmd].cmd);
-		rm67162_send_data(rm67162_init_cmd[cmd].data, rm67162_init_cmd[cmd].databytes&0x1F);
+		rm67162_send_data((uint8_t *)rm67162_init_cmd[cmd].data, rm67162_init_cmd[cmd].databytes & 0x7F);
 		if (rm67162_init_cmd[cmd].databytes & 0x80) {
 			vTaskDelay(120 / portTICK_RATE_MS);//deafult 100ms
 		}
@@ -113,16 +112,16 @@ void rm67162_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
 
     lcd_cmd_t flush[3] = {
         /*Column addresses*/
-        {0x2A,{uint8_t(area->x1 >> 8), (uint8_t)area->x1}, uint8_t(area->x2 >> 8), uint8_t(area->x2), 0x04}, 
+        {0x2A,{(uint8_t)(area->x1 >> 8), (uint8_t)area->x1, (uint8_t)(area->x2 >> 8), (uint8_t)(area->x2)}, 0x04}, 
         /*Page addresses*/
-        {0x2B,{uint8_t(area->y1 >> 8), (uint8_t)area->y1}, uint8_t(area->y2 >> 8), uint8_t(area->y2), 0x04}, 
+        {0x2B,{(uint8_t)(area->y1 >> 8), (uint8_t)area->y1, (uint8_t)(area->y2 >> 8), (uint8_t)(area->y2)}, 0x04}, 
         /*Memory write*/
         {0x2C, {0x00}, 0x00},
     };
 
 	for (uint8_t i = 0; i < 3; i++) {
         rm67162_send_cmd(flush[i].cmd);
-        rm67162_send_data(flush[i].data, flush[i].databytes);        
+        rm67162_send_data((uint8_t *)flush[i].data, flush[i].databytes);        
     }
 	
 	size = lv_area_get_width(area) * lv_area_get_height(area);

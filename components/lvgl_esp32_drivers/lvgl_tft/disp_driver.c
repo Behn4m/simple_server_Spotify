@@ -46,7 +46,8 @@ void *disp_driver_init(void)
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_PCD8544
     pcd8544_init();
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_RM67162
-    rm67162_init();    
+    //rm67162_init();  
+    lcd_init();  
 #endif
 
     // We still use menuconfig for these settings
@@ -114,7 +115,8 @@ void disp_driver_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t *
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_PCD8544
     pcd8544_flush(drv, area, color_map);
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_RM67162
-    rm67162_flush(drv, area, color_map);    
+    //rm67162_flush(drv, area, color_map);    
+    lcd_flush(drv, area, color_map);    
 #endif
 }
 

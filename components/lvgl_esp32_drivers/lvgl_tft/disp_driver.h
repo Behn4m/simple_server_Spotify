@@ -56,6 +56,7 @@ extern "C" {
 #include "pcd8544.h"
 #elif defined CONFIG_LV_TFT_DISPLAY_CONTROLLER_RM67162
 #include "rm67162.h"
+#include "rm67162Lilygo.h"
 #endif
 
 /*********************

@@ -39,23 +39,31 @@ extern "C" {
 #define RM67162_INVOFF      0x20
 #define RM67162_INVON       0x21
 
-#define RM67162_DC      GPIO_NUM_7 //CONFIG_LV_DISP_PIN_DC
-#define RM67162_RST     GPIO_NUM_17//CONFIG_LV_DISP_PIN_RST
-#define RM67162_CS      GPIO_NUM_6
-#define RM67162_MOSI    GPIO_NUM_18
-#define RM67162_SCK     GPIO_NUM_47
-#define RM67162_USE_RST CONFIG_LV_DISP_USE_RST
+// SPI pinout
+// #define RM67162_DC      GPIO_NUM_7 
+// #define RM67162_RST     GPIO_NUM_17
+// #define RM67162_CS      GPIO_NUM_6
+// #define RM67162_MOSI    GPIO_NUM_18
+// #define RM67162_SCK     GPIO_NUM_47
 
-#define RM67162_QSPI_CS           GPIO_NUM_6
-#define RM67162_QSPI_SCK          GPIO_NUM_47
-#define RM67162_QSPI_D0           GPIO_NUM_18
-#define RM67162_QSPI_D1           GPIO_NUM_7
-#define RM67162_QSPI_D2           GPIO_NUM_48
-#define RM67162_QSPI_D3           GPIO_NUM_5
-#define RM67162_QSPI_RST          GPIO_NUM_17
+// QSPI pinout
+// #define RM67162_QSPI_CS           GPIO_NUM_6
+// #define RM67162_QSPI_SCK          GPIO_NUM_47
+// #define RM67162_QSPI_D0           GPIO_NUM_18
+// #define RM67162_QSPI_D1           GPIO_NUM_7
+// #define RM67162_QSPI_D2           GPIO_NUM_48
+// #define RM67162_QSPI_D3           GPIO_NUM_5
+// #define RM67162_QSPI_RST          GPIO_NUM_17
+
+#define RM67162_RST         CONFIG_LV_DISP_PIN_RST
+#define RM67162_USE_RST     CONFIG_LV_DISP_USE_RST
+
+#define RM67162_CS          CONFIG_LV_DISP_SPI_CS
+#define RM67162_USE_CS      CONFIG_LV_DISPLAY_USE_SPI_CS
 
 #define LV_HOR_RES_MAX            536
 #define LV_VER_RES_MAX            240
+#define LV_TICK_PERIOD_MS         1
 /**********************
  * GLOBAL PROTOTYPES
  **********************/

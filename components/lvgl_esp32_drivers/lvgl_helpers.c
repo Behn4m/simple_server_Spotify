@@ -99,12 +99,19 @@ void lvgl_driver_init(void)
 #if defined CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI
     ESP_LOGI(TAG, "Initializing SPI master for display");
 
-    lvgl_spi_driver_init(TFT_SPI_HOST,
-        DISP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
-        SPI_BUS_MAX_TRANSFER_SZ, 1,
-        DISP_SPI_IO2, DISP_SPI_IO3);
+    #if defined CONFIG_LV_TFT_DISPLAY_SPI_TRANS_MODE_SIO//SEZ@done
+        lvgl_spi_driver_init(TFT_SPI_HOST,
+            DISP_SPI_MISO, DISP_SPI_MOSI, DISP_SPI_CLK,
+            SPI_BUS_MAX_TRANSFER_SZ, SPI_DMA_CH_AUTO,//SEZ@done 1->SPI_DMA_CH_AUTO
+            DISP_SPI_IO2, DISP_SPI_IO3);
+    #elif defined (CONFIG_LV_TFT_DISPLAY_SPI_TRANS_MODE_QIO)//SEZ@done
+        lvgl_qspi_driver_init(TFT_SPI_HOST,
+            DISP_SPI_MOSI, DISP_SPI_MISO, DISP_SPI_IO2, DISP_SPI_IO3 , DISP_SPI_CLK,
+            (SPI_BUS_MAX_TRANSFER_SZ*16)+8, SPI_DMA_CH_AUTO);
+    #endif        
 
-    disp_spi_add_device(TFT_SPI_HOST);
+    //SEZ@Done comment it.
+    //disp_spi_add_device(TFT_SPI_HOST);
 
     disp_driver_init();
 #elif defined (CONFIG_LV_I2C_DISPLAY)
@@ -175,9 +182,43 @@ bool lvgl_spi_driver_init(int host,
     };
 
     ESP_LOGI(TAG, "Initializing SPI bus...");
-    #if defined (CONFIG_IDF_TARGET_ESP32C3)
-    dma_channel = SPI_DMA_CH_AUTO;
-    #endif
+    //#if defined (CONFIG_IDF_TARGET_ESP32C3)//SEZ@done comment it.
+    //dma_channel = SPI_DMA_CH_AUTO;
+    //#endif
+    esp_err_t ret = spi_bus_initialize(host, &buscfg, (spi_dma_chan_t)dma_channel);
+    assert(ret == ESP_OK);
+
+    return ESP_OK != ret;
+}
+
+bool lvgl_qspi_driver_init(int host, 
+    int data0_pin, int data1_pin, int data2_pin, int data3_pin,
+    int sclk_pin, int max_transfer_sz, int dma_channel)
+{
+    assert((0 <= host) && (SPI_HOST_MAX > host));
+    const char *spi_names[] = {
+        "SPI1_HOST", "SPI2_HOST", "SPI3_HOST"
+    };
+
+    ESP_LOGI(TAG, "Configuring QSPI host %s", spi_names[host]);
+    ESP_LOGI(TAG, "data0 pin: %d, data1 pin: %d, data2 pin: %d, data3 pin: %d,SCLK pin: %d ",
+        data0_pin, data1_pin, data2_pin, data3_pin, sclk_pin);
+
+    ESP_LOGI(TAG, "Max transfer size: %d (bytes)", max_transfer_sz);  
+
+    spi_bus_config_t buscfg = {
+        .data0_io_num = data0_pin,
+        .data1_io_num = data1_pin,
+        .sclk_io_num = sclk_pin,
+        .data2_io_num = data2_pin,
+        .data3_io_num = data3_pin,
+        .max_transfer_sz = max_transfer_sz,
+        .flags = SPICOMMON_BUSFLAG_MASTER | SPICOMMON_BUSFLAG_GPIO_PINS  |
+                 SPICOMMON_BUSFLAG_QUAD   ,
+    }; 
+
+    ESP_LOGI(TAG, "Initializing SPI bus...");
+
     esp_err_t ret = spi_bus_initialize(host, &buscfg, (spi_dma_chan_t)dma_channel);
     assert(ret == ESP_OK);
 

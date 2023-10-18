@@ -68,7 +68,7 @@
 /*********************
  *      DEFINES
  *********************/
-#define SPI_TRANSACTION_POOL_SIZE 50	/* maximum number of DMA transactions simultaneously in-flight */
+#define SPI_TRANSACTION_POOL_SIZE 17	/* maximum number of DMA transactions simultaneously in-flight */
 
 /* DMA Transactions to reserve before queueing additional DMA transactions. A 1/10th seems to be a good balance. Too many (or all) and it will increase latency. */
 #define SPI_TRANSACTION_POOL_RESERVE_PERCENTAGE 10
@@ -123,11 +123,14 @@ void disp_spi_add_device_with_speed(spi_host_device_t host, int clock_speed_hz)
         clock_speed_hz, SPI_TFT_SPI_MODE, DISP_SPI_CS);
 
     spi_device_interface_config_t devcfg={
+        .command_bits = 8,          //SEZ@Done
+        .address_bits = 24,         //SEZ@Done
         .clock_speed_hz = clock_speed_hz,
-        .mode = SPI_TFT_SPI_MODE,
-        .spics_io_num=DISP_SPI_CS,              // CS pin
+        .mode = SPI_TFT_SPI_MODE,   //0
+        //.spics_io_num=DISP_SPI_CS,  //SEZ@Done
+        .spics_io_num = -1,         //SEZ@Done
         .input_delay_ns=DISP_SPI_INPUT_DELAY_NS,
-        .queue_size=SPI_TRANSACTION_POOL_SIZE,
+        .queue_size=SPI_TRANSACTION_POOL_SIZE, 
         .pre_cb=NULL,
         .post_cb=NULL,
 #if defined(DISP_SPI_HALF_DUPLEX)

@@ -102,6 +102,10 @@ void lvgl_driver_init(void);
 bool lvgl_spi_driver_init(int host, int miso_pin, int mosi_pin, int sclk_pin,
     int max_transfer_sz, int dma_channel, int quadwp_pin, int quadhd_pin);
 
+    /* Initialize QSPI master  SEZ@Done */ 
+bool lvgl_qspi_driver_init(int host, int data0_pin, int data1_pin, int data2_pin, int data3_pin,
+    int sclk_pin, int max_transfer_sz, int dma_channel);
+
 /**********************
  *      MACROS
  **********************/

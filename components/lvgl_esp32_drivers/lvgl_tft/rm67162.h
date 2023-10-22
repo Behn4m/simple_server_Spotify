@@ -68,7 +68,22 @@ extern "C" {
  * GLOBAL PROTOTYPES
  **********************/
 
+/**
+ * @brief      init rm67162 and use in disp_drivers.c
+ * @param[in]  void   nothing
+ * @param[out] void   nothing
+ * @return nothing
+ */
 void rm67162_init(void);
+
+/**
+ * @brief      flush all pixel of lcd and use in disp_drivers.c
+ *             we dont fill any input output parameter. we just pass it to 
+ *             lv_disp_drv_t staruct of lvglGui.c
+ * @param[in]  void   nothing
+ * @param[out] void   nothing
+ * @return nothing
+ */
 void rm67162_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * color_map);
 
 /**********************

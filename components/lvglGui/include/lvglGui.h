@@ -27,7 +27,7 @@ extern "C" {
 #endif */
 
 /**
- * @brief      initialize nvs flash partition.
+ * @brief      create guiTask and its global method
  * @param[in]  void   nothing
  * @param[out] void   nothing
  * @return nothing

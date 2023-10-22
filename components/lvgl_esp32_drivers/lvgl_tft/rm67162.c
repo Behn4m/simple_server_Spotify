@@ -21,13 +21,18 @@
 /**********************
  *      TYPEDEFS
  **********************/
+/**
+ * @brief      lcd cmd-data packet
+ */
 typedef struct {
     uint8_t cmd;
     uint8_t data[4];
     uint8_t databytes; //No. of data in data; bit 7 = delay after set; 0xFF = end of cmds.
 } lcd_cmd_t;
 
-
+/**
+ * @brief      some cmd for init lcd
+ */
 const static lcd_cmd_t rm67162_init_table[]={
     {0x11, {0x00}, 0x80}, // Sleep Out
     // {0x44, {0x01, 0x66},  0x02}, //Set_Tear_Scanline
@@ -118,6 +123,12 @@ void rm67162_flush(lv_disp_drv_t * drv, const lv_area_t * area, lv_color_t * col
 /**********************
  *   STATIC FUNCTIONS
  **********************/
+
+/**
+ * @brief       send cmd to lcd-chip
+ * @param[in]   cmd   8-bit cmd
+ * @return nothing
+ */
 static void rm67162_send_cmd(uint8_t cmd)
 {
     uint8_t cmdPacket[] = {
@@ -131,6 +142,12 @@ static void rm67162_send_cmd(uint8_t cmd)
 	disp_spi_send_data(cmdPacket, 4);
 }
 
+/**
+ * @brief       send data to lcd-chip
+ * @param[in]   data   data for lcd registers
+ * @param[in]   length   lengh of data
+ * @return nothing
+ */
 static void rm67162_send_data(uint8_t* data, uint16_t length)
 {
     disp_wait_for_pending_transactions();
@@ -144,6 +161,12 @@ static void rm67162_send_data(uint8_t* data, uint16_t length)
 #endif
 }
 
+/**
+ * @brief       send data to lcd-chip with queue
+ * @param[in]   data   data for lcd registers
+ * @param[in]   length   lengh of data
+ * @return nothing
+ */
 static void rm67162_send_color(void * data, uint16_t length)
 {
     disp_wait_for_pending_transactions();
@@ -157,6 +180,12 @@ static void rm67162_send_color(void * data, uint16_t length)
 #endif   
 }
 
+/**
+ * @brief                     rotation of lcd
+ * @param[in]   orientation   0:portrait 1:landscape 
+ *                            2:inverted portrait 3:inverted landscape
+ * @return nothing
+ */
 static void rm67162_set_orientation(uint8_t orientation)
 {
     const char *orientation_str[] = {

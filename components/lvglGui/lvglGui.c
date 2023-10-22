@@ -23,6 +23,11 @@
 
 //#include "lv_examples.h"
 
+/**
+ * @brief       timer handler for scheduling gui 
+ * @param[in]   nothing
+ * @return nothing
+ */
 static void lv_tick_task(void *arg) {
     (void) arg;
 
@@ -56,14 +61,18 @@ static void create_demo_application(void)
     lv_obj_align(label2, LV_ALIGN_CENTER, 0, 40);
 }
 
+/**
+ * @brief      global display buffer and its semaphore
+ */
 static lv_disp_draw_buf_t disp_draw_buf;
 static lv_color_t *buf;
-
-/* Creates a semaphore to handle concurrent call to lvgl stuff
- * If you wish to call *any* lvgl function from other threads/tasks
- * you should lock on the very same semaphore! */
 SemaphoreHandle_t xGuiSemaphore;
 
+/**
+ * @brief       main lvgl gui implementation
+ * @param[in]   pvParameter not importatn               
+ * @return nothing
+ */
 static void guiTask(void *pvParameter) {
     
     (void) pvParameter;
@@ -76,7 +85,6 @@ static void guiTask(void *pvParameter) {
     buf = (lv_color_t *)malloc(sizeof(lv_color_t) * LVGL_LCD_BUF_SIZE);//Lilygo
     assert(buf);
 
-    //lv_disp_draw_buf_init(&disp_draw_buf, buf1, NULL, DISP_BUF_SIZE);
     lv_disp_draw_buf_init(&disp_draw_buf, buf, NULL, LVGL_LCD_BUF_SIZE);//Lilygo
 
     lv_disp_drv_t disp_drv;
@@ -125,9 +133,11 @@ static void guiTask(void *pvParameter) {
 
 void lvglGui(void)
 {
-    /* If you want to use a task to create the graphic, you NEED to create a Pinned task
-     * Otherwise there can be problem such as memory corruption and so on.
-     * NOTE: When not using Wi-Fi nor Bluetooth you can pin the guiTask to core 0 */
+    TaskHandle_t xHandle = NULL;
 
-    xTaskCreatePinnedToCore(guiTask, "gui", 4096*2, NULL, 0, NULL, 1);
+    xTaskCreate(guiTask, "guiTask", 4096*2, NULL, tskIDLE_PRIORITY, &xHandle);
+    configASSERT(xHandle);
+
+    if(xHandle == NULL)    
+        vTaskDelete(xHandle);    
 }

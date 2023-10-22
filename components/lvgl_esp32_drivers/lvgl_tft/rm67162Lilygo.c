@@ -6,6 +6,9 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+/**
+ * @brief      lcd cmd-data packet
+ */
 typedef struct
 {
     uint8_t cmd;
@@ -13,6 +16,9 @@ typedef struct
     uint8_t len;
 } lcd_cmd_t;
 
+/**
+ * @brief      some cmd for init lcd
+ */
 const static lcd_cmd_t rm67162_qspi_init[] = {
     {0x11, {0x00}, 0x80}, // Sleep Out
     // {0x44, {0x01, 0x66},        0x02}, //Set_Tear_Scanline
@@ -29,6 +35,13 @@ const static lcd_cmd_t rm67162_qspi_init[] = {
 
 static spi_device_handle_t spi;
 
+/**
+ * @brief       send both cmd and data to lcd-chip
+ * @param[in]   cmd   16-bit cmd
+ * @param[in]   dat   data for lcd registers
+ * @param[in]   len   lengh of data
+ * @return nothing
+ */
 static void lcd_send_cmd(uint32_t cmd, uint8_t *dat, uint32_t len)
 {
     gpio_set_level(TFT_QSPI_CS, 0);
@@ -50,11 +63,17 @@ static void lcd_send_cmd(uint32_t cmd, uint8_t *dat, uint32_t len)
     gpio_set_level(TFT_QSPI_CS, 1);    
 }
 
-static void lcd_setRotation(uint8_t r)
+/**
+ * @brief       rotation of lcd
+ * @param[in]   rotation   0:portrait 1:landscape 
+ *                         2:inverted portrait 3:inverted landscape
+ * @return nothing
+ */
+static void lcd_setRotation(uint8_t rotation)
 {
     uint8_t gbr = TFT_MAD_RGB;
 
-    switch (r) {
+    switch (rotation) {
     case 0: // Portrait
         break;
     case 1: // Landscape (Portrait + 90)
@@ -71,6 +90,14 @@ static void lcd_setRotation(uint8_t r)
     lcd_send_cmd(TFT_MADCTL, &gbr, 1);
 }
 
+/**
+ * @brief           set address of start paint to lcd
+ * @param[in]  x1   horizontal start of painting
+ * @param[in]  y1   vertical start of painting
+ * @param[in]  x2   horizontal end of painting
+ * @param[in]  y2   vertical end of painting
+ * @return nothing
+ */
 static void lcd_address_set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 {
     lcd_cmd_t t[3] = {
@@ -84,6 +111,15 @@ static void lcd_address_set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
     }
 }
 
+/**
+ * @brief             painting all entier lcd
+ * @param[in]  x      horizontal start of painting
+ * @param[in]  y      vertical start of painting
+ * @param[in]  width  horizontal end of painting
+ * @param[in]  high   vertical end of painting
+ * @param[in]  data   ponter to data buffer
+ * @return nothing
+ */
 static void lcd_PushColor (uint16_t x,
                     uint16_t y,
                     uint16_t width,

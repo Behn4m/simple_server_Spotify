@@ -19,6 +19,8 @@
 #include "rm67162Lilygo.h"
 #include "rm67162.h"
 
+#include "lv_demo.h"
+
 #define LV_TICK_PERIOD_MS 1
 
 //#include "lv_examples.h"
@@ -35,37 +37,31 @@ static void lv_tick_task(void *arg) {
 }
 
 static void create_demo_application(void)
-{
- 
-    // lv_obj_t * scr = lv_disp_get_scr_act(NULL);
+{ 
+    // lv_obj_t *label1 = lv_label_create(lv_scr_act());
+    // lv_label_set_long_mode(label1, LV_LABEL_LONG_WRAP);     /*Break the long lines*/
+    // lv_label_set_recolor(label1, true);                      /*Enable re-coloring by commands in the text*/
+    // lv_label_set_text(label1, "#0000ff Re-color# #ff00ff words# #ff0000 of a# label, align the lines to the center "
+    //                   "and wrap long text automatically.");
+    // lv_obj_set_width(label1, 150);  /*Set smaller width to make the lines wrap*/
+    // lv_obj_set_style_text_align(label1, LV_TEXT_ALIGN_CENTER, 0);
+    // lv_obj_align(label1, LV_ALIGN_CENTER, 0, -40);
 
-    // lv_obj_t * label1 =  lv_label_create(scr);
-    
-    // lv_label_set_text(label1, "Hello\nworld");
+    // lv_obj_t *label2 = lv_label_create(lv_scr_act());
+    // lv_label_set_long_mode(label2, LV_LABEL_LONG_SCROLL_CIRCULAR);     /*Circular scroll*/
+    // lv_obj_set_width(label2, 150);
+    // lv_label_set_text(label2, "It is a circularly scrolling text. ");
+    // lv_obj_align(label2, LV_ALIGN_CENTER, 0, 40);
 
-    // lv_obj_align(label1,LV_ALIGN_CENTER, 0, 0);
-
-    lv_obj_t *label1 = lv_label_create(lv_scr_act());
-    lv_label_set_long_mode(label1, LV_LABEL_LONG_WRAP);     /*Break the long lines*/
-    lv_label_set_recolor(label1, true);                      /*Enable re-coloring by commands in the text*/
-    lv_label_set_text(label1, "#0000ff Re-color# #ff00ff words# #ff0000 of a# label, align the lines to the center "
-                      "and wrap long text automatically.");
-    lv_obj_set_width(label1, 150);  /*Set smaller width to make the lines wrap*/
-    lv_obj_set_style_text_align(label1, LV_TEXT_ALIGN_CENTER, 0);
-    lv_obj_align(label1, LV_ALIGN_CENTER, 0, -40);
-
-    lv_obj_t *label2 = lv_label_create(lv_scr_act());
-    lv_label_set_long_mode(label2, LV_LABEL_LONG_SCROLL_CIRCULAR);     /*Circular scroll*/
-    lv_obj_set_width(label2, 150);
-    lv_label_set_text(label2, "It is a circularly scrolling text. ");
-    lv_obj_align(label2, LV_ALIGN_CENTER, 0, 40);
+    lv_demo_music();
 }
 
 /**
  * @brief      global display buffer and its semaphore
  */
 static lv_disp_draw_buf_t disp_draw_buf;
-static lv_color_t *buf;
+static lv_color_t buf1[LV_HOR_RES_MAX * 100];
+static lv_color_t buf2[LV_HOR_RES_MAX * 100];
 SemaphoreHandle_t xGuiSemaphore;
 
 /**
@@ -82,10 +78,7 @@ static void guiTask(void *pvParameter) {
     
     lvgl_driver_init();    
 
-    buf = (lv_color_t *)malloc(sizeof(lv_color_t) * LVGL_LCD_BUF_SIZE);//Lilygo
-    assert(buf);
-
-    lv_disp_draw_buf_init(&disp_draw_buf, buf, NULL, LVGL_LCD_BUF_SIZE);//Lilygo
+    lv_disp_draw_buf_init(&disp_draw_buf, buf1, buf2, LV_HOR_RES_MAX*100);//Lilygo
 
     lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);
@@ -93,7 +86,14 @@ static void guiTask(void *pvParameter) {
     disp_drv.ver_res = LV_VER_RES_MAX;    
     disp_drv.flush_cb = disp_driver_flush;    
     disp_drv.draw_buf = &disp_draw_buf;
-    lv_disp_drv_register(&disp_drv);
+    lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
+
+    lv_theme_t *theme = lv_theme_default_init(disp, 
+        lv_palette_main(LV_PALETTE_BLUE), 
+        lv_palette_main(LV_PALETTE_RED), 
+        LV_THEME_DEFAULT_DARK, 
+        LV_FONT_DEFAULT);
+    lv_disp_set_theme(disp, theme);
 
     /* Register an input device when enabled on the menuconfig */
 #if CONFIG_LV_TOUCH_CONTROLLER != TOUCH_CONTROLLER_NONE
@@ -135,7 +135,7 @@ void lvglGui(void)
 {
     TaskHandle_t xHandle = NULL;
 
-    xTaskCreate(guiTask, "guiTask", 4096*2, NULL, tskIDLE_PRIORITY, &xHandle);
+    xTaskCreate(guiTask, "guiTask", 4096*8, NULL, tskIDLE_PRIORITY, &xHandle);
     configASSERT(xHandle);
 
     if(xHandle == NULL)    

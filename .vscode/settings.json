@@ -7,6 +7,8 @@
     "idf.port": "/dev/ttyACM0",
     "files.associations": {
         "mdns.h": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "rm67162lilygo.h": "c",
+        "lvgl_helpers.h": "c"
     }
 }

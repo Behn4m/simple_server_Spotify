@@ -72,9 +72,9 @@ void rm67162_init(void)
 
 	//Reset the display
 	gpio_set_level(RM67162_RST, 0);
-	vTaskDelay(300 / portTICK_RATE_MS);//default 100ms
+	vTaskDelay(300 / portTICK_PERIOD_MS);//default 100ms
 	gpio_set_level(RM67162_RST, 1);
-	vTaskDelay(300 / portTICK_RATE_MS);//default 100ms
+	vTaskDelay(300 / portTICK_PERIOD_MS);//default 100ms
 #endif
 
     ESP_LOGI(TAG, "RM67162 Initialization.");
@@ -85,7 +85,7 @@ void rm67162_init(void)
 		rm67162_send_cmd(rm67162_init_table[cnt].cmd);
 		rm67162_send_data((uint8_t*)rm67162_init_table[cnt].data, rm67162_init_table[cnt].databytes & 0x7F);
 		if (rm67162_init_table[cnt].databytes & 0x80) {
-			vTaskDelay(120 / portTICK_RATE_MS);//deafult 100ms
+			vTaskDelay(120 / portTICK_PERIOD_MS);//deafult 100ms
 		}
 		cnt++;
 	}

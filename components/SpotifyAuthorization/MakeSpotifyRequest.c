@@ -27,7 +27,7 @@ bool FindCode(char *Res, uint16_t SizeRes)
         {
             if (Res[i + 1] == 'o' && Res[i + 2] == 'd' && Res[i + 3] == 'e')
             {
-                ESP_LOGI("Abbasi", "\twe find CODE !\n");
+                printf("\twe find CODE !\n");
                 flg_findCode = 1;
             }
         }
@@ -35,7 +35,7 @@ bool FindCode(char *Res, uint16_t SizeRes)
         {
             if (Res[i + 1] == 't' && Res[i + 2] == 'a' && Res[i + 3] == 't' && Res[i + 3] == 'e')
             {
-                ESP_LOGI("Abbasi", "\twe find State !\n");
+                printf("\twe find State !\n");
                 flg_findState = 1;
             }
         }
@@ -131,7 +131,7 @@ void SendRequest_AndGiveToken(char *Buf, size_t SizeBuf, char *code, size_t Size
 *@param[in] SizeBuf The size of the character buffer.
 *@return This function does not return a value.
 */
-void SendToPlayerCommand(const char *Method_, const char *Command_, char *Buf, size_t SizeBuf)
+void MakePlayerCommand_AndSendIt(const char *Method_, const char *Command_, char *Buf, size_t SizeBuf)
 {
     // we copy to of them because ,we dont sent size of Method and command
     char Method[50] = {0};
@@ -158,7 +158,7 @@ void SendToPlayerCommand(const char *Method_, const char *Command_, char *Buf, s
 void SendRequestForNext()
 {
     char Buf[2500];
-    SendToPlayerCommand("POST", "next", Buf, 2500);
+    MakePlayerCommand_AndSendIt("POST", "next", Buf, 2500);
 }
 /**
 
@@ -168,7 +168,7 @@ void SendRequestForNext()
 void SendRequestForPrevious()
 {
     char Buf[2500];
-    SendToPlayerCommand("POST", "previous", Buf, 2500);
+    MakePlayerCommand_AndSendIt("POST", "previous", Buf, 2500);
 }
 /**
 
@@ -178,7 +178,7 @@ void SendRequestForPrevious()
 void SendRequestForPlay()
 {
     char Buf[2500];
-    SendToPlayerCommand("PUT", "play", Buf, 2500);
+    MakePlayerCommand_AndSendIt("PUT", "play", Buf, 2500);
 }
 /**
 
@@ -188,14 +188,14 @@ void SendRequestForPlay()
 void SendRequestForPause()
 {
     char Buf[2500];
-    SendToPlayerCommand("PUT", "pause", Buf, 2500);
+    MakePlayerCommand_AndSendIt("PUT", "pause", Buf, 2500);
 }
 /**
 
 *@brief This function sends a request to the Spotify API to retrieve the user's profile information.
 *@return This function does not return a value.
 */
-void UserStatus()
+void GetUserStatus()
 {
     char Buf[2500];
     sprintf(Buf, "GET /v1/me/ HTTP/1.1\r\n"

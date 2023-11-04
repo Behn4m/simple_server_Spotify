@@ -11,14 +11,14 @@ SemaphoreHandle_t FailToFindCodeSemaphore = NULL;
 extern QueueHandle_t BufQueue1;
 extern SemaphoreHandle_t GetResponseSemaphore;
 
-static const char *TAG = "HttpServer";
+static const char *TAG = "SpotifyTask";
 static const char *TAG_APP = "SPOTIFY";
 
 extern struct Token_ TokenParam;
 extern struct UserInfo_ UserInfo;
 
 void SpotifyAuth();
-static void HttpServer(void *pvparameters);
+static void SpotifyTask(void *pvparameters);
 
 /**
  * @brief This function handles the first HTTPS request to Spotify and redirects the user to the authorization page.
@@ -119,7 +119,7 @@ static esp_err_t stop_webserver(httpd_handle_t server)
  * @param[in] event_id The event ID.
  * @param[in] event_data The event data.
  */
-static void disconnect_handler(void *arg, esp_event_base_t event_base,
+static void HttpLocalServerDisconnectHandler(void *arg, esp_event_base_t event_base,
                                int32_t event_id, void *event_data)
 {
     httpd_handle_t *server = (httpd_handle_t *)arg;
@@ -144,7 +144,7 @@ static void disconnect_handler(void *arg, esp_event_base_t event_base,
  * @param[in] event_id The event ID.
  * @param[in] event_data The event data.
  */
-static void connect_handler(void *arg, esp_event_base_t event_base,
+static void HttpLocalServerConnectHandler(void *arg, esp_event_base_t event_base,
                             int32_t event_id, void *event_data)
 {
     httpd_handle_t *server = (httpd_handle_t *)arg;
@@ -174,19 +174,19 @@ void SpotifyComponent()
 {
     FindCodeSemaphore = xSemaphoreCreateBinary();
     FailToFindCodeSemaphore = xSemaphoreCreateBinary();
-    xTaskCreate(&HttpServer, "HttpServer", 10000, NULL, 1, NULL);
+    xTaskCreate(&SpotifyTask, "SpotifyTask", 10000, NULL, 1, NULL);
 }
 
 /**
  * @brief This function is the entry point for handling HTTPS requests for Spotify authorization.
  * @param[in] pvparameters we need it because its Task !
  */
-static void HttpServer(void *pvparameters)
+static void SpotifyTask(void *pvparameters)
 {
     static httpd_handle_t server = NULL;
     start_mdns_service();
-    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &connect_handler, &server));
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &disconnect_handler, &server));
+    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &HttpLocalServerConnectHandler, &server));
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &HttpLocalServerDisconnectHandler, &server));
     ESP_ERROR_CHECK(example_connect());
     FinishAthurisiation_FLG = 0;
     while (1)
@@ -196,7 +196,7 @@ static void HttpServer(void *pvparameters)
             char receivedData[2500];
             printf("\nSpotifyAuth has done !\n");
             vTaskDelay((8 * 1000) / portTICK_PERIOD_MS);
-            // UserStatus();
+            // GetUserStatus();
             GetCurrentPlaying();
             vTaskDelay((3600 * 1000) / portTICK_PERIOD_MS);
             SendRequest_AndGiveTokenWithRefreshToken(receivedData, sizeof(receivedData), TokenParam.refresh_token);

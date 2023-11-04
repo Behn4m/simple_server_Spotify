@@ -16,7 +16,7 @@ SemaphoreHandle_t GetResponseSemaphore = NULL;
 
 void app_main(void)
 {
-    MyInit();
+    GlobalInit();
     SpotifyComponent();
     // nvsFlashInit();
     // lvglGui();

@@ -1,8 +1,7 @@
-
-
 #include <stdio.h>
 #include "SpotifyAuthorization.h"
 #include "main.h"
+#include "JsonExtraction.h"
 
 bool FinishAthurisiation_FLG;
 
@@ -28,7 +27,7 @@ static void SpotifyTask(void *pvparameters);
  */
 static esp_err_t FirstRequest(httpd_req_t *req)
 {
-    char loc_url[400];
+    char loc_url[SmallBuffer + 150];
     printf("here send to client - Request_\n");
     sprintf(loc_url, "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state", ClientId, ReDirectUri);
     httpd_resp_set_hdr(req, "Location", loc_url);
@@ -45,20 +44,20 @@ static esp_err_t FirstRequest(httpd_req_t *req)
  */
 static esp_err_t HttpsUserCallBackFunc(httpd_req_t *req)
 {
-    char MyBuf[700];
-    if (httpd_req_get_url_query_str(req, MyBuf, sizeof(MyBuf)) == ESP_OK)
+    char Buf[MediumBuffer];
+    if (httpd_req_get_url_query_str(req, Buf, sizeof(Buf)) == ESP_OK)
     {
-        printf("\n\n\n%s\n\n", MyBuf);
+        printf("\n\n\n%s\n\n", Buf);
         httpd_resp_set_type(req, "text/plain");
-        httpd_resp_set_status(req, "200");
-        httpd_resp_send(req, MyBuf, HTTPD_RESP_USE_STRLEN);
-        uint8_t a = FindCode(MyBuf, sizeof(MyBuf));
+        httpd_resp_set_status(req, HTTPD_200);
+        httpd_resp_send(req, Buf, HTTPD_RESP_USE_STRLEN);
+        uint8_t a = FindCode(Buf, sizeof(Buf));
         printf("\na=%d", a);
         if (a == 1)
         {
             vTaskDelay(1000 / portTICK_PERIOD_MS);
             xSemaphoreGive(FindCodeSemaphore);
-            if (xQueueSend(BufQueue1, MyBuf, 0) == pdTRUE)
+            if (xQueueSend(BufQueue1, Buf, 0) == pdTRUE)
             {
                 printf("Sent CODE with queue \n");
             }
@@ -68,10 +67,10 @@ static esp_err_t HttpsUserCallBackFunc(httpd_req_t *req)
     else
     {
         xSemaphoreGive(FailToFindCodeSemaphore);
-        sprintf(MyBuf, "BAD ARGS");
+        sprintf(Buf, "BAD ARGS");
         httpd_resp_set_type(req, "text/plain");
-        httpd_resp_set_status(req, "500");
-        httpd_resp_send(req, MyBuf, HTTPD_RESP_USE_STRLEN);
+        httpd_resp_set_status(req, HTTPD_500);
+        httpd_resp_send(req, Buf, HTTPD_RESP_USE_STRLEN);
         ESP_LOGI(TAG_APP, "bad arguments - the response does not include correct structure");
     }
     return ESP_OK;
@@ -113,14 +112,13 @@ static esp_err_t stop_webserver(httpd_handle_t server)
 }
 /**
  * @brief This function is the handler for the disconnect event.
- *
  * @param[in] arg Pointer to the HTTP server handle.
  * @param[in] event_base The event base.
  * @param[in] event_id The event ID.
  * @param[in] event_data The event data.
  */
 static void HttpLocalServerDisconnectHandler(void *arg, esp_event_base_t event_base,
-                               int32_t event_id, void *event_data)
+                                             int32_t event_id, void *event_data)
 {
     httpd_handle_t *server = (httpd_handle_t *)arg;
     if (*server)
@@ -138,14 +136,13 @@ static void HttpLocalServerDisconnectHandler(void *arg, esp_event_base_t event_b
 
 /**
  * @brief This function is the handler for the connect event.
- *
  * @param[in] arg Pointer to the HTTP server handle.
  * @param[in] event_base The event base.
  * @param[in] event_id The event ID.
  * @param[in] event_data The event data.
  */
 static void HttpLocalServerConnectHandler(void *arg, esp_event_base_t event_base,
-                            int32_t event_id, void *event_data)
+                                          int32_t event_id, void *event_data)
 {
     httpd_handle_t *server = (httpd_handle_t *)arg;
     if (*server == NULL)
@@ -174,7 +171,7 @@ void SpotifyComponent()
 {
     FindCodeSemaphore = xSemaphoreCreateBinary();
     FailToFindCodeSemaphore = xSemaphoreCreateBinary();
-    xTaskCreate(&SpotifyTask, "SpotifyTask", 10000, NULL, 1, NULL);
+    xTaskCreate(&SpotifyTask, "SpotifyTask", SpotifyTaskStackSize, NULL, 1, NULL);
 }
 
 /**
@@ -193,14 +190,13 @@ static void SpotifyTask(void *pvparameters)
     {
         if (FinishAthurisiation_FLG == 1)
         {
-            char receivedData[2500];
+            char receivedData[BigBuffer];
             printf("\nSpotifyAuth has done !\n");
             vTaskDelay((8 * 1000) / portTICK_PERIOD_MS);
             // GetUserStatus();
             GetCurrentPlaying();
             vTaskDelay((3600 * 1000) / portTICK_PERIOD_MS);
             SendRequest_AndGiveTokenWithRefreshToken(receivedData, sizeof(receivedData), TokenParam.refresh_token);
-            
         }
         else
         {
@@ -241,7 +237,6 @@ static void SpotifyTask(void *pvparameters)
      |         |<---(E)----- Access Token -------------------'
      +---------+       (w/ Optional Refresh Token)
  * @brief This function do all thing for authorisation in Spotify web api
- *
  ** we have 4 stage for pass authorisation in Spotify server
  * 1-give CODE
  * 2-send request for give access token
@@ -250,15 +245,15 @@ static void SpotifyTask(void *pvparameters)
  */
 void SpotifyAuth()
 {
-    char receivedData[2500];
+    char receivedData[BigBuffer];
     if (xSemaphoreTake(FindCodeSemaphore, portMAX_DELAY) == pdTRUE)
     {
-        // we receive CODE
+        // 1-give CODE
         if (xQueueReceive(BufQueue1, receivedData, portMAX_DELAY) == pdTRUE)
         {
             printf("Received CODE by Queue: %s\n", receivedData);
         }
-        // we want to get  access token
+        // 2-send request for give access token
         SendRequest_AndGiveToken(receivedData, sizeof(receivedData), receivedData, sizeof(receivedData));
         if (xSemaphoreTake(GetResponseSemaphore, portMAX_DELAY) == pdTRUE)
         {
@@ -267,7 +262,7 @@ void SpotifyAuth()
             {
                 printf("Received TOKEN by Queue: %s\n", receivedData);
             }
-            // we extract json from RAW response
+            // 3-we extract json from RAW response
             if (FindToken(receivedData, sizeof(receivedData)) != 1)
             {
                 vTaskDelay((60 * 1000) / portTICK_PERIOD_MS);
@@ -278,12 +273,11 @@ void SpotifyAuth()
                     esp_restart();
                 }
             }
-            // extract JSON and get param from needed parameter
+            //  4-extract JSON and get param from needed parameter
             ExtractionJsonParamForFindAccessToken(receivedData, sizeof(receivedData));
             FinishAthurisiation_FLG = 1;
         }
     }
-    // if (xSemaphoreTake(FailToFindCodeSemaphore, portMAX_DELAY) == pdTRUE)
     else
     {
         printf("fail to get code !!!");

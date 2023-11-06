@@ -9,6 +9,10 @@
     "files.associations": {
         "mdns.h": "c",
         "typeinfo": "c",
-        "main.h": "c"
+        "main.h": "c",
+        "wificonfig.h": "c",
+        "sockets.h": "c",
+        "esp_wifi.h": "c",
+        "freertos.h": "c"
     }
 }

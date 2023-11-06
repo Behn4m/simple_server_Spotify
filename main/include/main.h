@@ -1,4 +1,6 @@
-
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #ifndef MAIN_H_
 #define MAIN_H_
@@ -11,8 +13,8 @@
 #include <sys/param.h>
 #include "protocol_examples_common.h"
 #include "SpotifyAuthorization.h"
-#include "HttpsRequest_.h"
-#include "WiFiConfig_.h"
+#include "HttpsRequests.h"
+#include "WiFiConfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
@@ -21,6 +23,13 @@
 
 #define MYSSID "Hardware12"
 #define MYPASS "87654321"
+
+#define BigBuffer 2500
+#define MediumBuffer 1000
+#define SmallBuffer   250
+/* all task stack define here */
+#define SpotifyTaskStackSize 10*1000
+#define HttpsTaskStackSize   9*1000
 
 void GlobalInit();
 
@@ -49,11 +58,9 @@ struct UserInfo_
 };
 
 
-// CONFIG_LV_FONT_MONTSERRAT_12=y
-// CONFIG_LV_FONT_MONTSERRAT_14=y
-// CONFIG_LV_FONT_MONTSERRAT_16=y
-// CONFIG_LV_FONT_MONTSERRAT_18=y
-// CONFIG_LV_TFT_DISPLAY_CONTROLLER_RM67162=y
-// CONFIG_LV_TFT_DISPLAY_PROTOCOL_SPI=y
-// CONFIG_LV_DISPLAY_ORIENTATION_PORTRAIT=y
+
+#endif
+
+#ifdef __cplusplus
+}
 #endif

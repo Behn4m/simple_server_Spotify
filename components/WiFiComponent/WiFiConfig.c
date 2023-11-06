@@ -8,7 +8,7 @@
 #include <nvs_flash.h>
 #include <sys/param.h>
 #include "protocol_examples_common.h"
-#include"WiFiConfig_.h"
+#include"WiFiConfig.h"
 #include"main.h"
 /**
  * @brief This function handles Wi-Fi events and prints corresponding messages based on the event ID.

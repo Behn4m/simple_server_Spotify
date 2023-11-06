@@ -43,17 +43,20 @@
 #include "esp_crt_bundle.h"
 #endif
 #include "time_sync.h"
+#include"main.h"
+
 extern SemaphoreHandle_t GetResponseSemaphore;
 extern QueueHandle_t BufQueue1;
-#define WEB_PORT "443"
+TaskHandle_t xTaskHandlerHTTPS;
 
 char *WebServerAddress;
 char *Web_URL;
 char *HttpsBuf;
+
+#define WEB_PORT "443"
 #define SERVER_URL_MAX_SZ 1024
 static const char *TAG = "Https";
 static void https_request_task(void *pvparameters);
-TaskHandle_t xTaskHandlerHTTPS;
 #define TIME_PERIOD (86400000000ULL)
 
 extern const uint8_t server_root_cert_pem_start[] asm("_binary_server_root_cert_pem_start");
@@ -66,12 +69,12 @@ extern const uint8_t local_server_cert_pem_end[] asm("_binary_local_server_cert_
 static esp_tls_client_session_t *tls_client_session = NULL;
 static bool save_client_session = false;
 #endif
-/**
 
-*@brief This function performs an HTTPS GET request to a specified server URL with the provided configuration.
-*@param[in] cfg The TLS configuration for the request.
-*@param[in] WEB_SERVER_URL The URL to which the request should be sent.
-*@param[in] REQUEST The HTTP request to be sent.
+/**
+* @brief This function performs an HTTPS GET request to a specified server URL with the provided configuration.
+* @param[in] cfg The TLS configuration for the request.
+* @param[in] WEB_SERVER_URL The URL to which the request should be sent.
+* @param[in] REQUEST The HTTP request to be sent.
 */
 static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, const char *REQUEST)
 {
@@ -103,7 +106,6 @@ static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, con
         tls_client_session = esp_tls_get_client_session(tls);
     }
 #endif
-
     size_t written_bytes = 0;
     do
     {
@@ -270,17 +272,17 @@ static void https_request_task(void *pvparameters)
     free(WebServerAddress);
     vTaskDelete(NULL);
 }
-/**
 
-*@brief This function performs an HTTPS GET request to a specified server URL with the provided header request.
-*@param[in] HeaderOfRequest The header of the HTTPS request.
-*@param[in] SizeHeaderOfRequest The size of the header of the HTTPS request.
-*@param[in] Url The URL to which the request should be sent.
-*@param[in] SizeUrl The size of the URL.
-*@param[in] Server The server address.
-*@param[in] SizeServer The size of the server address.
+/**
+* @brief This function performs an HTTPS GET request to a specified server URL with the provided header request.
+* @param[in] HeaderOfRequest The header of the HTTPS request.
+* @param[in] SizeHeaderOfRequest The size of the header of the HTTPS request.
+* @param[in] Url The URL to which the request should be sent.
+* @param[in] SizeUrl The size of the URL.
+* @param[in] Server The server address.
+* @param[in] SizeServer The size of the server address.
 */
-void MyHttpsHandler(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *Url, size_t SizeUrl, char *Server, size_t SizeServer)
+void HttpsHandler(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *Url, size_t SizeUrl, char *Server, size_t SizeServer)
 {
     HttpsBuf = (char *)malloc(SizeHeaderOfRequest * sizeof(char));
     Web_URL = (char *)malloc(SizeUrl * sizeof(char));
@@ -311,5 +313,5 @@ void MyHttpsHandler(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *Url
     esp_timer_handle_t nvs_update_timer;
     ESP_ERROR_CHECK(esp_timer_create(&nvs_update_timer_args, &nvs_update_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(nvs_update_timer, TIME_PERIOD));
-    xTaskCreate(&https_request_task, "https_get_task", 9000, NULL, 1, &xTaskHandlerHTTPS);
+    xTaskCreate(&https_request_task, "https_get_task", HttpsTaskStackSize, NULL, 1, &xTaskHandlerHTTPS);
 }

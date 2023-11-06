@@ -13,7 +13,6 @@ extern "C" {
  * @brief Update the system time from time stored in NVS.
  *
  */
-
 esp_err_t update_time_from_nvs(void);
 
 /**

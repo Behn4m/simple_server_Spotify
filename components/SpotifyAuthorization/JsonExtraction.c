@@ -1,9 +1,9 @@
 #include "SpotifyAuthorization.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "HttpsRequest_.h"
+#include "HttpsRequests.h"
 #include "cJSON.h"
-
+#include"JsonExtraction.h"
 
 extern  struct Token_ TokenParam;
 extern  struct  UserInfo_ UserInfo;
@@ -64,6 +64,7 @@ void ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson)
 
     cJSON_Delete(J_Token);
 }
+
 /**
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a UserInfo structure.
  *

@@ -36,6 +36,13 @@ extern "C" {
 void wifiConnectionTaskCreation();
 
 
+#define EXAMPLE_ESP_WIFI_SSID "ESP32-S3"
+#define EXAMPLE_ESP_WIFI_PASS "mypassword"
+#define EXAMPLE_MAX_STA_CONN 5
+
+
+
+
 #endif
 
 

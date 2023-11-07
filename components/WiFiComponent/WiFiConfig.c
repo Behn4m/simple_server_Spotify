@@ -1,18 +1,11 @@
 
 #include "WiFiConfig.h"
 
-
-
 static httpd_handle_t server_ = NULL;
 static void WifiConnectionTask(void *pvparameters);
 
-
 #define IS_FILE_EXT(filename, ext) \
     (strcasecmp(&filename[strlen(filename) - sizeof(ext) + 1], ext) == 0)
-
-#define EXAMPLE_ESP_WIFI_SSID "ESP32-S3"
-#define EXAMPLE_ESP_WIFI_PASS "mypassword"
-#define EXAMPLE_MAX_STA_CONN 5
 
 static const char *TAG = "wifi_AP_WEBserver";
 static esp_err_t DetectFileType(httpd_req_t *req, const char *FileName);
@@ -24,17 +17,19 @@ static esp_err_t GetWifiParam(httpd_req_t *req)
     if (httpd_req_get_url_query_str(req, MyBuf, sizeof(MyBuf)) == ESP_OK)
     {
         printf("\n\n\n%s\n\n", MyBuf);
+        httpd_resp_set_hdr(req, "Location", "http://wificonfig.local/successful");
         httpd_resp_set_type(req, "text/plain");
-        httpd_resp_set_status(req, "200");
-        httpd_resp_send(req, MyBuf, HTTPD_RESP_USE_STRLEN);
+        httpd_resp_set_status(req, "302");
+        httpd_resp_send(req, "", HTTPD_RESP_USE_STRLEN);
         return ESP_OK;
     }
     else
     {
         sprintf(MyBuf, "BAD ARGS");
+        httpd_resp_set_hdr(req, "Location", "http://wificonfig.local/unsuccessful");
         httpd_resp_set_type(req, "text/plain");
-        httpd_resp_set_status(req, "500");
-        httpd_resp_send(req, MyBuf, HTTPD_RESP_USE_STRLEN);
+        httpd_resp_set_status(req, "302");
+        httpd_resp_send(req, "", HTTPD_RESP_USE_STRLEN);
         ESP_LOGI(TAG, "bad arguments - the response does not include correct structure");
         return ESP_FAIL;
     }
@@ -66,7 +61,7 @@ static esp_err_t RequestLockSolidSvg(httpd_req_t *req)
 }
 static esp_err_t RequestSuccessfulPage(httpd_req_t *req)
 {
-    char FileName[] = "spiffs/Successfull";
+    char FileName[] = "spiffs/Successfull.html";
     return ReadFromFS_AndSendIt(req, FileName);
 }
 static esp_err_t FontAweSomeMinCss(httpd_req_t *req)
@@ -81,7 +76,12 @@ static esp_err_t FontAweSomeCss(httpd_req_t *req)
 }
 static esp_err_t RequestUNSuccessfulPage(httpd_req_t *req)
 {
-    char FileName[] = "spiffs/UNSuccessfull";
+    char FileName[] = "spiffs/UNSuccessfull.html";
+    return ReadFromFS_AndSendIt(req, FileName);
+}
+static esp_err_t RequestWaitPage(httpd_req_t *req)
+{
+    char FileName[] = "spiffs/Wait.html";
     return ReadFromFS_AndSendIt(req, FileName);
 }
 static esp_err_t DetectFileType(httpd_req_t *req, const char *FileName)
@@ -169,74 +169,72 @@ static httpd_handle_t StartWebServerLocally(void)
         .uri = "/",
         .method = HTTP_GET,
         .handler = RequestWifiPage,
-        .user_ctx = Server_ // Pass Server_ data as context
-    };
-    httpd_uri_t logo_ = {
-        .uri = "/logo.png",
-        .method = HTTP_GET,
-        .handler = RequestLogo,
-        .user_ctx = Server_ // Pass Server_ data as context
-    };
-    httpd_uri_t Exclam = {
-        .uri = "/Exclam.png",
-        .method = HTTP_GET,
-        .handler = RequestExclaim,
-        .user_ctx = Server_ // Pass Server_ data as context
-    };
-    httpd_uri_t user_solid_svg = {
-        .uri = "/user-solid.svg",
-        .method = HTTP_GET,
-        .handler = RequestUserSolidSvg,
-        .user_ctx = Server_ // Pass Server_ data as context
-    };
-    httpd_uri_t lock_solid_svg = {
-        .uri = "/lock-solid.svg",
-        .method = HTTP_GET,
-        .handler = RequestLockSolidSvg,
-        .user_ctx = Server_ // Pass Server_ data as context
-    };
+        .user_ctx = Server_};
     httpd_uri_t Successful_ = {
-        .uri = "/",
+        .uri = "/successful",
         .method = HTTP_GET,
         .handler = RequestSuccessfulPage,
-        .user_ctx = Server_ // Pass Server_ data as context
-    };
+        .user_ctx = Server_};
+    httpd_uri_t WaitPage = {
+        .uri = "/wait",
+        .method = HTTP_GET,
+        .handler = RequestWaitPage,
+        .user_ctx = Server_};
     httpd_uri_t UNSuccessful_ = {
-        .uri = "/",
+        .uri = "/unsuccessful",
         .method = HTTP_GET,
         .handler = RequestUNSuccessfulPage,
-        .user_ctx = Server_ // Pass Server_ data as context
-    };
-    httpd_uri_t font_wesome_css = {
-        .uri = "/css/font-awesome.css",
-        .method = HTTP_GET,
-        .handler = FontAweSomeCss,
-        .user_ctx = Server_ // Pass Server_ data as context
-    };
-    httpd_uri_t font_awesome_min_css = {
-        .uri = "/css/font-awesome.min.css",
-        .method = HTTP_GET,
-        .handler = FontAweSomeMinCss,
-        .user_ctx = Server_ // Pass Server_ data as context
-    };
+        .user_ctx = Server_};
     httpd_uri_t GetWifiParam_ = {
         .uri = "/get",
         .method = HTTP_GET,
         .handler = GetWifiParam,
-    };
+        .user_ctx = Server_};
+    httpd_uri_t logo_ = {
+        .uri = "/logo.png",
+        .method = HTTP_GET,
+        .handler = RequestLogo,
+        .user_ctx = Server_};
+    httpd_uri_t Exclam = {
+        .uri = "/Exclam.png",
+        .method = HTTP_GET,
+        .handler = RequestExclaim,
+        .user_ctx = Server_};
+    httpd_uri_t user_solid_svg = {
+        .uri = "/user-solid.svg",
+        .method = HTTP_GET,
+        .handler = RequestUserSolidSvg,
+        .user_ctx = Server_};
+    httpd_uri_t lock_solid_svg = {
+        .uri = "/lock-solid.svg",
+        .method = HTTP_GET,
+        .handler = RequestLockSolidSvg,
+        .user_ctx = Server_};
+
+    httpd_uri_t font_wesome_css = {
+        .uri = "/css/font-awesome.css",
+        .method = HTTP_GET,
+        .handler = FontAweSomeCss,
+        .user_ctx = Server_};
+    httpd_uri_t font_awesome_min_css = {
+        .uri = "/css/font-awesome.min.css",
+        .method = HTTP_GET,
+        .handler = FontAweSomeMinCss,
+        .user_ctx = Server_};
     if (httpd_start(&Server_, &config) == ESP_OK)
     {
         ESP_LOGI(TAG, "Registering URI handlers");
         httpd_register_uri_handler(Server_, &SecPage_);
         httpd_register_uri_handler(Server_, &logo_);
-        httpd_register_uri_handler(Server_, &Exclam);
-        httpd_register_uri_handler(Server_, &user_solid_svg);
-        httpd_register_uri_handler(Server_, &lock_solid_svg);
+        httpd_register_uri_handler(Server_, &GetWifiParam_);
+        httpd_register_uri_handler(Server_, &font_awesome_min_css);
         httpd_register_uri_handler(Server_, &Successful_);
         httpd_register_uri_handler(Server_, &UNSuccessful_);
+        httpd_register_uri_handler(Server_, &user_solid_svg);
+        httpd_register_uri_handler(Server_, &lock_solid_svg);
         httpd_register_uri_handler(Server_, &font_wesome_css);
-        httpd_register_uri_handler(Server_, &font_awesome_min_css);
-        httpd_register_uri_handler(Server_, &GetWifiParam_);
+        httpd_register_uri_handler(Server_, &Exclam);
+        httpd_register_uri_handler(Server_, &WaitPage);
         return Server_;
     }
     return Server_;

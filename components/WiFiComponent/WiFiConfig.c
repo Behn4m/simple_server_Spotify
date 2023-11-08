@@ -16,7 +16,7 @@ static esp_err_t GetWifiParam(httpd_req_t *req)
     char MyBuf[100];
     if (httpd_req_get_url_query_str(req, MyBuf, sizeof(MyBuf)) == ESP_OK)
     {
-        printf("\n\n\n%s\n\n", MyBuf);
+        ESP_LOGI(TAG,"\n\n\n%s\n\n", MyBuf);
         httpd_resp_set_hdr(req, "Location", "http://wificonfig.local/successful");
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_set_status(req, "302");
@@ -343,7 +343,7 @@ void SpiffsInit()
 }
 void wifiConnectionTaskCreation()
 {
-    printf("creat wifi task");
+    ESP_LOGI(TAG,"creat wifi task");
     xTaskCreate(&WifiConnectionTask, "WifiConnectionTask", 10000, NULL, 1, NULL);
 }
 void WifiConnectionTask()
@@ -362,10 +362,10 @@ void WifiConnectionTask()
     Wait = xSemaphoreCreateBinary();
     while (1)
     {
-        printf("wait \n");
+        ESP_LOGI(TAG,"wait \n");
         if (xSemaphoreTake(Wait, portMAX_DELAY) == pdTRUE)
         {
-            printf("just for test");
+            ESP_LOGI(TAG,"just for test");
         }
     }
 }
@@ -383,16 +383,16 @@ void WifiConnectionTask()
 //     switch (event_id)
 //     {
 //     case WIFI_EVENT_STA_START:
-//         printf("WiFi connecting ... \n");
+//         ESP_LOGI(TAG,"WiFi connecting ... \n");
 //         break;
 //     case WIFI_EVENT_STA_CONNECTED:
-//         printf("WiFi connected ... \n");
+//         ESP_LOGI(TAG,"WiFi connected ... \n");
 //         break;
 //     case WIFI_EVENT_STA_DISCONNECTED:
-//         printf("WiFi lost connection ... \n");
+//         ESP_LOGI(TAG,"WiFi lost connection ... \n");
 //         break;
 //     case IP_EVENT_STA_GOT_IP:
-//         printf("WiFi got IP ... \n\n");
+//         ESP_LOGI(TAG,"WiFi got IP ... \n\n");
 //         break;
 //     default:
 //         break;

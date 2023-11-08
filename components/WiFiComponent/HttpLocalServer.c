@@ -2,6 +2,7 @@
 
 char UserWifiPassWord[100];
 char UserWifiSSID[100];
+static const char *TAG = "WifiTask";
 
 bool FindWifiSSIDAndPassword(char *Res, uint16_t SizeRes)
 {
@@ -21,7 +22,7 @@ bool FindWifiSSIDAndPassword(char *Res, uint16_t SizeRes)
                     {
                         break;
                         flg_findSSID = 1;
-                        printf("\twe find SSID !\n");
+                        ESP_LOGI(TAG,"\twe find SSID !\n");
                     }
                 }
             }
@@ -36,7 +37,7 @@ bool FindWifiSSIDAndPassword(char *Res, uint16_t SizeRes)
                     {
                         UserWifiPassWord[j - (i + 9)] = Res[j];
                         break;
-                        printf("\twe find Password!\n");
+                        ESP_LOGI(TAG,"\twe find Password!\n");
                         flg_findPassword = 1;
                     }
                 }

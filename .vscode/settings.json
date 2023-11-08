@@ -13,6 +13,11 @@
         "wificonfig.h": "c",
         "sockets.h": "c",
         "esp_wifi.h": "c",
-        "freertos.h": "c"
+        "freertos.h": "c",
+        "array": "c",
+        "bitset": "c",
+        "string_view": "c",
+        "initializer_list": "c",
+        "regex": "c"
     }
 }

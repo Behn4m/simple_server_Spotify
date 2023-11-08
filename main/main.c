@@ -14,6 +14,6 @@ void app_main(void)
     GlobalInit();    
     nvsFlashInit();
     // lvglGui();
-    // SpotifyComponent();
+    SpotifyComponent();
 
 }

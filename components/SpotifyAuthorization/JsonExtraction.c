@@ -8,6 +8,7 @@
 extern  struct Token_ TokenParam;
 extern  struct  UserInfo_ UserInfo;
 
+static const char *TAG = "JsonExTraction";
 
 /**
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a TokenParam structure.
@@ -21,7 +22,7 @@ void ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson)
     cJSON *J_Token = cJSON_Parse(Json);
     if (J_Token == NULL)
     {
-        printf("Failed to parse JSON\n");
+        ESP_LOGI(TAG,"Failed to parse JSON\n");
     }
 
     // Extract values from the cJSON object
@@ -56,11 +57,11 @@ void ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson)
     }
 
     // Print the values from the TokenParam struct
-    printf("Access Token: %s\n", TokenParam.access_token);
-    printf("Token Type: %s\n", TokenParam.token_type);
-    printf("Expires In: %d seconds\n", TokenParam.expires_in);
-    printf("Refresh Token: %s\n", TokenParam.refresh_token);
-    printf("Scope: %s\n", TokenParam.scope);
+    ESP_LOGI(TAG,"Access Token: %s\n", TokenParam.access_token);
+    ESP_LOGI(TAG,"Token Type: %s\n", TokenParam.token_type);
+    ESP_LOGI(TAG,"Expires In: %d seconds\n", TokenParam.expires_in);
+    ESP_LOGI(TAG,"Refresh Token: %s\n", TokenParam.refresh_token);
+    ESP_LOGI(TAG,"Scope: %s\n", TokenParam.scope);
 
     cJSON_Delete(J_Token);
 }
@@ -76,7 +77,7 @@ int ExtractionJsonParamForFindUserInfo(char *JsonUSerInfo)
     cJSON *J_UsserInfo = cJSON_Parse(JsonUSerInfo);
     if (J_UsserInfo == NULL)
     {
-        printf("Failed to parse JSON: %s\n", cJSON_GetErrorPtr());
+        ESP_LOGI(TAG,"Failed to parse JSON: %s\n", cJSON_GetErrorPtr());
         return 1;
     }
     cJSON *displayNameItem = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "DisplayName");
@@ -131,14 +132,14 @@ int ExtractionJsonParamForFindUserInfo(char *JsonUSerInfo)
 
     cJSON_Delete(J_UsserInfo);
 
-    printf("DisplayName: %s\n", UserInfo.DisplayName);
-    printf("SpotifyProfileURL: %s\n", UserInfo.SpotifyProfileURL);
-    printf("UserID: %s\n", UserInfo.UserID);
-    printf("Image1: %s\n", UserInfo.Image1);
-    printf("Image2: %s\n", UserInfo.Image2);
-    printf("Follower: %d\n", UserInfo.Follower);
-    printf("Country: %s\n", UserInfo.Country);
-    printf("Product: %s\n", UserInfo.Product);
+    ESP_LOGI(TAG,"DisplayName: %s\n", UserInfo.DisplayName);
+    ESP_LOGI(TAG,"SpotifyProfileURL: %s\n", UserInfo.SpotifyProfileURL);
+    ESP_LOGI(TAG,"UserID: %s\n", UserInfo.UserID);
+    ESP_LOGI(TAG,"Image1: %s\n", UserInfo.Image1);
+    ESP_LOGI(TAG,"Image2: %s\n", UserInfo.Image2);
+    ESP_LOGI(TAG,"Follower: %d\n", UserInfo.Follower);
+    ESP_LOGI(TAG,"Country: %s\n", UserInfo.Country);
+    ESP_LOGI(TAG,"Product: %s\n", UserInfo.Product);
 
     return 0;
 }

@@ -24,9 +24,9 @@ extern "C" {
 #define MYSSID "Hardware12"
 #define MYPASS "87654321"
 
-#define BigBuffer 2500
-#define MediumBuffer 1000
-#define SmallBuffer   250
+#define LONG_BUF 2500
+#define MEDIUM_BUF 1000
+#define SMALL_BUF   250
 /* all task stack define here */
 #define SpotifyTaskStackSize 10*1000
 #define HttpsTaskStackSize   9*1000

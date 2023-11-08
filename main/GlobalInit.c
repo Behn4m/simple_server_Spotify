@@ -14,5 +14,6 @@ void GlobalInit()
 
     GetResponseSemaphore = xSemaphoreCreateBinary();
     BufQueue1 = xQueueCreate(1, sizeof(char) * sizeof(char[2500]));
-    wifiConnectionTaskCreation();
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
 }

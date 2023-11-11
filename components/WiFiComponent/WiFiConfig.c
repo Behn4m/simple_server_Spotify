@@ -393,14 +393,15 @@ void WifiConnectionTask()
         ESP_LOGI(TAG, "wait \n");
         if (xSemaphoreTake(Wait, portMAX_DELAY) == pdTRUE)
         {
-            vTaskDelay(5000 / portTICK_PERIOD_MS);
+            vTaskDelay(3000 / portTICK_PERIOD_MS);
             WifiSTAMode();
+            vTaskDelay(5000 / portTICK_PERIOD_MS);
             while (1)
             {
-                
+                ESP_LOGI(TAG, "\nExitFromApMode");
                 if (xSemaphoreTake(ExitFromApMode, 10 / portTICK_PERIOD_MS) == pdTRUE)
                 {
-                     ESP_LOGI(TAG,"\nExitFromApMode");
+                    ESP_LOGI(TAG, "\nExitFromApMode");
                     StopWebServer(server_);
                     server_ = NULL;
                     mdns_free();
@@ -408,15 +409,15 @@ void WifiConnectionTask()
                 }
                 if (xSemaphoreTake(StayInApModeSemaphore, 10 / portTICK_PERIOD_MS) == pdTRUE)
                 {
-                    ESP_LOGI(TAG,"\nStayInApModeSemaphore");
+                    ESP_LOGI(TAG, "\nStayInApModeSemaphore");
                     ESP_ERROR_CHECK(WifiInitSoftAP());
                     break;
                 }
-
             }
         }
     }
 }
+
 /**
  * @brief This function handles Wi-Fi events and prints corresponding messages based on the event ID.
  *
@@ -500,15 +501,11 @@ static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_b
  */
 void WifiSTAMode()
 {
-    
-    // esp_event_loop_create_default()
     esp_netif_deinit();
     esp_wifi_stop();
     esp_wifi_deinit();
     esp_netif_init();
     esp_netif_create_default_wifi_sta();
-    // esp_netif_t *sta_netif = esp_netif_create_default_wifi_sta();
-    // assert(sta_netif);
     wifi_init_config_t wifi_initiation = WIFI_INIT_CONFIG_DEFAULT();
     esp_wifi_init(&wifi_initiation); //
     esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, wifi_event_handler, NULL);

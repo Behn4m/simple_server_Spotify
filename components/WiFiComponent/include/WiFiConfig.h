@@ -34,10 +34,10 @@ extern "C" {
 #include "esp_mac.h"
 
 void wifiConnectionTaskCreation();
-
+void WifiSTAMode();
 
 #define EXAMPLE_ESP_WIFI_SSID "ESP32-S3"
-#define EXAMPLE_ESP_WIFI_PASS "mypassword"
+#define EXAMPLE_ESP_WIFI_PASS "87654321"
 #define EXAMPLE_MAX_STA_CONN 5
 
 

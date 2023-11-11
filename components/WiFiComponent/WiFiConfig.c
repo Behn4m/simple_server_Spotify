@@ -1,7 +1,16 @@
 
 #include "WiFiConfig.h"
 
+char UserWifiPassWord[64];
+char UserWifiSSID[32];
+
+SemaphoreHandle_t Wait = NULL;
+SemaphoreHandle_t ExitFromApMode = NULL;
+SemaphoreHandle_t StayInApModeSemaphore = NULL;
+
+bool ForFirstTimeFlag = 0;
 static httpd_handle_t server_ = NULL;
+
 static void WifiConnectionTask(void *pvparameters);
 
 #define IS_FILE_EXT(filename, ext) \
@@ -13,19 +22,32 @@ static esp_err_t ReadFromFS_AndSendIt(httpd_req_t *req, char *FileName_);
 /* An HTTP GET handler */
 static esp_err_t GetWifiParam(httpd_req_t *req)
 {
-    char MyBuf[100];
-    if (httpd_req_get_url_query_str(req, MyBuf, sizeof(MyBuf)) == ESP_OK)
+    char Buf[100];
+    if (httpd_req_get_url_query_str(req, Buf, sizeof(Buf)) == ESP_OK)
     {
-        printf("\n\n\n%s\n\n", MyBuf);
-        httpd_resp_set_hdr(req, "Location", "http://wificonfig.local/successful");
-        httpd_resp_set_type(req, "text/plain");
-        httpd_resp_set_status(req, "302");
-        httpd_resp_send(req, "", HTTPD_RESP_USE_STRLEN);
-        return ESP_OK;
+        ESP_LOGI(TAG, "\n\n\n%s\n\n", Buf);
+        if (httpd_query_key_value(Buf, "login_username", UserWifiSSID, sizeof(UserWifiSSID)) == ESP_OK && httpd_query_key_value(Buf, "login_password", UserWifiPassWord, sizeof(UserWifiPassWord)) == ESP_OK)
+        {
+            httpd_resp_set_hdr(req, "Location", "http://wificonfig.local/successful");
+            httpd_resp_set_type(req, "text/plain");
+            httpd_resp_set_status(req, "302");
+            httpd_resp_send(req, "", HTTPD_RESP_USE_STRLEN);
+            ESP_LOGI(TAG, "\n\n\nssid=%s\tpass%s\n\n", UserWifiSSID, UserWifiPassWord);
+            xSemaphoreGive(Wait);
+            return ESP_OK;
+        }
+        else
+        {
+            httpd_resp_set_hdr(req, "Location", "http://wificonfig.local/unsuccessful");
+            httpd_resp_set_type(req, "text/plain");
+            httpd_resp_set_status(req, "302");
+            httpd_resp_send(req, "", HTTPD_RESP_USE_STRLEN);
+            return ESP_OK;
+        }
     }
     else
     {
-        sprintf(MyBuf, "BAD ARGS");
+        sprintf(Buf, "BAD ARGS");
         httpd_resp_set_hdr(req, "Location", "http://wificonfig.local/unsuccessful");
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_set_status(req, "302");
@@ -258,7 +280,7 @@ void StartMDNSService()
     mdns_hostname_set("wificonfig");
     mdns_instance_name_set("Behnam's ESP32 Thing");
 }
-static void WifiEvenHandler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
+static void WifiAPEvenHandler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
 {
     if (event_id == WIFI_EVENT_AP_STACONNECTED)
     {
@@ -276,12 +298,16 @@ static void WifiEvenHandler(void *arg, esp_event_base_t event_base, int32_t even
 
 esp_err_t WifiInitSoftAP(void)
 {
+    if (ForFirstTimeFlag == 1)
+    {
+        esp_wifi_stop();
+        esp_wifi_deinit();
+    }
     esp_netif_create_default_wifi_ap();
-
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
 
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &WifiEvenHandler, NULL));
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &WifiAPEvenHandler, NULL));
 
     wifi_config_t wifi_config = {
         .ap = {
@@ -343,7 +369,7 @@ void SpiffsInit()
 }
 void wifiConnectionTaskCreation()
 {
-    printf("creat wifi task");
+    ESP_LOGI(TAG, "creat wifi task");
     xTaskCreate(&WifiConnectionTask, "WifiConnectionTask", 10000, NULL, 1, NULL);
 }
 void WifiConnectionTask()
@@ -358,18 +384,39 @@ void WifiConnectionTask()
     ESP_ERROR_CHECK(WifiInitSoftAP());
     StartMDNSService();
     server_ = StartWebServerLocally();
-    SemaphoreHandle_t Wait = NULL;
+    ForFirstTimeFlag = 1;
     Wait = xSemaphoreCreateBinary();
+    ExitFromApMode = xSemaphoreCreateBinary();
+    StayInApModeSemaphore = xSemaphoreCreateBinary();
     while (1)
     {
-        printf("wait \n");
+        ESP_LOGI(TAG, "wait \n");
         if (xSemaphoreTake(Wait, portMAX_DELAY) == pdTRUE)
         {
-            printf("just for test");
+            vTaskDelay(5000 / portTICK_PERIOD_MS);
+            WifiSTAMode();
+            while (1)
+            {
+                
+                if (xSemaphoreTake(ExitFromApMode, 10 / portTICK_PERIOD_MS) == pdTRUE)
+                {
+                     ESP_LOGI(TAG,"\nExitFromApMode");
+                    StopWebServer(server_);
+                    server_ = NULL;
+                    mdns_free();
+                    vTaskDelete(NULL);
+                }
+                if (xSemaphoreTake(StayInApModeSemaphore, 10 / portTICK_PERIOD_MS) == pdTRUE)
+                {
+                    ESP_LOGI(TAG,"\nStayInApModeSemaphore");
+                    ESP_ERROR_CHECK(WifiInitSoftAP());
+                    break;
+                }
+
+            }
         }
     }
 }
-
 /**
  * @brief This function handles Wi-Fi events and prints corresponding messages based on the event ID.
  *
@@ -378,48 +425,103 @@ void WifiConnectionTask()
  * @param[in] event_id The event ID.
  * @param[in] event_data The event data (not used in this function).
  */
-// static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
-// {
-//     switch (event_id)
-//     {
-//     case WIFI_EVENT_STA_START:
-//         printf("WiFi connecting ... \n");
-//         break;
-//     case WIFI_EVENT_STA_CONNECTED:
-//         printf("WiFi connected ... \n");
-//         break;
-//     case WIFI_EVENT_STA_DISCONNECTED:
-//         printf("WiFi lost connection ... \n");
-//         break;
-//     case IP_EVENT_STA_GOT_IP:
-//         printf("WiFi got IP ... \n\n");
-//         break;
-//     default:
-//         break;
-//     }
-// }
-// /**
-//  * @brief This function handles the Wi-Fi connection process.
-//  */
-// void wifi_connection()
-// {
-//     // 1 - Wi-Fi/LwIP Init Phase
-//     esp_netif_init();                    // TCP/IP initiation 					s1.1
-//     esp_event_loop_create_default();     // event loop 			                s1.2
-//     esp_netif_create_default_wifi_sta(); // WiFi station 	                    s1.3
-//     wifi_init_config_t wifi_initiation = WIFI_INIT_CONFIG_DEFAULT();
-//     esp_wifi_init(&wifi_initiation); // 					                    s1.4
-//     // 2 - Wi-Fi Configuration Phase
-//     esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, wifi_event_handler, NULL);
-//     esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, wifi_event_handler, NULL);
-
-//     wifi_config_t wifi_configuration = {
-//         .sta = {
-//             .ssid = MYSSID,
-//             .password = MYPASS}};
-//     esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_configuration);
-//     // 3 - Wi-Fi Start Phase
-//     esp_wifi_start();
-//     // 4- Wi-Fi Connect Phase
-//     esp_wifi_connect();
-// }
+static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
+{
+    switch (event_id)
+    {
+    case WIFI_EVENT_STA_START:
+        ESP_LOGI(TAG, "WiFi connecting ... \n");
+        break;
+    case WIFI_EVENT_STA_CONNECTED:
+    {
+        ESP_LOGI(TAG, "WiFi connected ... \n");
+        // xSemaphoreGive(ExitFromApMode);
+        break;
+    }
+    case WIFI_EVENT_STA_DISCONNECTED:
+    {
+        static int RetryNum = 0;
+        ESP_LOGI(TAG, "WiFi lost connection ... \n");
+        if (RetryNum < 5)
+        {
+            esp_wifi_connect();
+            RetryNum++;
+            ESP_LOGI(TAG, "Retrying to Connect...#%d\n ", RetryNum);
+        }
+        else
+        {
+            ESP_LOGI(TAG, "Please check SSID and Password and try again\n\n");
+        }
+        xSemaphoreGive(StayInApModeSemaphore);
+        break;
+    }
+    case IP_EVENT_STA_GOT_IP:
+    {
+        ESP_LOGI(TAG, "WiFi got IP ... \n\n");
+        xSemaphoreGive(StayInApModeSemaphore);
+        break;
+    }
+    case WIFI_EVENT_STA_WPS_ER_FAILED:
+    {
+        ESP_LOGI(TAG, "WiFi config failed... \n");
+        xSemaphoreGive(StayInApModeSemaphore);
+        break;
+    }
+    case WIFI_EVENT_STA_WPS_ER_TIMEOUT:
+    {
+        ESP_LOGI(TAG, "WiFi config failed... \n");
+        xSemaphoreGive(StayInApModeSemaphore);
+        break;
+    }
+    case WIFI_EVENT_STA_WPS_ER_PIN:
+    {
+        ESP_LOGI(TAG, "WiFi config failed... \n");
+        xSemaphoreGive(StayInApModeSemaphore);
+        break;
+    }
+    case WIFI_EVENT_STA_WPS_ER_PBC_OVERLAP:
+    {
+        ESP_LOGI(TAG, "WiFi config failed... \n");
+        xSemaphoreGive(StayInApModeSemaphore);
+        break;
+    }
+    case WIFI_EVENT_STA_BEACON_TIMEOUT:
+    {
+        ESP_LOGI(TAG, "WiFi config failed... \n");
+        xSemaphoreGive(StayInApModeSemaphore);
+        break;
+    }
+    default:
+        break;
+    }
+}
+/**
+ * @brief This function handles the Wi-Fi connection process.
+ */
+void WifiSTAMode()
+{
+    
+    // esp_event_loop_create_default()
+    esp_netif_deinit();
+    esp_wifi_stop();
+    esp_wifi_deinit();
+    esp_netif_init();
+    esp_netif_create_default_wifi_sta();
+    // esp_netif_t *sta_netif = esp_netif_create_default_wifi_sta();
+    // assert(sta_netif);
+    wifi_init_config_t wifi_initiation = WIFI_INIT_CONFIG_DEFAULT();
+    esp_wifi_init(&wifi_initiation); //
+    esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, wifi_event_handler, NULL);
+    esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, wifi_event_handler, NULL);
+    wifi_config_t wifi_config = {
+        .sta = {
+            .ssid = "",
+            .password = "",
+        },
+    };
+    strcpy((char *)wifi_config.sta.ssid, UserWifiSSID);
+    strcpy((char *)wifi_config.sta.password, UserWifiPassWord);
+    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
+    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
+    ESP_ERROR_CHECK(esp_wifi_start());
+}

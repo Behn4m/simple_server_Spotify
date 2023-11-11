@@ -55,7 +55,6 @@ void ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson)
         strncpy(TokenParam.scope, scopeObj->valuestring, sizeof(TokenParam.scope) - 1);
         TokenParam.scope[sizeof(TokenParam.scope) - 1] = '\0';
     }
-
     // Print the values from the TokenParam struct
     ESP_LOGI(TAG,"Access Token: %s\n", TokenParam.access_token);
     ESP_LOGI(TAG,"Token Type: %s\n", TokenParam.token_type);

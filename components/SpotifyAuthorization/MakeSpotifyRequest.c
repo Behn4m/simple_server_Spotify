@@ -61,7 +61,7 @@ bool FindToken(char *Res, uint16_t SizeRes)
 {
     uint8_t flg_findToken = 0;
     uint32_t SizeOfJson = 0;
-    char json[MediumBuffer] = {0};
+    char json[MEDIUMBUF] = {0};
     for (uint16_t i = 0; i < SizeRes; i++)
     {
         if (Res[i] == '{')
@@ -106,7 +106,7 @@ bool FindToken(char *Res, uint16_t SizeRes)
 void SendRequest_AndGiveToken(char *Buf, size_t SizeBuf, char *code, size_t SizeCode)
 {
     // static const char *ReDirectUri = "http%3A%2F%2Fdeskhub.local%2Fcallback%2F";
-    char grand[MediumBuffer] = {0};
+    char grand[MEDIUMBUF] = {0};
     ESP_LOGI(TAG,"\n\n\n\n%s\n\n\n", code);
     sprintf(grand, "grant_type=authorization_code&redirect_uri=%s&%s", ReDirectUri, code);
     memset(Buf, 0x0, SizeBuf);
@@ -120,8 +120,8 @@ void SendRequest_AndGiveToken(char *Buf, size_t SizeBuf, char *code, size_t Size
                  "%s\r",
             strlen(grand), grand);
     // ESP_LOGI(TAG,"\n\n\nmake request for give token : %s\n\n\n", Buf);
-    char url[SmallBuffer] = "https://accounts.spotify.com/api/token";
-    char server[SmallBuffer] = "accounts.spotify.com";
+    char url[SMALLBUF] = "https://accounts.spotify.com/api/token";
+    char server[SMALLBUF] = "accounts.spotify.com";
     HttpsHandler(Buf, SizeBuf, url, sizeof(url), server, sizeof(server));
 }
 
@@ -135,7 +135,7 @@ void SendRequest_AndGiveToken(char *Buf, size_t SizeBuf, char *code, size_t Size
 */
 void MakePlayerCommand_AndSendIt(const char *Method_, const char *Command_, char *Buf, size_t SizeBuf)
 {
-    // we copy to of them because ,we dont sent size of Method and command
+    //   copy tow of them because ,we dont give size of Method and command
     char Method[50] = {0};
     char Command[50] = {0};
     strcpy(Method, Method_);
@@ -148,8 +148,8 @@ void MakePlayerCommand_AndSendIt(const char *Method_, const char *Command_, char
                  "Connection: close\r\n\r\n",
             Method, Command, TokenParam.access_token);
     ESP_LOGI(TAG,"\n\nrequest for getting now playing\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
-    char url[SmallBuffer] = "https://api.spotify.com";
-    char server[SmallBuffer] = "api.spotify.com";
+    char url[SMALLBUF] = "https://api.spotify.com";
+    char server[SMALLBUF] = "api.spotify.com";
     HttpsHandler(Buf, SizeBuf, url, sizeof(url), server, sizeof(server));
 }
 
@@ -159,8 +159,8 @@ void MakePlayerCommand_AndSendIt(const char *Method_, const char *Command_, char
 */
 void SendRequestForNext()
 {
-    char Buf[BigBuffer];
-    MakePlayerCommand_AndSendIt("POST", "next", Buf, BigBuffer);
+    char Buf[LONGBUF];
+    MakePlayerCommand_AndSendIt("POST", "next", Buf, LONGBUF);
 }
 
 /**
@@ -169,8 +169,8 @@ void SendRequestForNext()
 */
 void SendRequestForPrevious()
 {
-    char Buf[BigBuffer];
-    MakePlayerCommand_AndSendIt("POST", "previous", Buf, BigBuffer);
+    char Buf[LONGBUF];
+    MakePlayerCommand_AndSendIt("POST", "previous", Buf, LONGBUF);
 }
 
 /**
@@ -179,8 +179,8 @@ void SendRequestForPrevious()
 */
 void SendRequestForPlay()
 {
-    char Buf[BigBuffer];
-    MakePlayerCommand_AndSendIt("PUT", "play", Buf, BigBuffer);
+    char Buf[LONGBUF];
+    MakePlayerCommand_AndSendIt("PUT", "play", Buf, LONGBUF);
 }
 
 /**
@@ -189,8 +189,8 @@ void SendRequestForPlay()
 */
 void SendRequestForPause()
 {
-    char Buf[BigBuffer];
-    MakePlayerCommand_AndSendIt("PUT", "pause", Buf, BigBuffer);
+    char Buf[LONGBUF];
+    MakePlayerCommand_AndSendIt("PUT", "pause", Buf, LONGBUF);
 }
 
 /**
@@ -199,7 +199,7 @@ void SendRequestForPause()
 */
 void GetUserStatus()
 {
-    char Buf[BigBuffer];
+    char Buf[LONGBUF];
     sprintf(Buf, "GET /v1/me/ HTTP/1.1\r\n"
                  "Host: api.spotify.com\r\n"
                  "Authorization: Bearer %s\r\n"
@@ -207,8 +207,8 @@ void GetUserStatus()
                  "Connection: close\r\n\r\n",
             TokenParam.access_token);
     ESP_LOGI(TAG,"\n\nrequest for getting now playing\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
-    char url[SmallBuffer] = "https://api.spotify.com";
-    char server[SmallBuffer] = "api.spotify.com";
+    char url[SMALLBUF] = "https://api.spotify.com";
+    char server[SMALLBUF] = "api.spotify.com";
     HttpsHandler(Buf, sizeof(Buf), url, sizeof(url), server, sizeof(server));
 }
 
@@ -218,7 +218,7 @@ void GetUserStatus()
 */
 void GetUserTopItems()
 {
-    char Buf[BigBuffer];
+    char Buf[LONGBUF];
     sprintf(Buf, "GET /v1/me/top/artists HTTP/1.1\r\n"
                  "Host: api.spotify.com\r\n"
                  "Authorization: Bearer %s\r\n"
@@ -226,8 +226,8 @@ void GetUserTopItems()
                  "Connection: close\r\n\r\n",
             TokenParam.access_token);
     ESP_LOGI(TAG,"\n\nrequest for getting now playing\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
-    char url[SmallBuffer] = "https://api.spotify.com";
-    char server[SmallBuffer] = "api.spotify.com";
+    char url[SMALLBUF] = "https://api.spotify.com";
+    char server[SMALLBUF] = "api.spotify.com";
     HttpsHandler(Buf, sizeof(Buf), url, sizeof(url), server, sizeof(server));
 }
 
@@ -238,7 +238,7 @@ void GetUserTopItems()
 */
 void GetUserProfile(char *UserId_)
 {
-    char Buf[BigBuffer];
+    char Buf[LONGBUF];
     char UserId[50];
     strcpy(UserId, UserId_);
     sprintf(Buf, "GET /v1/users/%s HTTP/1.1\r\n"
@@ -249,8 +249,8 @@ void GetUserProfile(char *UserId_)
             UserId, TokenParam.access_token);
 
     ESP_LOGI(TAG,"\n\nrequest for getting now playing\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
-    char url[SmallBuffer] = "https://api.spotify.com";
-    char server[SmallBuffer] = "api.spotify.com";
+    char url[SMALLBUF] = "https://api.spotify.com";
+    char server[SMALLBUF] = "api.spotify.com";
     HttpsHandler(Buf, sizeof(Buf), url, sizeof(url), server, sizeof(server));
 }
 
@@ -259,16 +259,16 @@ void GetUserProfile(char *UserId_)
 */
 void GetCurrentPlaying()
 {
-    // return json is so big and we need big buffer 
-    char Buf[BigBuffer+1500]; 
+    // return json is so long and we need longer buffer 
+    char Buf[LONGBUF+1500]; 
     sprintf(Buf, "GET /v1/me/player/currently-playing HTTP/1.1\r\n"
                  "Host: api.spotify.com\r\n"
                  "Authorization: Bearer %s\r\n"
                  "Connection: close\r\n\r\n",
             TokenParam.access_token);
     ESP_LOGI(TAG,"\n\nrequest for getting now playing\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
-    char url[SmallBuffer] = "https://api.spotify.com";
-    char server[SmallBuffer] = "api.spotify.com";
+    char url[SMALLBUF] = "https://api.spotify.com";
+    char server[SMALLBUF] = "api.spotify.com";
     HttpsHandler(Buf, sizeof(Buf), url, sizeof(url), server, sizeof(server));
 }
 
@@ -281,9 +281,9 @@ void GetCurrentPlaying()
  */
 void SendRequest_AndGiveTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *RefreshToken_)
 {
-    char RefreshToken[SmallBuffer+150];
+    char RefreshToken[SMALLBUF+150];
     strcpy(RefreshToken, RefreshToken_);
-    char grand[MediumBuffer] = {0};
+    char grand[MEDIUMBUF] = {0};
     sprintf(grand, "grant_type=refresh_token&refresh_token=%s&redirect_uri=%s", RefreshToken, ReDirectUri);
     memset(Buf, 0x0, SizeBuf);
     sprintf(Buf, "POST /api/token HTTP/1.1 \r\n"
@@ -295,7 +295,7 @@ void SendRequest_AndGiveTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *R
                  "%s\r",
             strlen(grand), grand);
     ESP_LOGI(TAG,"\n\n\n%s\n\n\n", Buf);
-    char url[SmallBuffer] = "https://accounts.spotify.com/api/token";
-    char server[SmallBuffer] = "accounts.spotify.com";
+    char url[SMALLBUF] = "https://accounts.spotify.com/api/token";
+    char server[SMALLBUF] = "accounts.spotify.com";
     HttpsHandler(Buf, SizeBuf, url, sizeof(url), server, sizeof(server));
 }

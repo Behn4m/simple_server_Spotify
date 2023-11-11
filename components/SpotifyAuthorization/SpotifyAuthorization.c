@@ -21,13 +21,12 @@ static void SpotifyTask(void *pvparameters);
 
 /**
  * @brief This function handles the first HTTPS request to Spotify and redirects the user to the authorization page.
- *
  * @param[in] req The HTTP request object.
  * @return Returns ESP_OK if the request is processed successfully.
  */
 static esp_err_t FirstRequest(httpd_req_t *req)
 {
-    char loc_url[SmallBuffer + 150];
+    char loc_url[SMALLBUF + 150];
     ESP_LOGI(TAG,"here send to client - Request_\n");
     sprintf(loc_url, "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state", ClientId, ReDirectUri);
     httpd_resp_set_hdr(req, "Location", loc_url);
@@ -38,13 +37,12 @@ static esp_err_t FirstRequest(httpd_req_t *req)
 }
 /**
  * @brief This function handles the callback HTTPS request from Spotify and processes the response data.
- *
  * @param[in] req The HTTP request object.
  * @return Returns ESP_OK if the request is processed successfully.
  */
 static esp_err_t HttpsUserCallBackFunc(httpd_req_t *req)
 {
-    char Buf[MediumBuffer];
+    char Buf[MEDIUMBUF];
     if (httpd_req_get_url_query_str(req, Buf, sizeof(Buf)) == ESP_OK)
     {
         ESP_LOGI(TAG,"\n\n\n%s\n\n", Buf);
@@ -85,9 +83,9 @@ static const httpd_uri_t Responce_ = {
     .uri = "/callback/",
     .method = HTTP_GET,
     .handler = HttpsUserCallBackFunc};
+
 /**
  * @brief This function starts the web server for handling HTTPS requests.
- *
  * @return Returns the HTTP server handle if it is started successfully, or NULL otherwise.
  */
 static httpd_handle_t StartWebServer(void)
@@ -110,6 +108,7 @@ static esp_err_t stop_webserver(httpd_handle_t server)
 {
     return httpd_stop(server);
 }
+
 /**
  * @brief This function is the handler for the disconnect event.
  * @param[in] arg Pointer to the HTTP server handle.
@@ -176,7 +175,7 @@ void SpotifyComponent()
 
 /**
  * @brief This function is the entry point for handling HTTPS requests for Spotify authorization.
- * @param[in] pvparameters we need it because its Task !
+ * @param[in] pvparameters   need it because its Task !
  */
 static void SpotifyTask(void *pvparameters)
 {
@@ -190,7 +189,7 @@ static void SpotifyTask(void *pvparameters)
     {
         if (FinishAthurisiation_FLG == 1)
         {
-            char receivedData[BigBuffer];
+            char receivedData[LONGBUF];
             ESP_LOGI(TAG,"\nSpotifyAuth has done !\n");
             vTaskDelay((8 * 1000) / portTICK_PERIOD_MS);
             // GetUserStatus();
@@ -204,6 +203,7 @@ static void SpotifyTask(void *pvparameters)
         }
     }
 }
+
 /**
  *  The authorization code grant type is used to obtain both access
  * tokens and refresh tokens and is optimized for confidential clients.
@@ -240,12 +240,12 @@ static void SpotifyTask(void *pvparameters)
  ** we have 4 stage for pass authorisation in Spotify server
  * 1-give CODE
  * 2-send request for give access token
- * 3-we extract json from RAW response
+ * 3-  extract json from RAW response
  * 4-extract JSON and get param from needed parameter
  */
 void SpotifyAuth()
 {
-    char receivedData[BigBuffer];
+    char receivedData[LONGBUF];
     if (xSemaphoreTake(FindCodeSemaphore, portMAX_DELAY) == pdTRUE)
     {
         // 1-give CODE
@@ -262,7 +262,7 @@ void SpotifyAuth()
             {
                 ESP_LOGI(TAG,"Received TOKEN by Queue: %s\n", receivedData);
             }
-            // 3-we extract json from RAW response
+            // 3-  extract json from RAW response
             if (FindToken(receivedData, sizeof(receivedData)) != 1)
             {
                 vTaskDelay((60 * 1000) / portTICK_PERIOD_MS);

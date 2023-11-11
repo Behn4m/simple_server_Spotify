@@ -401,7 +401,6 @@ void WifiConnectionTask()
             vTaskDelay(5000 / portTICK_PERIOD_MS);
             while (1)
             {
-                ESP_LOGI(TAG, "\nExitFromApMode");
                 if (xSemaphoreTake(ExitFromApMode, 10 / portTICK_PERIOD_MS) == pdTRUE)
                 {
                     ESP_LOGI(TAG, "\nExitFromApMode");

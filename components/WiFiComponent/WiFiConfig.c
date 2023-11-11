@@ -372,7 +372,6 @@ void WifiConnectionTask()
 
 /**
  * @brief This function handles Wi-Fi events and prints corresponding messages based on the event ID.
- *
  * @param[in] event_handler_arg The event handler argument (not used in this function).
  * @param[in] event_base The event base.
  * @param[in] event_id The event ID.

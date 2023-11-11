@@ -14,6 +14,7 @@ extern "C" {
  * @return This function does not return a value.
  */
 void ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson);
+
 /**
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a UserInfo structure.
  *

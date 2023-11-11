@@ -35,6 +35,7 @@ static esp_err_t FirstRequest(httpd_req_t *req)
     httpd_resp_send(req, "", HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
+
 /**
  * @brief This function handles the callback HTTPS request from Spotify and processes the response data.
  * @param[in] req The HTTP request object.

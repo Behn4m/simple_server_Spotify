@@ -12,7 +12,6 @@ static const char *TAG = "JsonExTraction";
 
 /**
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a TokenParam structure.
- *
  * @param[in] Json The input JSON string.
  * @param[in] SizeJson The size of the JSON string.
  * @return This function does not return a value.
@@ -67,7 +66,6 @@ void ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson)
 
 /**
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a UserInfo structure.
- *
  * @param[in] JsonUSerInfo The input JSON string containing user information.
  * @return Returns 0 if the JSON is parsed successfully, or 1 otherwise.
  */
@@ -128,9 +126,7 @@ int ExtractionJsonParamForFindUserInfo(char *JsonUSerInfo)
         strncpy(UserInfo.Product, productItem->valuestring, sizeof(UserInfo.Product) - 1);
         UserInfo.Product[sizeof(UserInfo.Product) - 1] = '\0';
     }
-
     cJSON_Delete(J_UsserInfo);
-
     ESP_LOGI(TAG,"DisplayName: %s\n", UserInfo.DisplayName);
     ESP_LOGI(TAG,"SpotifyProfileURL: %s\n", UserInfo.SpotifyProfileURL);
     ESP_LOGI(TAG,"UserID: %s\n", UserInfo.UserID);
@@ -139,6 +135,5 @@ int ExtractionJsonParamForFindUserInfo(char *JsonUSerInfo)
     ESP_LOGI(TAG,"Follower: %d\n", UserInfo.Follower);
     ESP_LOGI(TAG,"Country: %s\n", UserInfo.Country);
     ESP_LOGI(TAG,"Product: %s\n", UserInfo.Product);
-
     return 0;
 }

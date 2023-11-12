@@ -2,7 +2,7 @@
 #include "SpotifyAuthorization.h"
 #include "GlobalInit.h"
 #include "JsonExtraction.h"
-bool FinishAthurisiation_FLG;
+bool FinishAthurisiationFlag;
 SemaphoreHandle_t FindCodeSemaphore = NULL;
 SemaphoreHandle_t FailToFindCodeSemaphore = NULL;
 extern QueueHandle_t BufQueue1;
@@ -91,18 +91,18 @@ static const httpd_uri_t Responce_ = {
  */
 static httpd_handle_t StartWebServer(void)
 {
-    httpd_handle_t server = NULL;
+    httpd_handle_t Server_ = NULL;
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.lru_purge_enable = true;
     ESP_LOGI(TAG, "Starting server on port: '%d'", config.server_port);
-    if (httpd_start(&server, &config) == ESP_OK)
+    if (httpd_start(&Server_, &config) == ESP_OK)
     {
         ESP_LOGI(TAG, "Registering URI handlers");
-        httpd_register_uri_handler(server, &Request_);
-        httpd_register_uri_handler(server, &Responce_);
-        return server;
+        httpd_register_uri_handler(Server_, &Request_);
+        httpd_register_uri_handler(Server_, &Responce_);
+        return Server_;
     }
-    return server;
+    return Server_;
 }
 
 /**
@@ -173,7 +173,7 @@ void StartMDNSService()
 /**
  * @brief This function handles the Spotify authorization process.
  */
-void SpotifyModuleTaskCreation()
+void SpotifyModule()
 {
     FindCodeSemaphore = xSemaphoreCreateBinary();
     FailToFindCodeSemaphore = xSemaphoreCreateBinary();
@@ -186,18 +186,19 @@ void SpotifyModuleTaskCreation()
  */
 static void SpotifyTask(void *pvparameters)
 {
-    static httpd_handle_t server = NULL;
+    static httpd_handle_t _Server = NULL;
+    ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     StartMDNSService();
-    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &HttpLocalServerConnectHandler, &server));
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &HttpLocalServerDisconnectHandler, &server));
+    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &HttpLocalServerConnectHandler, &_Server));
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &HttpLocalServerDisconnectHandler, &_Server));
     ESP_ERROR_CHECK(example_connect());
     ESP_LOGI(TAG, "\nSpotify task creat has done !\n");
-    FinishAthurisiation_FLG = 0;
+    FinishAthurisiationFlag = 0;
     while (1)
     {
-        if (FinishAthurisiation_FLG == 1)
+        if (FinishAthurisiationFlag == 1)
         {
             char receivedData[LONGBUF];
             ESP_LOGI(TAG, "\nSpotifyAuth has done !\n");
@@ -285,7 +286,7 @@ void SpotifyAuth()
             }
             //  4-extract JSON and get param from needed parameter
             ExtractionJsonParamForFindAccessToken(receivedData, sizeof(receivedData));
-            FinishAthurisiation_FLG = 1;
+            FinishAthurisiationFlag = 1;
         }
     }
     else

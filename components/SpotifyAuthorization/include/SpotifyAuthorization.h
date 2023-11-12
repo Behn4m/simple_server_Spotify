@@ -20,7 +20,7 @@ extern "C" {
 /**
  * @brief This function handles the Spotify authorization process.
  */
-void SpotifyModuleTaskCreation();
+void SpotifyModule();
 #endif
 
 #ifdef __cplusplus

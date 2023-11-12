@@ -8,8 +8,8 @@ SemaphoreHandle_t GetResponseSemaphore = NULL;
 void app_main(void)
 {
     GlobalInit();    
-    nvsFlashInit();
+    // nvsFlashInit();
     // lvglGui();
-    SpotifyModuleTaskCreation();
+    SpotifyModule();
 
 }

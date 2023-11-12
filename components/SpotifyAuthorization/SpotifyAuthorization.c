@@ -21,7 +21,7 @@ static void SpotifyTask(void *pvparameters);
 static esp_err_t FirstRequest(httpd_req_t *req)
 {
     char loc_url[SMALLBUF + 150];
-    ESP_LOGI(TAG,"here send to client - Request_\n");
+    ESP_LOGI(TAG, "here send to client - Request_\n");
     sprintf(loc_url, "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state", ClientId, ReDirectUri);
     httpd_resp_set_hdr(req, "Location", loc_url);
     httpd_resp_set_type(req, "text/plain");
@@ -40,22 +40,22 @@ static esp_err_t HttpsUserCallBackFunc(httpd_req_t *req)
     char Buf[MEDIUMBUF];
     if (httpd_req_get_url_query_str(req, Buf, sizeof(Buf)) == ESP_OK)
     {
-        ESP_LOGI(TAG,"\n\n\n%s\n\n", Buf);
+        ESP_LOGI(TAG, "\n\n\n%s\n\n", Buf);
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_set_status(req, HTTPD_200);
         httpd_resp_send(req, Buf, HTTPD_RESP_USE_STRLEN);
         uint8_t a = FindCode(Buf, sizeof(Buf));
-        ESP_LOGI(TAG,"\na=%d", a);
+        ESP_LOGI(TAG, "\na=%d", a);
         if (a == 1)
         {
             vTaskDelay(1000 / portTICK_PERIOD_MS);
             xSemaphoreGive(FindCodeSemaphore);
             if (xQueueSend(BufQueue1, Buf, 0) == pdTRUE)
             {
-                ESP_LOGI(TAG,"Sent CODE with queue \n");
+                ESP_LOGI(TAG, "Sent CODE with queue \n");
             }
         }
-        ESP_LOGI(TAG,"\nafter find code ");
+        ESP_LOGI(TAG, "\nafter find code ");
     }
     else
     {
@@ -70,16 +70,16 @@ static esp_err_t HttpsUserCallBackFunc(httpd_req_t *req)
 }
 
 /**
- * this strcut is http URL handler if receive "/" FirstRequest getting run 
-*/
+ * this strcut is http URL handler if receive "/" FirstRequest getting run
+ */
 static const httpd_uri_t Request_ = {
     .uri = "/",
     .method = HTTP_GET,
     .handler = FirstRequest};
 
 /**
- * this strcut is http URL handler if receive "/callback" HttpsUserCallBackFunc getting run 
-*/
+ * this strcut is http URL handler if receive "/callback" HttpsUserCallBackFunc getting run
+ */
 static const httpd_uri_t Responce_ = {
     .uri = "/callback/",
     .method = HTTP_GET,
@@ -187,17 +187,20 @@ void SpotifyModuleTaskCreation()
 static void SpotifyTask(void *pvparameters)
 {
     static httpd_handle_t server = NULL;
+    ESP_ERROR_CHECK(esp_netif_init());
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
     StartMDNSService();
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &HttpLocalServerConnectHandler, &server));
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &HttpLocalServerDisconnectHandler, &server));
     ESP_ERROR_CHECK(example_connect());
+    ESP_LOGI(TAG, "\nSpotify task creat has done !\n");
     FinishAthurisiation_FLG = 0;
     while (1)
     {
         if (FinishAthurisiation_FLG == 1)
         {
             char receivedData[LONGBUF];
-            ESP_LOGI(TAG,"\nSpotifyAuth has done !\n");
+            ESP_LOGI(TAG, "\nSpotifyAuth has done !\n");
             vTaskDelay((8 * 1000) / portTICK_PERIOD_MS);
             // GetUserStatus();
             GetCurrentPlaying();
@@ -258,7 +261,7 @@ void SpotifyAuth()
         // 1-give CODE
         if (xQueueReceive(BufQueue1, receivedData, portMAX_DELAY) == pdTRUE)
         {
-            ESP_LOGI(TAG,"Received CODE by Queue: %s\n", receivedData);
+            ESP_LOGI(TAG, "Received CODE by Queue: %s\n", receivedData);
         }
         // 2-send request for give access token
         SendRequestAndGiveToken(receivedData, sizeof(receivedData), receivedData, sizeof(receivedData));
@@ -267,7 +270,7 @@ void SpotifyAuth()
             memset(receivedData, 0x0, sizeof(receivedData));
             if (xQueueReceive(BufQueue1, receivedData, portMAX_DELAY) == pdTRUE)
             {
-                ESP_LOGI(TAG,"Received TOKEN by Queue: %s\n", receivedData);
+                ESP_LOGI(TAG, "Received TOKEN by Queue: %s\n", receivedData);
             }
             // 3-  extract json from RAW response
             if (FindToken(receivedData, sizeof(receivedData)) != 1)
@@ -276,7 +279,7 @@ void SpotifyAuth()
                 SendRequestAndGiveToken(receivedData, sizeof(receivedData), receivedData, sizeof(receivedData));
                 if (FindToken(receivedData, sizeof(receivedData)) != 1)
                 {
-                    ESP_LOGI(TAG,"fail to get Token !!!");
+                    ESP_LOGI(TAG, "fail to get Token !!!");
                     esp_restart();
                 }
             }
@@ -287,7 +290,7 @@ void SpotifyAuth()
     }
     else
     {
-        ESP_LOGI(TAG,"fail to get code !!!");
+        ESP_LOGI(TAG, "fail to get code !!!");
         esp_restart();
     }
 }

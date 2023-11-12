@@ -1,7 +1,3 @@
-
-
-
-
 #include <esp_wifi.h>
 #include <esp_event.h>
 #include <esp_log.h>
@@ -9,11 +5,11 @@
 #include <nvs_flash.h>
 #include <sys/param.h>
 #include "protocol_examples_common.h"
-#include"WiFiConfig_.h"
-#include"main.h"
+#include"WiFiConfig.h"
+#include"GlobalInit.h"
+
 /**
  * @brief This function handles Wi-Fi events and prints corresponding messages based on the event ID.
- *
  * @param[in] event_handler_arg The event handler argument (not used in this function).
  * @param[in] event_base The event base.
  * @param[in] event_id The event ID.
@@ -39,6 +35,7 @@ static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_b
         break;
     }
 }
+
 /**
  * @brief This function handles the Wi-Fi connection process.
  */
@@ -56,8 +53,8 @@ void wifi_connection()
 
     wifi_config_t wifi_configuration = {
         .sta = {
-            .ssid = MYSSID,
-            .password = MYPASS}};
+            .ssid = SSID,
+            .password = PASS}};
     esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_configuration);
     // 3 - Wi-Fi Start Phase
     esp_wifi_start();

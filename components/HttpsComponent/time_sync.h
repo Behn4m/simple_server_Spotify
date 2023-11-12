@@ -4,11 +4,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 #pragma once
-
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 /**
  * @brief Update the system time from time stored in NVS.
  *

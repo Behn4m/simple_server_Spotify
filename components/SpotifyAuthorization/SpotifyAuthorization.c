@@ -1,24 +1,18 @@
 #include <stdio.h>
 #include "SpotifyAuthorization.h"
-#include "main.h"
+#include "GlobalInit.h"
 #include "JsonExtraction.h"
-
 bool FinishAthurisiation_FLG;
-
 SemaphoreHandle_t FindCodeSemaphore = NULL;
 SemaphoreHandle_t FailToFindCodeSemaphore = NULL;
 extern QueueHandle_t BufQueue1;
 extern SemaphoreHandle_t GetResponseSemaphore;
-
 static const char *TAG = "SpotifyTask";
 static const char *TAG_APP = "SPOTIFY";
-
 extern struct Token_ TokenParam;
 extern struct UserInfo_ UserInfo;
-
 void SpotifyAuth();
 static void SpotifyTask(void *pvparameters);
-
 /**
  * @brief This function handles the first HTTPS request to Spotify and redirects the user to the authorization page.
  * @param[in] req The HTTP request object.
@@ -75,11 +69,17 @@ static esp_err_t HttpsUserCallBackFunc(httpd_req_t *req)
     return ESP_OK;
 }
 
+/**
+ * this strcut is http URL handler if receive "/" FirstRequest getting run 
+*/
 static const httpd_uri_t Request_ = {
     .uri = "/",
     .method = HTTP_GET,
     .handler = FirstRequest};
 
+/**
+ * this strcut is http URL handler if receive "/callback" HttpsUserCallBackFunc getting run 
+*/
 static const httpd_uri_t Responce_ = {
     .uri = "/callback/",
     .method = HTTP_GET,
@@ -105,7 +105,11 @@ static httpd_handle_t StartWebServer(void)
     return server;
 }
 
-static esp_err_t stop_webserver(httpd_handle_t server)
+/**
+ * @brief This function stops the web server for handling HTTPS requests.
+ * @return Returns the HTTP server handle if it is started successfully, or NULL otherwise.
+ */
+static esp_err_t StopWebServer(httpd_handle_t server)
 {
     return httpd_stop(server);
 }
@@ -123,7 +127,7 @@ static void HttpLocalServerDisconnectHandler(void *arg, esp_event_base_t event_b
     httpd_handle_t *server = (httpd_handle_t *)arg;
     if (*server)
     {
-        if (stop_webserver(*server) == ESP_OK)
+        if (StopWebServer(*server) == ESP_OK)
         {
             *server = NULL;
         }
@@ -150,10 +154,11 @@ static void HttpLocalServerConnectHandler(void *arg, esp_event_base_t event_base
         *server = StartWebServer();
     }
 }
+
 /**
  * @brief This function starts the mDNS service.
  */
-void start_mdns_service()
+void StartMDNSService()
 {
     esp_err_t err = mdns_init();
     if (err)
@@ -162,12 +167,13 @@ void start_mdns_service()
         return;
     }
     mdns_hostname_set("deskhub");
-    mdns_instance_name_set("Behnam's ESP32 Thing");
+    mdns_instance_name_set("Spotify");
 }
+
 /**
  * @brief This function handles the Spotify authorization process.
  */
-void SpotifyComponent()
+void SpotifyModuleTaskCreation()
 {
     FindCodeSemaphore = xSemaphoreCreateBinary();
     FailToFindCodeSemaphore = xSemaphoreCreateBinary();
@@ -176,12 +182,12 @@ void SpotifyComponent()
 
 /**
  * @brief This function is the entry point for handling HTTPS requests for Spotify authorization.
- * @param[in] pvparameters   need it because its Task !
+ * @param[in] pvparameters  need it because its Task !
  */
 static void SpotifyTask(void *pvparameters)
 {
     static httpd_handle_t server = NULL;
-    start_mdns_service();
+    StartMDNSService();
     ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &HttpLocalServerConnectHandler, &server));
     ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &HttpLocalServerDisconnectHandler, &server));
     ESP_ERROR_CHECK(example_connect());
@@ -255,7 +261,7 @@ void SpotifyAuth()
             ESP_LOGI(TAG,"Received CODE by Queue: %s\n", receivedData);
         }
         // 2-send request for give access token
-        SendRequest_AndGiveToken(receivedData, sizeof(receivedData), receivedData, sizeof(receivedData));
+        SendRequestAndGiveToken(receivedData, sizeof(receivedData), receivedData, sizeof(receivedData));
         if (xSemaphoreTake(GetResponseSemaphore, portMAX_DELAY) == pdTRUE)
         {
             memset(receivedData, 0x0, sizeof(receivedData));
@@ -267,7 +273,7 @@ void SpotifyAuth()
             if (FindToken(receivedData, sizeof(receivedData)) != 1)
             {
                 vTaskDelay((60 * 1000) / portTICK_PERIOD_MS);
-                SendRequest_AndGiveToken(receivedData, sizeof(receivedData), receivedData, sizeof(receivedData));
+                SendRequestAndGiveToken(receivedData, sizeof(receivedData), receivedData, sizeof(receivedData));
                 if (FindToken(receivedData, sizeof(receivedData)) != 1)
                 {
                     ESP_LOGI(TAG,"fail to get Token !!!");

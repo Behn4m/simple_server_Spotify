@@ -9,7 +9,7 @@
     "files.associations": {
         "mdns.h": "c",
         "typeinfo": "c",
-        "main.h": "c",
+        "GlobalInit.h": "c",
         "wificonfig.h": "c",
         "sockets.h": "c",
         "esp_wifi.h": "c",
@@ -18,6 +18,15 @@
         "bitset": "c",
         "string_view": "c",
         "initializer_list": "c",
-        "regex": "c"
-    }
+        "regex": "c",
+        "event_groups.h": "c",
+        "queue.h": "c",
+        "string.h": "c",
+        "makespotifyrequest.h": "c",
+        "nvsflash.h": "c"
+    },
+    "cSpell.words": [
+        "athurisiation",
+        "nesseccry"
+    ]
 }

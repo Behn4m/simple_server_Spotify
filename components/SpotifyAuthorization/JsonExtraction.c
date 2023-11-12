@@ -4,12 +4,9 @@
 #include "HttpsRequests.h"
 #include "cJSON.h"
 #include"JsonExtraction.h"
-
 extern  struct Token_ TokenParam;
 extern  struct  UserInfo_ UserInfo;
-
 static const char *TAG = "JsonExTraction";
-
 /**
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a TokenParam structure.
  * @param[in] Json The input JSON string.
@@ -23,7 +20,6 @@ void ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson)
     {
         ESP_LOGI(TAG,"Failed to parse JSON\n");
     }
-
     // Extract values from the cJSON object
     cJSON *accessTokenObj = cJSON_GetObjectItem(J_Token, "access_token");
     cJSON *tokenTypeObj = cJSON_GetObjectItem(J_Token, "token_type");
@@ -60,7 +56,6 @@ void ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson)
     ESP_LOGI(TAG,"Expires In: %d seconds\n", TokenParam.expires_in);
     ESP_LOGI(TAG,"Refresh Token: %s\n", TokenParam.refresh_token);
     ESP_LOGI(TAG,"Scope: %s\n", TokenParam.scope);
-
     cJSON_Delete(J_Token);
 }
 
@@ -83,7 +78,6 @@ int ExtractionJsonParamForFindUserInfo(char *JsonUSerInfo)
         strncpy(UserInfo.DisplayName, displayNameItem->valuestring, sizeof(UserInfo.DisplayName) - 1);
         UserInfo.DisplayName[sizeof(UserInfo.DisplayName) - 1] = '\0';
     }
-
     cJSON *spotifyProfileURLItem = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "SpotifyProfileURL");
     if (cJSON_IsString(spotifyProfileURLItem) && (spotifyProfileURLItem->valuestring != NULL))
     {
@@ -119,7 +113,6 @@ int ExtractionJsonParamForFindUserInfo(char *JsonUSerInfo)
         strncpy(UserInfo.Country, countryItem->valuestring, sizeof(UserInfo.Country) - 1);
         UserInfo.Country[sizeof(UserInfo.Country) - 1] = '\0';
     }
-
     cJSON *productItem = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "Product");
     if (cJSON_IsString(productItem) && (productItem->valuestring != NULL))
     {

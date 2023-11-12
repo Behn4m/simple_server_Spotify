@@ -6,3 +6,4 @@ idf_component_register(SRCS "JsonExtraction.c" "SpotifyAuthorization.c" "MakeSpo
                     esp_https_server esp_http_client nvs_flash HttpsComponent json
                     main) 
                     
+# I need main component ,because have some global variable ,without main component dose not work

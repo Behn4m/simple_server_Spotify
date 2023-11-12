@@ -11,5 +11,4 @@ void app_main(void)
     // nvsFlashInit();
     // lvglGui();
     SpotifyModule();
-
 }

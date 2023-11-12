@@ -44,6 +44,7 @@ struct UserInfo_
     char Country[30];
     char Product[30];
 };
+
 /**
  * in this function we init hardware or variable that need them
  *  globally

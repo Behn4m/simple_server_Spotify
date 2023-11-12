@@ -23,7 +23,8 @@
         "queue.h": "c",
         "string.h": "c",
         "makespotifyrequest.h": "c",
-        "nvsflash.h": "c"
+        "nvsflash.h": "c",
+        "esp_https_server.h": "c"
     },
     "cSpell.words": [
         "athurisiation",

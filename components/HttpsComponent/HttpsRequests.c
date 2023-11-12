@@ -63,7 +63,6 @@ extern const uint8_t local_server_cert_pem_end[] asm("_binary_local_server_cert_
 static esp_tls_client_session_t *tls_client_session = NULL;
 static bool save_client_session = false;
 #endif
-
 /**
 * @brief This function performs an HTTPS GET request to a specified server URL with the provided configuration.
 * @param[in] cfg The TLS configuration for the request.

@@ -8,6 +8,7 @@
 extern struct Token_ TokenParam;
 extern struct UserInfo_ UserInfo;
 static const char *TAG = "SpotifyTask";
+
 /**
 * @brief This function searches for specific patterns ('code' and 'state') within a character array and returns a boolean value indicating if either pattern was found.
 * @param[in] Res The character array to search within, and Res is response from first stage from spotify athurisiation

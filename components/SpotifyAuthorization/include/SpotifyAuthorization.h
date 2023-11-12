@@ -17,6 +17,7 @@ extern "C" {
 #include "mdns.h"
 #include "GlobalInit.h"
 #include"MakeSpotifyRequest.h"
+
 /**
  * @brief This function handles the Spotify authorization process.
  */

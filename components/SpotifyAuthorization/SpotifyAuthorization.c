@@ -13,6 +13,7 @@ extern struct Token_ TokenParam;
 extern struct UserInfo_ UserInfo;
 void SpotifyAuth();
 static void SpotifyTask(void *pvparameters);
+
 /**
  * @brief This function handles the first HTTPS request to Spotify and redirects the user to the authorization page.
  * @param[in] req The HTTP request object.

@@ -7,6 +7,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 /**
  * @brief Update the system time from time stored in NVS.
  *

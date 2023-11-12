@@ -3,7 +3,7 @@ extern "C" {
 #endif
 #ifndef   MAKE_SPOTIFY_REQUEST_H_
 #define   MAKE_SPOTIFY_REQUEST_H_
-#include"SpotifyAuthorization.h"
+#include "SpotifyAuthorization.h"
 
 /**
 * @brief This function sends a request to the Spotify API to give Curent playing information 

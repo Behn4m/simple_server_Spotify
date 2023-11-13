@@ -10,14 +10,10 @@ extern "C" {
 #include <nvs_flash.h>
 #include <sys/param.h>
 #include "protocol_examples_common.h"
-#include "SpotifyAuthorization.h"
-#include "HttpsRequests.h"
-#include "WiFiConfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
 #include "freertos/queue.h"
-#include "nvsFlash.h"
 #define LONGBUF 2500
 #define MEDIUMBUF 1000
 #define SMALLBUF   250

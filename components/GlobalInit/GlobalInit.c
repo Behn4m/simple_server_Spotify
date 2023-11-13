@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "GlobalInit.h"
 extern QueueHandle_t BufQueue1;
 extern SemaphoreHandle_t GetResponseSemaphore;

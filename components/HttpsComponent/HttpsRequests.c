@@ -52,9 +52,9 @@ char *Web_URL;
 char *HttpsBuf;
 #define WEB_PORT "443"
 #define SERVER_URL_MAX_SZ 1024
+#define TIME_PERIOD (86400000000ULL)
 static const char *TAG = "Https";
 static void https_request_task(void *pvparameters);
-#define TIME_PERIOD (86400000000ULL)
 extern const uint8_t server_root_cert_pem_start[] asm("_binary_server_root_cert_pem_start");
 extern const uint8_t server_root_cert_pem_end[] asm("_binary_server_root_cert_pem_end");
 extern const uint8_t local_server_cert_pem_start[] asm("_binary_local_server_cert_pem_start");
@@ -63,6 +63,7 @@ extern const uint8_t local_server_cert_pem_end[] asm("_binary_local_server_cert_
 static esp_tls_client_session_t *tls_client_session = NULL;
 static bool save_client_session = false;
 #endif
+
 /**
 * @brief This function performs an HTTPS GET request to a specified server URL with the provided configuration.
 * @param[in] cfg The TLS configuration for the request.

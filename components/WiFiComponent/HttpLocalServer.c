@@ -54,11 +54,6 @@ static esp_err_t RequestLogo(httpd_req_t *req)
     char FileName[] = "spiffs/logo.png";
     return ReadFromFileSystemAndSendIt(req, FileName);
 }
-static esp_err_t RequestExclaim(httpd_req_t *req)
-{
-    char FileName[] = "spiffs/Exclam.png";
-    return ReadFromFileSystemAndSendIt(req, FileName);
-}
 static esp_err_t RequestUserSolidSvg(httpd_req_t *req)
 {
     char FileName[] = "spiffs/user-solid.svg";
@@ -79,19 +74,9 @@ static esp_err_t FontAweSomeMinCss(httpd_req_t *req)
     char FileName[] = "spiffs/css/font-awesome.min.css";
     return ReadFromFileSystemAndSendIt(req, FileName);
 }
-static esp_err_t FontAweSomeCss(httpd_req_t *req)
-{
-    char FileName[] = "spiffs//css/font-awesome.css";
-    return ReadFromFileSystemAndSendIt(req, FileName);
-}
 static esp_err_t RequestUNSuccessfulPage(httpd_req_t *req)
 {
     char FileName[] = "spiffs/UNSuccessfull.html";
-    return ReadFromFileSystemAndSendIt(req, FileName);
-}
-static esp_err_t RequestWaitPage(httpd_req_t *req)
-{
-    char FileName[] = "spiffs/Wait.html";
     return ReadFromFileSystemAndSendIt(req, FileName);
 }
 static esp_err_t DetectFileType(httpd_req_t *req, const char *FileName)
@@ -185,11 +170,6 @@ static httpd_handle_t StartWebServerLocally(void)
         .method = HTTP_GET,
         .handler = RequestSuccessfulPage,
         .user_ctx = Server_};
-    httpd_uri_t WaitPage = {
-        .uri = "/wait",
-        .method = HTTP_GET,
-        .handler = RequestWaitPage,
-        .user_ctx = Server_};
     httpd_uri_t UNSuccessful_ = {
         .uri = "/unsuccessful",
         .method = HTTP_GET,
@@ -205,11 +185,6 @@ static httpd_handle_t StartWebServerLocally(void)
         .method = HTTP_GET,
         .handler = RequestLogo,
         .user_ctx = Server_};
-    httpd_uri_t Exclam = {
-        .uri = "/Exclam.png",
-        .method = HTTP_GET,
-        .handler = RequestExclaim,
-        .user_ctx = Server_};
     httpd_uri_t user_solid_svg = {
         .uri = "/user-solid.svg",
         .method = HTTP_GET,
@@ -219,12 +194,6 @@ static httpd_handle_t StartWebServerLocally(void)
         .uri = "/lock-solid.svg",
         .method = HTTP_GET,
         .handler = RequestLockSolidSvg,
-        .user_ctx = Server_};
-
-    httpd_uri_t font_wesome_css = {
-        .uri = "/css/font-awesome.css",
-        .method = HTTP_GET,
-        .handler = FontAweSomeCss,
         .user_ctx = Server_};
     httpd_uri_t font_awesome_min_css = {
         .uri = "/css/font-awesome.min.css",
@@ -242,9 +211,6 @@ static httpd_handle_t StartWebServerLocally(void)
         httpd_register_uri_handler(Server_, &UNSuccessful_);
         httpd_register_uri_handler(Server_, &user_solid_svg);
         httpd_register_uri_handler(Server_, &lock_solid_svg);
-        httpd_register_uri_handler(Server_, &font_wesome_css);
-        httpd_register_uri_handler(Server_, &Exclam);
-        httpd_register_uri_handler(Server_, &WaitPage);
         return Server_;
     }
     return Server_;

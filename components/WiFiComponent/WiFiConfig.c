@@ -10,7 +10,7 @@
 #include "nvs_flash.h"
 #include "lwip/err.h"
 #include "lwip/sys.h"
-#define MAXIMUMRETRYTOCONNECT 1
+#define MAXIMUM_RETRY_TO_CONNECT 1
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT BIT1
 static EventGroupHandle_t s_wifi_event_group;
@@ -18,8 +18,16 @@ SemaphoreHandle_t Wait;
 SemaphoreHandle_t ExitFromApMode;
 SemaphoreHandle_t StayInApModeSemaphore;
 esp_netif_t *NetifAccessPointStruct;
-static const char *TAG = "go to wifi station mode";
+static const char *TAG = "wifi station mode";
 static int RetryTime = 0;
+/**
+ * @brief handler for WiFi and IP events.
+ * @param[in]Arg Pointer to user-defined data.
+ * @param[in] EventBase The event base of the event.
+ * @param[in] EventId The event ID.
+ * @param[in] EventData Pointer to the event data.
+ * @returns None
+ */
 static void EventAPHandler(void *Arg, esp_event_base_t EventBase,
                            int32_t EventId, void *EventData)
 {
@@ -29,7 +37,7 @@ static void EventAPHandler(void *Arg, esp_event_base_t EventBase,
     }
     else if (EventBase == WIFI_EVENT && EventId == WIFI_EVENT_STA_DISCONNECTED)
     {
-        if (RetryTime < MAXIMUMRETRYTOCONNECT)
+        if (RetryTime < MAXIMUM_RETRY_TO_CONNECT)
         {
             esp_wifi_connect();
             RetryTime++;
@@ -81,8 +89,10 @@ static void EventAPHandler(void *Arg, esp_event_base_t EventBase,
     }
 }
 /**
- * @brief This function handles the Wi-Fi Station Mode connection process.
- * @return return ESP error
+ * @brief Sets up WiFi station mode.
+ * @param[in] ssid      SSID of the access point.
+ * @param[in] password  Password of the access point.
+ * @return esp_err_t
  */
 esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_)
 {
@@ -132,7 +142,14 @@ esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_)
     }
     return ESP_OK;
 }
-
+/**
+ * @brief Event handler for WiFi access point events.
+ * @param[in] arg Pointer to user-defined data.
+ * @param[in] EventBase The event base associated with the event.
+ * @param[in] EventID The ID of the event.
+ * @param[in] EventData Pointer to the event data.
+ * @returns None
+ */
 static void WifiAccessPointEvenHandler(void *arg, esp_event_base_t EventBase, int32_t EventID, void *EventData)
 {
     if (EventID == WIFI_EVENT_AP_STACONNECTED)
@@ -148,7 +165,12 @@ static void WifiAccessPointEvenHandler(void *arg, esp_event_base_t EventBase, in
                  MAC2STR(event->mac), event->aid);
     }
 }
-
+/**
+ * @brief Configures the ESP32 to operate in Soft Access Point mode.
+ * @param[in] WifiAccessPointSSID The SSID (network name) of the access point.
+ * @param[in] WifiAccessPointPassWord The password for the access point.
+ * @returns ESP_OK if the operation is successful, otherwise an error code.
+ */
 esp_err_t WifiSoftAccessPointMode(char *WifiAccessPointSSID, char *WifiAccessPointPassWord)
 {
     if (ForFirstTimeFlag == 1)
@@ -173,7 +195,7 @@ esp_err_t WifiSoftAccessPointMode(char *WifiAccessPointSSID, char *WifiAccessPoi
             .ssid = "",
             .ssid_len = strlen(WifiAccessPointSSID),
             .password = "",
-            .max_connection = EXAMPLE_MAX_STA_CONN,
+            .max_connection = MAX_STA_CONN,
             .authmode = WIFI_AUTH_WPA_WPA2_PSK},
     };
     strcpy((char *)wifi_config.ap.ssid, WifiAccessPointSSID);

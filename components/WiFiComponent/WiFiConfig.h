@@ -29,9 +29,9 @@ extern "C" {
 #include "esp_spiffs.h"
 #include "esp_http_server.h"
 #include "esp_mac.h"
-#define EXAMPLE_ESP_WIFI_SSID "ESP32-S3"
-#define EXAMPLE_ESP_WIFI_PASS "87654321"
-#define EXAMPLE_MAX_STA_CONN 5
+#define ESP_WIFI_SSID "ESP32-S3"
+#define ESP_WIFI_PASS "87654321"
+#define MAX_STA_CONN 5
 #define IS_FILE_EXT(filename, ext) \
     (strcasecmp(&filename[strlen(filename) - sizeof(ext) + 1], ext) == 0)
 extern bool ForFirstTimeFlag ;

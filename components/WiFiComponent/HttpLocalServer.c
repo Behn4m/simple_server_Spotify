@@ -4,10 +4,15 @@ char UserWifiSSID[32];
 bool ForFirstTimeFlag = 0;
 static httpd_handle_t server_ = NULL;
 static void WifiConnectionTask(void *pvparameters);
-static const char *TAG = "wifi_AP_WEBserver";
+static const char *TAG = "wifi AP Mode";
 static esp_err_t DetectFileType(httpd_req_t *req, const char *FileName);
 static esp_err_t ReadFromFileSystemAndSendIt(httpd_req_t *req, char *FileName_);
-/* An HTTP GET handler */
+
+/**
+ * @brief Retrieves the WiFi parameters from the HTTP request and performs necessary actions.
+ * @param req The HTTP request object.
+ * @returns ESP_OK if successful, ESP_FAIL otherwise.
+ */
 static esp_err_t GetWifiParam(httpd_req_t *req)
 {
     char Buf[100];
@@ -44,41 +49,90 @@ static esp_err_t GetWifiParam(httpd_req_t *req)
         return ESP_FAIL;
     }
 }
+/**
+ * @brief Handles a request for a SecPage page.
+ * This function processes an HTTP request for a SecPage page. It reads the contents of the "SecPage.html" file from the SPIFFS file system and sends it as the response to the client.
+ * @param[in] req The HTTP request object.
+ * @returns An esp_err_t indicating the success or failure of the request.
+ */
 static esp_err_t RequestWifiPage(httpd_req_t *req)
 {
     char FileName[] = "spiffs/SecPage.html";
     return ReadFromFileSystemAndSendIt(req, FileName);
 }
+/**
+ * @brief Handles a request for a logo file.
+ * This function processes an HTTP request for a logo file. It reads the contents of the "logo.png" file from the SPIFFS file system and sends it as the response to the client.
+ * @param[in] req The HTTP request object.
+ * @returns An esp_err_t indicating the success or failure of the request.
+ */
 static esp_err_t RequestLogo(httpd_req_t *req)
 {
     char FileName[] = "spiffs/logo.png";
     return ReadFromFileSystemAndSendIt(req, FileName);
 }
+
+/**
+ * @brief Handles a request for a user-solid SVG file.
+ * This function processes an HTTP request for a user-solid SVG file. It reads the contents of the "user-solid.svg" file from the SPIFFS file system and sends it as the response to the client.
+ * @param[in] req The HTTP request object.
+ * @returns An esp_err_t indicating the success or failure of the request.
+ */
 static esp_err_t RequestUserSolidSvg(httpd_req_t *req)
 {
     char FileName[] = "spiffs/user-solid.svg";
     return ReadFromFileSystemAndSendIt(req, FileName);
 }
+/**
+ * @brief Handles a request for a lock-solid SVG file.
+ * This function processes an HTTP request for a lock-solid SVG file. It reads the contents of the "lock-solid.svg" file from the SPIFFS file system and sends it as the response to the client.
+ * @param[in] req The HTTP request object.
+ * @returns An esp_err_t indicating the success or failure of the request.
+ */
 static esp_err_t RequestLockSolidSvg(httpd_req_t *req)
 {
     char FileName[] = "spiffs/lock-solid.svg";
     return ReadFromFileSystemAndSendIt(req, FileName);
 }
+/**
+ * @brief Handles a request for an unsuccessful page.
+ * This function processes an HTTP request for an unsuccessful page. It reads the contents of the "UNSuccessfull.html" file from the SPIFFS file system and sends it as the response to the client.
+ * @param[in] req The HTTP request object.
+ * @returns An esp_err_t indicating the success or failure of the request.
+ */
 static esp_err_t RequestSuccessfulPage(httpd_req_t *req)
 {
     char FileName[] = "spiffs/Successfull.html";
     return ReadFromFileSystemAndSendIt(req, FileName);
 }
+/**
+ * @brief Handles a request for the Font Awesome CSS file.
+ * This function processes an HTTP request for the Font Awesome CSS file. It reads the contents of the "font-awesome.min.css" file from the SPIFFS file system and sends it as the response to the client.
+ * @param[in] req The HTTP request object.
+ * @returns An esp_err_t indicating the success or failure of the request.
+ */
 static esp_err_t FontAweSomeMinCss(httpd_req_t *req)
 {
     char FileName[] = "spiffs/css/font-awesome.min.css";
     return ReadFromFileSystemAndSendIt(req, FileName);
 }
+/**
+ * @brief Handles a request for an unsuccessful page.
+ * This function processes an HTTP request for an unsuccessful page. It reads the contents of the "UNSuccessfull.html" file from the SPIFFS file system and sends it as the response to the client.
+ * @param[in] req The HTTP request object.
+ * @returns An esp_err_t indicating the success or failure of the request.
+ */
 static esp_err_t RequestUNSuccessfulPage(httpd_req_t *req)
 {
     char FileName[] = "spiffs/UNSuccessfull.html";
     return ReadFromFileSystemAndSendIt(req, FileName);
 }
+/**
+ * Detects the file type based on the file extension and sets the appropriate content type in the HTTP response.
+ * @param req The HTTP request object.
+ * @param FileName The name of the file.
+ * @returns An esp_err_t indicating the success or failure of detecting the file type.
+ */
 static esp_err_t DetectFileType(httpd_req_t *req, const char *FileName)
 {
     if (IS_FILE_EXT(FileName, ".pdf"))
@@ -105,10 +159,14 @@ static esp_err_t DetectFileType(httpd_req_t *req, const char *FileName)
     {
         return httpd_resp_set_type(req, "text/css");
     }
-    /* This is a limited set only */
-    /* For any other type always set as plain text */
     return httpd_resp_set_type(req, "text/plain");
 }
+/**
+ * Reads a file from the file system and sends it as an HTTP response.
+ * @param req The HTTP request object.
+ * @param FileName_ The name of the file to read and send.
+ * @returns An esp_err_t indicating the success or failure of reading and sending the file.
+ */
 static esp_err_t ReadFromFileSystemAndSendIt(httpd_req_t *req, char *FileName_)
 {
     FILE *fd = NULL;
@@ -153,7 +211,11 @@ static esp_err_t ReadFromFileSystemAndSendIt(httpd_req_t *req, char *FileName_)
     httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
 }
-
+/**
+ * @brief Starts a web server locally.
+ * This function starts a web server locally using the default configuration. It registers various URI handlers for different endpoints and returns the server handle.
+ * @returns The handle to the started web server.
+ */
 static httpd_handle_t StartWebServerLocally(void)
 {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
@@ -215,13 +277,20 @@ static httpd_handle_t StartWebServerLocally(void)
     }
     return Server_;
 }
+
+/**
+ * @brief Stops a running web server.
+ * This function stops a running web server identified by the provided server handle.
+ * @param[in] server The handle to the web server.
+ * @returns An esp_err_t indicating the success or failure of stopping the web server.
+ */
 static esp_err_t StopWebServer(httpd_handle_t server)
 {
     return httpd_stop(server);
 }
-
 /**
- * @brief This function starts the mDNS service.
+ * @brief Initializes and starts the mDNS service.
+ * This function initializes and starts the mDNS (Multicast DNS) service. It sets the hostname and instance name for mDNS.
  */
 void StartMDNSService()
 {
@@ -234,8 +303,10 @@ void StartMDNSService()
     mdns_hostname_set("wificonfig");
     mdns_instance_name_set("Behnam's ESP32 Thing");
 }
-
-//------------------------------------------------------------------------------
+/**
+ * @brief Initializes the SPIFFS (SPI Flash File System).
+ * This function initializes the SPIFFS file system with the provided configuration. It registers the SPIFFS file system and checks the partition information.
+ */
 void SpiffsInit()
 {
     esp_vfs_spiffs_conf_t conf = {
@@ -272,13 +343,19 @@ void SpiffsInit()
         ESP_LOGI(TAG, "Partition size: total: %d, used: %d", total, used);
     }
 }
-
+/**
+ * @brief Creates a task for handling Wi-Fi connection.
+ * This function creates a task for handling Wi-Fi connection. It creates a task with the `WifiConnectionTask` function as the entry point.
+ */
 void wifiConnectionTaskCreation()
 {
     ESP_LOGI(TAG, "creat wifi task");
     xTaskCreate(&WifiConnectionTask, "WifiConnectionTask", 10000, NULL, 1, NULL);
 }
-
+/**
+ * @brief Entry point for the Wi-Fi connection task.
+ * This function is the entry point for the Wi-Fi connection task. It initializes necessary components, sets up the SPIFFS, starts the mDNS service, starts the web server, and waits for Wi-Fi connection events.
+ */
 void WifiConnectionTask()
 {
     ESP_LOGI(TAG, "NVS init");
@@ -288,7 +365,7 @@ void WifiConnectionTask()
     ESP_LOGI(TAG, "Eventloop create");
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     ESP_LOGI(TAG, "init softAP");
-    ESP_ERROR_CHECK(WifiSoftAccessPointMode(EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS));
+    ESP_ERROR_CHECK(WifiSoftAccessPointMode(ESP_WIFI_SSID, ESP_WIFI_PASS));
     StartMDNSService();
     server_ = StartWebServerLocally();
     ForFirstTimeFlag = 1;
@@ -302,7 +379,6 @@ void WifiConnectionTask()
         {
             vTaskDelay(3000 / portTICK_PERIOD_MS);
             WifiStationMode(UserWifiSSID, UserWifiPassWord);
-            // wifi_sta_handler();
             vTaskDelay(5000 / portTICK_PERIOD_MS);
             while (1)
             {
@@ -317,17 +393,10 @@ void WifiConnectionTask()
                 if (xSemaphoreTake(StayInApModeSemaphore, 10 / portTICK_PERIOD_MS) == pdTRUE)
                 {
                     ESP_LOGI(TAG, "\nStayInApModeSemaphore");
-                    ESP_ERROR_CHECK(WifiSoftAccessPointMode(EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS));
+                    ESP_ERROR_CHECK(WifiSoftAccessPointMode(ESP_WIFI_SSID, ESP_WIFI_PASS));
                     break;
                 }
             }
         }
     }
 }
-/**
- * @brief This function handles Wi-Fi events and prints corresponding messages based on the event ID.
- * @param[in] event_handler_arg The event handler argument (not used in this function).
- * @param[in] event_base The event base.
- * @param[in] event_id The event ID.
- * @param[in] event_data The event data (not used in this function).
- */

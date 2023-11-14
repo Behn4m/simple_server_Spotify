@@ -1,24 +1,12 @@
-
 #include "WiFiConfig.h"
-
-extern char UserWifiPassWord[64];
-extern char UserWifiSSID[32];
-
-SemaphoreHandle_t Wait = NULL;
-SemaphoreHandle_t ExitFromApMode = NULL;
-SemaphoreHandle_t StayInApModeSemaphore = NULL;
-
+char UserWifiPassWord[64];
+char UserWifiSSID[32];
 bool ForFirstTimeFlag = 0;
 static httpd_handle_t server_ = NULL;
-
 static void WifiConnectionTask(void *pvparameters);
-
-#define IS_FILE_EXT(filename, ext) \
-    (strcasecmp(&filename[strlen(filename) - sizeof(ext) + 1], ext) == 0)
-
 static const char *TAG = "wifi_AP_WEBserver";
 static esp_err_t DetectFileType(httpd_req_t *req, const char *FileName);
-static esp_err_t ReadFromFS_AndSendIt(httpd_req_t *req, char *FileName_);
+static esp_err_t ReadFromFileSystemAndSendIt(httpd_req_t *req, char *FileName_);
 /* An HTTP GET handler */
 static esp_err_t GetWifiParam(httpd_req_t *req)
 {
@@ -59,52 +47,52 @@ static esp_err_t GetWifiParam(httpd_req_t *req)
 static esp_err_t RequestWifiPage(httpd_req_t *req)
 {
     char FileName[] = "spiffs/SecPage.html";
-    return ReadFromFS_AndSendIt(req, FileName);
+    return ReadFromFileSystemAndSendIt(req, FileName);
 }
 static esp_err_t RequestLogo(httpd_req_t *req)
 {
     char FileName[] = "spiffs/logo.png";
-    return ReadFromFS_AndSendIt(req, FileName);
+    return ReadFromFileSystemAndSendIt(req, FileName);
 }
 static esp_err_t RequestExclaim(httpd_req_t *req)
 {
     char FileName[] = "spiffs/Exclam.png";
-    return ReadFromFS_AndSendIt(req, FileName);
+    return ReadFromFileSystemAndSendIt(req, FileName);
 }
 static esp_err_t RequestUserSolidSvg(httpd_req_t *req)
 {
     char FileName[] = "spiffs/user-solid.svg";
-    return ReadFromFS_AndSendIt(req, FileName);
+    return ReadFromFileSystemAndSendIt(req, FileName);
 }
 static esp_err_t RequestLockSolidSvg(httpd_req_t *req)
 {
     char FileName[] = "spiffs/lock-solid.svg";
-    return ReadFromFS_AndSendIt(req, FileName);
+    return ReadFromFileSystemAndSendIt(req, FileName);
 }
 static esp_err_t RequestSuccessfulPage(httpd_req_t *req)
 {
     char FileName[] = "spiffs/Successfull.html";
-    return ReadFromFS_AndSendIt(req, FileName);
+    return ReadFromFileSystemAndSendIt(req, FileName);
 }
 static esp_err_t FontAweSomeMinCss(httpd_req_t *req)
 {
     char FileName[] = "spiffs/css/font-awesome.min.css";
-    return ReadFromFS_AndSendIt(req, FileName);
+    return ReadFromFileSystemAndSendIt(req, FileName);
 }
 static esp_err_t FontAweSomeCss(httpd_req_t *req)
 {
     char FileName[] = "spiffs//css/font-awesome.css";
-    return ReadFromFS_AndSendIt(req, FileName);
+    return ReadFromFileSystemAndSendIt(req, FileName);
 }
 static esp_err_t RequestUNSuccessfulPage(httpd_req_t *req)
 {
     char FileName[] = "spiffs/UNSuccessfull.html";
-    return ReadFromFS_AndSendIt(req, FileName);
+    return ReadFromFileSystemAndSendIt(req, FileName);
 }
 static esp_err_t RequestWaitPage(httpd_req_t *req)
 {
     char FileName[] = "spiffs/Wait.html";
-    return ReadFromFS_AndSendIt(req, FileName);
+    return ReadFromFileSystemAndSendIt(req, FileName);
 }
 static esp_err_t DetectFileType(httpd_req_t *req, const char *FileName)
 {
@@ -136,7 +124,7 @@ static esp_err_t DetectFileType(httpd_req_t *req, const char *FileName)
     /* For any other type always set as plain text */
     return httpd_resp_set_type(req, "text/plain");
 }
-static esp_err_t ReadFromFS_AndSendIt(httpd_req_t *req, char *FileName_)
+static esp_err_t ReadFromFileSystemAndSendIt(httpd_req_t *req, char *FileName_)
 {
     FILE *fd = NULL;
     char FileName[100];
@@ -281,56 +269,6 @@ void StartMDNSService()
     mdns_instance_name_set("Behnam's ESP32 Thing");
 }
 
-static void WifiAPEvenHandler(void *arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
-{
-    if (event_id == WIFI_EVENT_AP_STACONNECTED)
-    {
-        wifi_event_ap_staconnected_t *event = (wifi_event_ap_staconnected_t *)event_data;
-        ESP_LOGI(TAG, "station " MACSTR " join, AID=%d",
-                 MAC2STR(event->mac), event->aid);
-    }
-    else if (event_id == WIFI_EVENT_AP_STADISCONNECTED)
-    {
-        wifi_event_ap_stadisconnected_t *event = (wifi_event_ap_stadisconnected_t *)event_data;
-        ESP_LOGI(TAG, "station " MACSTR " leave, AID=%d",
-                 MAC2STR(event->mac), event->aid);
-    }
-}
-
-esp_err_t WifiInitSoftAP(void)
-{
-    if (ForFirstTimeFlag == 1)
-    {
-        esp_wifi_stop();
-        esp_wifi_deinit();
-    }
-    esp_netif_create_default_wifi_ap();
-    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &WifiAPEvenHandler, NULL));
-
-    wifi_config_t wifi_config = {
-        .ap = {
-            .ssid = EXAMPLE_ESP_WIFI_SSID,
-            .ssid_len = strlen(EXAMPLE_ESP_WIFI_SSID),
-            .password = EXAMPLE_ESP_WIFI_PASS,
-            .max_connection = EXAMPLE_MAX_STA_CONN,
-            .authmode = WIFI_AUTH_WPA_WPA2_PSK},
-    };
-    if (strlen(EXAMPLE_ESP_WIFI_PASS) == 0)
-    {
-        wifi_config.ap.authmode = WIFI_AUTH_OPEN;
-    }
-
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
-    ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_AP, &wifi_config));
-    ESP_ERROR_CHECK(esp_wifi_start());
-
-    ESP_LOGI(TAG, "WifiInitSoftAP finished. SSID:%s password:%s",
-             EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS);
-    return ESP_OK;
-}
 //------------------------------------------------------------------------------
 void SpiffsInit()
 {
@@ -384,7 +322,7 @@ void WifiConnectionTask()
     ESP_LOGI(TAG, "Eventloop create");
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     ESP_LOGI(TAG, "init softAP");
-    ESP_ERROR_CHECK(WifiInitSoftAP());
+    ESP_ERROR_CHECK(WifiSoftAccessPointMode(EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS));
     StartMDNSService();
     server_ = StartWebServerLocally();
     ForFirstTimeFlag = 1;
@@ -397,8 +335,8 @@ void WifiConnectionTask()
         if (xSemaphoreTake(Wait, portMAX_DELAY) == pdTRUE)
         {
             vTaskDelay(3000 / portTICK_PERIOD_MS);
-            // WifiSTAMode();
-            wifi_sta_handler();
+            WifiStationMode(UserWifiSSID, UserWifiPassWord);
+            // wifi_sta_handler();
             vTaskDelay(5000 / portTICK_PERIOD_MS);
             while (1)
             {
@@ -413,89 +351,17 @@ void WifiConnectionTask()
                 if (xSemaphoreTake(StayInApModeSemaphore, 10 / portTICK_PERIOD_MS) == pdTRUE)
                 {
                     ESP_LOGI(TAG, "\nStayInApModeSemaphore");
-                    ESP_ERROR_CHECK(WifiInitSoftAP());
+                    ESP_ERROR_CHECK(WifiSoftAccessPointMode(EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS));
                     break;
                 }
             }
         }
     }
 }
-
 /**
  * @brief This function handles Wi-Fi events and prints corresponding messages based on the event ID.
- *
  * @param[in] event_handler_arg The event handler argument (not used in this function).
  * @param[in] event_base The event base.
  * @param[in] event_id The event ID.
  * @param[in] event_data The event data (not used in this function).
  */
-static void wifi_event_handler(void *event_handler_arg, esp_event_base_t event_base, int32_t event_id, void *event_data)
-{
-    switch (event_id)
-    {
-    case WIFI_EVENT_STA_START:
-        ESP_LOGI(TAG, "WiFi connecting ... \n");
-        break;
-    case WIFI_EVENT_STA_CONNECTED:
-    {
-        ESP_LOGI(TAG, "WiFi connected ... \n");
-        // xSemaphoreGive(ExitFromApMode);
-        break;
-    }
-    case WIFI_EVENT_STA_DISCONNECTED:
-    {
-        static int RetryNum = 0;
-        ESP_LOGI(TAG, "WiFi lost connection ... \n");
-        if (RetryNum < 5)
-        {
-            esp_wifi_connect();
-            RetryNum++;
-            ESP_LOGI(TAG, "Retrying to Connect...#%d\n ", RetryNum);
-        }
-        else
-        {
-            ESP_LOGI(TAG, "Please check SSID and Password and try again\n\n");
-        }
-        xSemaphoreGive(StayInApModeSemaphore);
-        break;
-    }
-    case IP_EVENT_STA_GOT_IP:
-    {
-        ESP_LOGI(TAG, "WiFi got IP ... \n\n");
-        xSemaphoreGive(StayInApModeSemaphore);
-        break;
-    }
-    case WIFI_EVENT_STA_WPS_ER_FAILED:
-    {
-        ESP_LOGI(TAG, "WiFi config failed... \n");
-        xSemaphoreGive(StayInApModeSemaphore);
-        break;
-    }
-    case WIFI_EVENT_STA_WPS_ER_TIMEOUT:
-    {
-        ESP_LOGI(TAG, "WiFi config failed... \n");
-        xSemaphoreGive(StayInApModeSemaphore);
-        break;
-    }
-    case WIFI_EVENT_STA_WPS_ER_PIN:
-    {
-        ESP_LOGI(TAG, "WiFi config failed... \n");
-        xSemaphoreGive(StayInApModeSemaphore);
-        break;
-    }
-    case WIFI_EVENT_STA_WPS_ER_PBC_OVERLAP:
-    {
-        ESP_LOGI(TAG, "WiFi config failed... \n");
-        xSemaphoreGive(StayInApModeSemaphore);
-        break;
-    }
-    case WIFI_EVENT_STA_BEACON_TIMEOUT:
-    {
-        ESP_LOGI(TAG, "WiFi config failed... \n");
-        xSemaphoreGive(StayInApModeSemaphore);
-        break;
-    }
-    default:
-        break;
-    }
-}

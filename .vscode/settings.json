@@ -13,6 +13,8 @@
         "wificonfig.h": "c",
         "sockets.h": "c",
         "esp_wifi.h": "c",
-        "freertos.h": "c"
+        "freertos.h": "c",
+        "esp_spiffs.h": "c",
+        "nvs_flash.h": "c"
     }
 }

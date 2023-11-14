@@ -1,11 +1,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-
 #ifndef WIFI_CONFIG_H_
 #define WIFI_CONFIG_H_
-
 #include <esp_wifi.h>
 #include <esp_event.h>
 #include <esp_log.h>
@@ -32,13 +29,19 @@ extern "C" {
 #include "esp_spiffs.h"
 #include "esp_http_server.h"
 #include "esp_mac.h"
-
-void wifiConnectionTaskCreation();
-void WifiSTAMode();
-void wifi_sta_handler(void);
 #define EXAMPLE_ESP_WIFI_SSID "ESP32-S3"
 #define EXAMPLE_ESP_WIFI_PASS "87654321"
 #define EXAMPLE_MAX_STA_CONN 5
+#define IS_FILE_EXT(filename, ext) \
+    (strcasecmp(&filename[strlen(filename) - sizeof(ext) + 1], ext) == 0)
+extern bool ForFirstTimeFlag ;
+extern SemaphoreHandle_t Wait ;
+extern SemaphoreHandle_t ExitFromApMode ;
+extern SemaphoreHandle_t StayInApModeSemaphore ;
+extern esp_netif_t * NetifAccessPointStruct ;
+void wifiConnectionTaskCreation();
+esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_);
+esp_err_t WifiSoftAccessPointMode(char *WifiAccessPointSSID, char *WifiAccessPointPassWord);
 
 
 

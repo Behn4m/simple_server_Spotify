@@ -8,8 +8,7 @@ struct UserInfo_ UserInfo;
 QueueHandle_t BufQueue1;
 SemaphoreHandle_t GetResponseSemaphore = NULL;
 
-char UserWifiPassWord[64];
-char UserWifiSSID[32];
+
 void app_main(void)
 {
     GlobalInit();    

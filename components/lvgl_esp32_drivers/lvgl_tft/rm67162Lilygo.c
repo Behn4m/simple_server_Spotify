@@ -173,9 +173,9 @@ void lcd_init(void)
 
     //Reset the display
 	gpio_set_level(TFT_QSPI_RST, 0);
-	vTaskDelay(300 / portTICK_RATE_MS);//default 100ms
+	vTaskDelay(300 / portTICK_PERIOD_MS);//default 100ms
 	gpio_set_level(TFT_QSPI_RST, 1);
-	vTaskDelay(300 / portTICK_RATE_MS);//default 100ms
+	vTaskDelay(300 / portTICK_PERIOD_MS);//default 100ms
 
     esp_err_t ret;
 
@@ -217,7 +217,7 @@ void lcd_init(void)
                          lcd_init[i].len & 0x7f);
 
             if (lcd_init[i].len & 0x80)
-                vTaskDelay(120 / portTICK_RATE_MS);
+                vTaskDelay(120 / portTICK_PERIOD_MS);
         }
     //}
 

@@ -25,6 +25,12 @@
 #include "esp_wifi.h"
 #endif
 
+#if ESP_IDF_VERSION <= ESP_IDF_VERSION_VAL(5, 1, 0)
+// IDF <= v5.1 does not support enabling/disabling esp-wifi
+#define MDNS_ESP_WIFI_ENABLED 1
+#else
+#define MDNS_ESP_WIFI_ENABLED CONFIG_ESP_WIFI_ENABLED
+#endif
 
 #ifdef MDNS_ENABLE_DEBUG
 void mdns_debug_packet(const uint8_t *data, size_t len);
@@ -1476,7 +1482,7 @@ static void _mdns_dispatch_tx_packet(mdns_tx_packet_t *p)
     _mdns_set_u16(packet, MDNS_HEAD_ADDITIONAL_OFFSET, count);
 
 #ifdef MDNS_ENABLE_DEBUG
-    _mdns_dbg_printf("\nTX[%u][%u]: ", p->tcpip_if, p->ip_protocol);
+    _mdns_dbg_printf("\nTX[%lu][%lu]: ", (unsigned long)p->tcpip_if, (unsigned long)p->ip_protocol);
     if (p->dst.type == ESP_IPADDR_TYPE_V4) {
         _mdns_dbg_printf("To: " IPSTR ":%u, ", IP2STR(&p->dst.u_addr.ip4), p->port);
     } else {
@@ -3048,6 +3054,7 @@ static void free_delegated_hostnames(void)
         host = host->next;
         free(item);
     }
+    _mdns_host_list = NULL;
 }
 
 static bool _mdns_delegate_hostname_remove(const char *hostname)
@@ -3492,7 +3499,7 @@ void mdns_parse_packet(mdns_rx_packet_t *packet)
     mdns_search_once_t *search_result = NULL;
 
 #ifdef MDNS_ENABLE_DEBUG
-    _mdns_dbg_printf("\nRX[%u][%u]: ", packet->tcpip_if, (uint32_t)packet->ip_protocol);
+    _mdns_dbg_printf("\nRX[%lu][%lu]: ", (unsigned long)packet->tcpip_if, (unsigned long)packet->ip_protocol);
     if (packet->src.type == ESP_IPADDR_TYPE_V4) {
         _mdns_dbg_printf("From: " IPSTR ":%u, To: " IPSTR ", ", IP2STR(&packet->src.u_addr.ip4), packet->src_port, IP2STR(&packet->dest.u_addr.ip4));
     } else {
@@ -4157,7 +4164,7 @@ void mdns_preset_if_handle_system_event(void *arg, esp_event_base_t event_base,
     }
 
     esp_netif_dhcp_status_t dcst;
-#if CONFIG_ESP_WIFI_ENABLED
+#if MDNS_ESP_WIFI_ENABLED
     if (event_base == WIFI_EVENT) {
         switch (event_id) {
         case WIFI_EVENT_STA_CONNECTED:
@@ -5359,7 +5366,7 @@ static inline void set_default_duplicated_interfaces(void)
 
 static inline void unregister_predefined_handlers(void)
 {
-#if defined(CONFIG_ESP_WIFI_ENABLED) && (CONFIG_MDNS_PREDEF_NETIF_STA || CONFIG_MDNS_PREDEF_NETIF_AP)
+#if defined(MDNS_ESP_WIFI_ENABLED) && (CONFIG_MDNS_PREDEF_NETIF_STA || CONFIG_MDNS_PREDEF_NETIF_AP)
     esp_event_handler_unregister(WIFI_EVENT, ESP_EVENT_ANY_ID, mdns_preset_if_handle_system_event);
 #endif
 #if CONFIG_MDNS_PREDEF_NETIF_STA || CONFIG_MDNS_PREDEF_NETIF_AP || CONFIG_MDNS_PREDEF_NETIF_ETH
@@ -5456,7 +5463,7 @@ esp_err_t mdns_init(void)
         goto free_queue;
     }
 
-#if defined(CONFIG_ESP_WIFI_ENABLED) && (CONFIG_MDNS_PREDEF_NETIF_STA || CONFIG_MDNS_PREDEF_NETIF_AP)
+#if defined(MDNS_ESP_WIFI_ENABLED) && (CONFIG_MDNS_PREDEF_NETIF_STA || CONFIG_MDNS_PREDEF_NETIF_AP)
     if ((err = esp_event_handler_register(WIFI_EVENT, ESP_EVENT_ANY_ID, mdns_preset_if_handle_system_event, NULL)) != ESP_OK) {
         goto free_event_handlers;
     }
@@ -5597,11 +5604,18 @@ esp_err_t mdns_hostname_set(const char *hostname)
 
 esp_err_t mdns_hostname_get(char *hostname)
 {
-    if (!_mdns_server || !hostname) {
+    if (!hostname) {
         return ESP_ERR_INVALID_ARG;
     }
+
+    if (!_mdns_server || !_mdns_server->hostname) {
+        return ESP_ERR_INVALID_STATE;
+    }
+
     MDNS_SERVICE_LOCK();
-    strncpy(hostname, _mdns_server->hostname, strnlen(_mdns_server->hostname, MDNS_NAME_BUF_LEN));
+    size_t len = strnlen(_mdns_server->hostname, MDNS_NAME_BUF_LEN - 1);
+    strncpy(hostname, _mdns_server->hostname, len);
+    hostname[len] = 0;
     MDNS_SERVICE_UNLOCK();
     return ESP_OK;
 }
@@ -5902,10 +5916,14 @@ static mdns_result_t *_mdns_lookup_service(const char *instance, const char *ser
                 item->esp_netif = NULL;
                 item->ttl = _str_null_or_empty(instance) ? MDNS_ANSWER_PTR_TTL : MDNS_ANSWER_SRV_TTL;
                 item->ip_protocol = MDNS_IP_PROTOCOL_MAX;
-                item->instance_name = strndup(srv->instance, MDNS_NAME_BUF_LEN - 1);
-                if (!item->instance_name) {
-                    HOOK_MALLOC_FAILED;
-                    goto handle_error;
+                if (srv->instance) {
+                    item->instance_name = strndup(srv->instance, MDNS_NAME_BUF_LEN - 1);
+                    if (!item->instance_name) {
+                        HOOK_MALLOC_FAILED;
+                        goto handle_error;
+                    }
+                } else {
+                    item->instance_name = NULL;
                 }
                 item->service_type = strndup(srv->service, MDNS_NAME_BUF_LEN - 1);
                 if (!item->service_type) {
@@ -6537,7 +6555,7 @@ void mdns_debug_packet(const uint8_t *data, size_t len)
     mdns_name_t *name = &n;
     memset(name, 0, sizeof(mdns_name_t));
 
-    _mdns_dbg_printf("Packet[%u]: ", t);
+    _mdns_dbg_printf("Packet[%" PRIu32 "]: ", t);
 
     header.id = _mdns_read_u16(data, MDNS_HEAD_ID_OFFSET);
     header.flags = _mdns_read_u16(data, MDNS_HEAD_FLAGS_OFFSET);
@@ -6675,7 +6693,7 @@ void mdns_debug_packet(const uint8_t *data, size_t len)
             if (flush) {
                 _mdns_dbg_printf("FLUSH ");
             }
-            _mdns_dbg_printf("%u ", ttl);
+            _mdns_dbg_printf("%" PRIu32, ttl);
             _mdns_dbg_printf("[%u] ", data_len);
             if (type == MDNS_TYPE_PTR) {
                 if (!_mdns_parse_fqdn(data, data_ptr, name, len)) {

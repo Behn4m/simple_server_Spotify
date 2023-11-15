@@ -43,28 +43,22 @@
 #include "esp_crt_bundle.h"
 #endif
 #include "time_sync.h"
-#include"main.h"
-
+#include"GlobalInit.h"
 extern SemaphoreHandle_t GetResponseSemaphore;
 extern QueueHandle_t BufQueue1;
 TaskHandle_t xTaskHandlerHTTPS;
-
 char *WebServerAddress;
 char *Web_URL;
 char *HttpsBuf;
-
 #define WEB_PORT "443"
 #define SERVER_URL_MAX_SZ 1024
+#define TIME_PERIOD (86400000000ULL)
 static const char *TAG = "Https";
 static void https_request_task(void *pvparameters);
-#define TIME_PERIOD (86400000000ULL)
-
 extern const uint8_t server_root_cert_pem_start[] asm("_binary_server_root_cert_pem_start");
 extern const uint8_t server_root_cert_pem_end[] asm("_binary_server_root_cert_pem_end");
-
 extern const uint8_t local_server_cert_pem_start[] asm("_binary_local_server_cert_pem_start");
 extern const uint8_t local_server_cert_pem_end[] asm("_binary_local_server_cert_pem_end");
-
 #ifdef CONFIG_EXAMPLE_CLIENT_SESSION_TICKETS
 static esp_tls_client_session_t *tls_client_session = NULL;
 static bool save_client_session = false;
@@ -78,7 +72,7 @@ static bool save_client_session = false;
 */
 static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, const char *REQUEST)
 {
-    char buf[2500];
+    char buf[LONGBUF];
     int ret, len;
 
     esp_tls_t *tls = esp_tls_init();
@@ -145,7 +139,6 @@ static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, con
             vTaskDelete(xTaskHandlerHTTPS);
             break;
         }
-
         len = ret;
         ESP_LOGD(TAG, "%d bytes read", len);
         buf[len + 1] = '\n';
@@ -156,7 +149,6 @@ static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, con
             printf("Sent data with queue \n");
         }
     } while (1);
-
 cleanup:
     esp_tls_conn_destroy(tls);
 exit:
@@ -297,7 +289,6 @@ void HttpsHandler(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *Url, 
     const esp_timer_create_args_t nvs_update_timer_args = {
         .callback = (void *)&fetch_and_store_time_in_nvs,
     };
-
     for (int i = 0; i < SizeUrl; i++)
     {
         Web_URL[i] = Url[i];

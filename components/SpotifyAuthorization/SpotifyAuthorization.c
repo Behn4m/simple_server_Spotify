@@ -1,34 +1,28 @@
 #include <stdio.h>
 #include "SpotifyAuthorization.h"
-#include "main.h"
+#include "GlobalInit.h"
 #include "JsonExtraction.h"
-
-bool FinishAthurisiation_FLG;
-
+bool FinishAthurisiationFlag;
 SemaphoreHandle_t FindCodeSemaphore = NULL;
 SemaphoreHandle_t FailToFindCodeSemaphore = NULL;
 extern QueueHandle_t BufQueue1;
 extern SemaphoreHandle_t GetResponseSemaphore;
-
 static const char *TAG = "SpotifyTask";
 static const char *TAG_APP = "SPOTIFY";
-
 extern struct Token_ TokenParam;
 extern struct UserInfo_ UserInfo;
-
 void SpotifyAuth();
 static void SpotifyTask(void *pvparameters);
 
 /**
  * @brief This function handles the first HTTPS request to Spotify and redirects the user to the authorization page.
- *
  * @param[in] req The HTTP request object.
  * @return Returns ESP_OK if the request is processed successfully.
  */
 static esp_err_t FirstRequest(httpd_req_t *req)
 {
-    char loc_url[SmallBuffer + 150];
-    printf("here send to client - Request_\n");
+    char loc_url[SMALLBUF + 150];
+    ESP_LOGI(TAG, "here send to client - Request_\n");
     sprintf(loc_url, "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state", ClientId, ReDirectUri);
     httpd_resp_set_hdr(req, "Location", loc_url);
     httpd_resp_set_type(req, "text/plain");
@@ -36,33 +30,33 @@ static esp_err_t FirstRequest(httpd_req_t *req)
     httpd_resp_send(req, "", HTTPD_RESP_USE_STRLEN);
     return ESP_OK;
 }
+
 /**
  * @brief This function handles the callback HTTPS request from Spotify and processes the response data.
- *
  * @param[in] req The HTTP request object.
  * @return Returns ESP_OK if the request is processed successfully.
  */
 static esp_err_t HttpsUserCallBackFunc(httpd_req_t *req)
 {
-    char Buf[MediumBuffer];
+    char Buf[MEDIUMBUF];
     if (httpd_req_get_url_query_str(req, Buf, sizeof(Buf)) == ESP_OK)
     {
-        printf("\n\n\n%s\n\n", Buf);
+        ESP_LOGI(TAG, "\n\n\n%s\n\n", Buf);
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_set_status(req, HTTPD_200);
         httpd_resp_send(req, Buf, HTTPD_RESP_USE_STRLEN);
         uint8_t a = FindCode(Buf, sizeof(Buf));
-        printf("\na=%d", a);
+        ESP_LOGI(TAG, "\na=%d", a);
         if (a == 1)
         {
             vTaskDelay(1000 / portTICK_PERIOD_MS);
             xSemaphoreGive(FindCodeSemaphore);
             if (xQueueSend(BufQueue1, Buf, 0) == pdTRUE)
             {
-                printf("Sent CODE with queue \n");
+                ESP_LOGI(TAG, "Sent CODE with queue \n");
             }
         }
-        printf("\nafter find code ");
+        ESP_LOGI(TAG, "\nafter find code ");
     }
     else
     {
@@ -76,40 +70,51 @@ static esp_err_t HttpsUserCallBackFunc(httpd_req_t *req)
     return ESP_OK;
 }
 
+/**
+ * this strcut is http URL handler if receive "/" FirstRequest getting run
+ */
 static const httpd_uri_t Request_ = {
     .uri = "/",
     .method = HTTP_GET,
     .handler = FirstRequest};
 
+/**
+ * this strcut is http URL handler if receive "/callback" HttpsUserCallBackFunc getting run
+ */
 static const httpd_uri_t Responce_ = {
     .uri = "/callback/",
     .method = HTTP_GET,
     .handler = HttpsUserCallBackFunc};
+
 /**
  * @brief This function starts the web server for handling HTTPS requests.
- *
  * @return Returns the HTTP server handle if it is started successfully, or NULL otherwise.
  */
 static httpd_handle_t StartWebServer(void)
 {
-    httpd_handle_t server = NULL;
+    httpd_handle_t Server_ = NULL;
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.lru_purge_enable = true;
     ESP_LOGI(TAG, "Starting server on port: '%d'", config.server_port);
-    if (httpd_start(&server, &config) == ESP_OK)
+    if (httpd_start(&Server_, &config) == ESP_OK)
     {
         ESP_LOGI(TAG, "Registering URI handlers");
-        httpd_register_uri_handler(server, &Request_);
-        httpd_register_uri_handler(server, &Responce_);
-        return server;
+        httpd_register_uri_handler(Server_, &Request_);
+        httpd_register_uri_handler(Server_, &Responce_);
+        return Server_;
     }
-    return server;
+    return Server_;
 }
 
-static esp_err_t stop_webserver(httpd_handle_t server)
+/**
+ * @brief This function stops the web server for handling HTTPS requests.
+ * @return Returns the HTTP server handle if it is started successfully, or NULL otherwise.
+ */
+static esp_err_t StopWebServer(httpd_handle_t server)
 {
     return httpd_stop(server);
 }
+
 /**
  * @brief This function is the handler for the disconnect event.
  * @param[in] arg Pointer to the HTTP server handle.
@@ -123,7 +128,7 @@ static void HttpLocalServerDisconnectHandler(void *arg, esp_event_base_t event_b
     httpd_handle_t *server = (httpd_handle_t *)arg;
     if (*server)
     {
-        if (stop_webserver(*server) == ESP_OK)
+        if (StopWebServer(*server) == ESP_OK)
         {
             *server = NULL;
         }
@@ -150,10 +155,11 @@ static void HttpLocalServerConnectHandler(void *arg, esp_event_base_t event_base
         *server = StartWebServer();
     }
 }
+
 /**
  * @brief This function starts the mDNS service.
  */
-void start_mdns_service()
+void StartMDNSService()
 {
     esp_err_t err = mdns_init();
     if (err)
@@ -162,12 +168,13 @@ void start_mdns_service()
         return;
     }
     mdns_hostname_set("deskhub");
-    mdns_instance_name_set("Behnam's ESP32 Thing");
+    mdns_instance_name_set("Spotify");
 }
+
 /**
  * @brief This function handles the Spotify authorization process.
  */
-void SpotifyComponent()
+void SpotifyModule()
 {
     FindCodeSemaphore = xSemaphoreCreateBinary();
     FailToFindCodeSemaphore = xSemaphoreCreateBinary();
@@ -176,7 +183,7 @@ void SpotifyComponent()
 
 /**
  * @brief This function is the entry point for handling HTTPS requests for Spotify authorization.
- * @param[in] pvparameters we need it because its Task !
+ * @param[in] pvparameters  need it because its Task !
  */
 static void SpotifyTask(void *pvparameters)
 {
@@ -189,10 +196,10 @@ static void SpotifyTask(void *pvparameters)
     FinishAthurisiation_FLG = 0;
     while (1)
     {
-        if (FinishAthurisiation_FLG == 1)
+        if (FinishAthurisiationFlag == 1)
         {
-            char receivedData[BigBuffer];
-            printf("\nSpotifyAuth has done !\n");
+            char receivedData[LONGBUF];
+            ESP_LOGI(TAG, "\nSpotifyAuth has done !\n");
             vTaskDelay((8 * 1000) / portTICK_PERIOD_MS);
             // GetUserStatus();
             GetCurrentPlaying();
@@ -205,6 +212,7 @@ static void SpotifyTask(void *pvparameters)
         }
     }
 }
+
 /**
  *  The authorization code grant type is used to obtain both access
  * tokens and refresh tokens and is optimized for confidential clients.
@@ -241,47 +249,47 @@ static void SpotifyTask(void *pvparameters)
  ** we have 4 stage for pass authorisation in Spotify server
  * 1-give CODE
  * 2-send request for give access token
- * 3-we extract json from RAW response
+ * 3-  extract json from RAW response
  * 4-extract JSON and get param from needed parameter
  */
 void SpotifyAuth()
 {
-    char receivedData[BigBuffer];
+    char receivedData[LONGBUF];
     if (xSemaphoreTake(FindCodeSemaphore, portMAX_DELAY) == pdTRUE)
     {
         // 1-give CODE
         if (xQueueReceive(BufQueue1, receivedData, portMAX_DELAY) == pdTRUE)
         {
-            printf("Received CODE by Queue: %s\n", receivedData);
+            ESP_LOGI(TAG, "Received CODE by Queue: %s\n", receivedData);
         }
         // 2-send request for give access token
-        SendRequest_AndGiveToken(receivedData, sizeof(receivedData), receivedData, sizeof(receivedData));
+        SendRequestAndGiveToken(receivedData, sizeof(receivedData), receivedData, sizeof(receivedData));
         if (xSemaphoreTake(GetResponseSemaphore, portMAX_DELAY) == pdTRUE)
         {
             memset(receivedData, 0x0, sizeof(receivedData));
             if (xQueueReceive(BufQueue1, receivedData, portMAX_DELAY) == pdTRUE)
             {
-                printf("Received TOKEN by Queue: %s\n", receivedData);
+                ESP_LOGI(TAG, "Received TOKEN by Queue: %s\n", receivedData);
             }
-            // 3-we extract json from RAW response
+            // 3-  extract json from RAW response
             if (FindToken(receivedData, sizeof(receivedData)) != 1)
             {
                 vTaskDelay((60 * 1000) / portTICK_PERIOD_MS);
-                SendRequest_AndGiveToken(receivedData, sizeof(receivedData), receivedData, sizeof(receivedData));
+                SendRequestAndGiveToken(receivedData, sizeof(receivedData), receivedData, sizeof(receivedData));
                 if (FindToken(receivedData, sizeof(receivedData)) != 1)
                 {
-                    printf("fail to get Token !!!");
+                    ESP_LOGI(TAG, "fail to get Token !!!");
                     esp_restart();
                 }
             }
             //  4-extract JSON and get param from needed parameter
             ExtractionJsonParamForFindAccessToken(receivedData, sizeof(receivedData));
-            FinishAthurisiation_FLG = 1;
+            FinishAthurisiationFlag = 1;
         }
     }
     else
     {
-        printf("fail to get code !!!");
+        ESP_LOGI(TAG, "fail to get code !!!");
         esp_restart();
     }
 }

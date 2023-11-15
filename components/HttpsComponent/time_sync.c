@@ -18,18 +18,14 @@
 #include "nvs.h"
 #include "esp_netif.h"
 #include "esp_netif_sntp.h"
-
 #include "lwip/err.h"
 #include "lwip/sockets.h"
 #include "lwip/sys.h"
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
 #include "time_sync.h"
-
 static const char *TAG = "time_sync";
-
 #define STORAGE_NAMESPACE "storage"
-
 void initialize_sntp(void)
 {
     ESP_LOGI(TAG, "Initializing SNTP");
@@ -58,30 +54,22 @@ esp_err_t fetch_and_store_time_in_nvs(void *args)
     if (obtain_time() != ESP_OK) {
         return ESP_FAIL;
     }
-
     nvs_handle_t my_handle;
     esp_err_t err;
-
     time_t now;
     time(&now);
-
-    //Open
     err = nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle);
     if (err != ESP_OK) {
         goto exit;
     }
-
-    //Write
     err = nvs_set_i64(my_handle, "timestamp", now);
     if (err != ESP_OK) {
         goto exit;
     }
-
     err = nvs_commit(my_handle);
     if (err != ESP_OK) {
         goto exit;
     }
-
     nvs_close(my_handle);
     esp_netif_deinit();
 
@@ -98,15 +86,12 @@ esp_err_t update_time_from_nvs(void)
 {
     nvs_handle_t my_handle;
     esp_err_t err;
-
     err = nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle);
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "Error opening NVS");
         goto exit;
     }
-
     int64_t timestamp = 0;
-
     err = nvs_get_i64(my_handle, "timestamp", &timestamp);
     if (err == ESP_ERR_NVS_NOT_FOUND) {
         ESP_LOGI(TAG, "Time not found in NVS. Syncing time from SNTP server.");
@@ -120,7 +105,6 @@ esp_err_t update_time_from_nvs(void)
         get_nvs_time.tv_sec = timestamp;
         settimeofday(&get_nvs_time, NULL);
     }
-
 exit:
     nvs_close(my_handle);
     return err;

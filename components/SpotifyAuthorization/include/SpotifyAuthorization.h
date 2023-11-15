@@ -1,10 +1,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
 #ifndef HTTPS_SPOTIFY_H
 #define HTTPS_SPOTIFY_H
-
 #include <esp_wifi.h>
 #include <esp_event.h>
 #include <esp_log.h>
@@ -17,12 +15,13 @@ extern "C" {
 #include "esp_tls.h"
 #include "sdkconfig.h"
 #include "mdns.h"
-#include "main.h"
+#include "GlobalInit.h"
 #include"MakeSpotifyRequest.h"
 
-void SpotifyComponent();
-
-
+/**
+ * @brief This function handles the Spotify authorization process.
+ */
+void SpotifyModule();
 #endif
 
 #ifdef __cplusplus

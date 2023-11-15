@@ -1,10 +1,8 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-
-#ifndef MAIN_H_
-#define MAIN_H_
-
+#ifndef GLOBAL_INIT_H_
+#define GLOBAL_INIT_H_
 #include <esp_wifi.h>
 #include <esp_event.h>
 #include <esp_log.h>
@@ -12,30 +10,17 @@ extern "C" {
 #include <nvs_flash.h>
 #include <sys/param.h>
 #include "protocol_examples_common.h"
-#include "SpotifyAuthorization.h"
-#include "HttpsRequests.h"
-#include "WiFiConfig.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
 #include "freertos/queue.h"
-#include "nvsFlash.h"
-
-#define MYSSID "Hardware12"
-#define MYPASS "87654321"
-
-#define BigBuffer 2500
-#define MediumBuffer 1000
-#define SmallBuffer   250
-/* all task stack define here */
+#define LONGBUF 2500
+#define MEDIUMBUF 1000
+#define SMALLBUF   250
 #define SpotifyTaskStackSize 10*1000
 #define HttpsTaskStackSize   9*1000
-
-void GlobalInit();
-
 #define ReDirectUri "http%3A%2F%2Fdeskhub.local%2Fcallback%2f"
 #define ClientId  "55bb974a0667481ab0b2a49fd0abea6d"
-
 struct Token_
 {
     char access_token[500];
@@ -44,7 +29,6 @@ struct Token_
     char refresh_token[500];
     char scope[200];
 };
-
 struct UserInfo_
 {
     char DisplayName[128];
@@ -57,10 +41,12 @@ struct UserInfo_
     char Product[30];
 };
 
-
-
+/**
+ * in this function we init hardware or variable that need them
+ *  globally
+ */
+void GlobalInit();
 #endif
-
 #ifdef __cplusplus
 }
 #endif

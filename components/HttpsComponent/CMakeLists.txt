@@ -6,4 +6,4 @@ idf_component_register(SRCS "HttpsRequests.c" "time_sync.c"
                     EMBED_TXTFILES server_root_cert.pem local_server_cert.pem
                     
                     REQUIRES mdns esp_wifi esp_eth protocol_examples_common
-                    esp_https_server esp_http_client nvs_flash  esp_timer main ) 
+                    esp_https_server esp_http_client nvs_flash  esp_timer GlobalInit ) 

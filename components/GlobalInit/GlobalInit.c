@@ -1,9 +1,9 @@
-
-#include "main.h"
+#include "GlobalInit.h"
 static const char *TAG = "Global init";
 extern QueueHandle_t BufQueue1;
 extern SemaphoreHandle_t GetResponseSemaphore;
 extern SemaphoreHandle_t FinishWifiConfig;
+
 /**
  * in this function we init hardware or variable that need them
  *  globally

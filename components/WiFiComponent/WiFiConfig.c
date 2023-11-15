@@ -1,25 +1,77 @@
 #include "WiFiConfig.h"
-#include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/event_groups.h"
-#include "esp_system.h"
-#include "esp_wifi.h"
-#include "esp_event.h"
-#include "esp_log.h"
-#include "nvs_flash.h"
-#include "lwip/err.h"
-#include "lwip/sys.h"
+#include"HttpLocalServer.h"
 #define MAXIMUM_RETRY_TO_CONNECT 1
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT BIT1
 static EventGroupHandle_t s_wifi_event_group;
-SemaphoreHandle_t Wait;
-SemaphoreHandle_t ExitFromApMode;
+SemaphoreHandle_t WaitSemaphore;
+SemaphoreHandle_t ExitFromApModeSemaphore;
 SemaphoreHandle_t StayInApModeSemaphore;
 esp_netif_t *NetifAccessPointStruct;
+httpd_handle_t server_ = NULL;
 static const char *TAG = "wifi station mode";
 static int RetryTime = 0;
+bool ForFirstTimeFlag = 0;
+void WifiConnectionTask();
+/**
+ * @brief Creates a task for handling Wi-Fi connection.
+ * This function creates a task for handling Wi-Fi connection. It creates a task with the `WifiConnectionTask` function as the entry point.
+ */
+void wifiConnectionModule()
+{
+    ESP_LOGI(TAG, "creat wifi task");
+    xTaskCreate(&WifiConnectionTask, "WifiConnectionTask", 10000, NULL, 1, NULL);
+}
+
+/**
+ * @brief Entry point for the Wi-Fi connection task.
+ * This function is the entry point for the Wi-Fi connection task. It initializes necessary components, sets up the SPIFFS, starts the mDNS service, starts the web server, and waits for Wi-Fi connection events.
+ */
+void WifiConnectionTask()
+{
+    ESP_LOGI(TAG, "NVS init");
+    ESP_ERROR_CHECK(nvs_flash_init());
+    ESP_ERROR_CHECK(esp_netif_init());
+    SpiffsInit();
+    ESP_LOGI(TAG, "Eventloop create");
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    ESP_LOGI(TAG, "init softAP");
+    ESP_ERROR_CHECK(WifiSoftAccessPointMode(ESP_WIFI_SSID, ESP_WIFI_PASS));
+    StartMDNSService();
+    server_ = StartWebServerLocally();
+    ForFirstTimeFlag = 1;
+    WaitSemaphore = xSemaphoreCreateBinary();
+    ExitFromApModeSemaphore = xSemaphoreCreateBinary();
+    StayInApModeSemaphore = xSemaphoreCreateBinary();
+    while (1)
+    {
+        ESP_LOGI(TAG, "wait \n");
+        if (xSemaphoreTake(WaitSemaphore, portMAX_DELAY) == pdTRUE)
+        {
+            vTaskDelay(3000 / portTICK_PERIOD_MS);
+            WifiStationMode(UserWifi.SSID, UserWifi.PassWord);
+            vTaskDelay(5000 / portTICK_PERIOD_MS);
+            while (1)
+            {
+                if (xSemaphoreTake(ExitFromApModeSemaphore, 10 / portTICK_PERIOD_MS) == pdTRUE)
+                {
+                    ESP_LOGI(TAG, "\nExitFromApMode");
+                    StopWebServer(server_);
+                    server_ = NULL;
+                    mdns_free();
+                    vTaskDelete(NULL);
+                }
+                if (xSemaphoreTake(StayInApModeSemaphore, 10 / portTICK_PERIOD_MS) == pdTRUE)
+                {
+                    ESP_LOGI(TAG, "\nStayInApModeSemaphore");
+                    ESP_ERROR_CHECK(WifiSoftAccessPointMode(ESP_WIFI_SSID, ESP_WIFI_PASS));
+                    break;
+                }
+            }
+        }
+    }
+}
+
 /**
  * @brief handler for WiFi and IP events.
  * @param[in]Arg Pointer to user-defined data.
@@ -28,7 +80,7 @@ static int RetryTime = 0;
  * @param[in] EventData Pointer to the event data.
  * @returns None
  */
-static void EventAPHandler(void *Arg, esp_event_base_t EventBase,
+static void EventStationModeHandler(void *Arg, esp_event_base_t EventBase,
                            int32_t EventId, void *EventData)
 {
     if (EventBase == WIFI_EVENT && EventId == WIFI_EVENT_STA_START)
@@ -53,7 +105,7 @@ static void EventAPHandler(void *Arg, esp_event_base_t EventBase,
     else if (EventBase == WIFI_EVENT && EventId == WIFI_EVENT_STA_CONNECTED)
     {
         ESP_LOGI(TAG, "WiFi connected ... \n");
-        xSemaphoreGive(ExitFromApMode);
+        xSemaphoreGive(ExitFromApModeSemaphore);
     }
     else if (EventBase == WIFI_EVENT && EventId == WIFI_EVENT_STA_WPS_ER_FAILED)
     {
@@ -88,6 +140,7 @@ static void EventAPHandler(void *Arg, esp_event_base_t EventBase,
         xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
     }
 }
+
 /**
  * @brief Sets up WiFi station mode.
  * @param[in] ssid      SSID of the access point.
@@ -110,8 +163,8 @@ esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_)
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
     esp_event_handler_instance_t instance_any_id;
     esp_event_handler_instance_t instance_got_ip;
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &EventAPHandler, NULL, &instance_any_id));
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &EventAPHandler, NULL, &instance_got_ip));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT, ESP_EVENT_ANY_ID, &EventStationModeHandler, NULL, &instance_any_id));
+    ESP_ERROR_CHECK(esp_event_handler_instance_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &EventStationModeHandler, NULL, &instance_got_ip));
     wifi_config_t wifi_config = {
         .sta = {
             .ssid = "",
@@ -142,6 +195,7 @@ esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_)
     }
     return ESP_OK;
 }
+
 /**
  * @brief Event handler for WiFi access point events.
  * @param[in] arg Pointer to user-defined data.
@@ -165,6 +219,7 @@ static void WifiAccessPointEvenHandler(void *arg, esp_event_base_t EventBase, in
                  MAC2STR(event->mac), event->aid);
     }
 }
+
 /**
  * @brief Configures the ESP32 to operate in Soft Access Point mode.
  * @param[in] WifiAccessPointSSID The SSID (network name) of the access point.

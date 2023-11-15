@@ -1,9 +1,9 @@
 #include "WiFiConfig.h"
-char UserWifiPassWord[64];
-char UserWifiSSID[32];
-bool ForFirstTimeFlag = 0;
-static httpd_handle_t server_ = NULL;
-static void WifiConnectionTask(void *pvparameters);
+struct UserWifi_ UserWifi
+{
+    char PassWord[64];
+    char SSID[32];
+};
 static const char *TAG = "wifi AP Mode";
 static esp_err_t DetectFileType(httpd_req_t *req, const char *FileName);
 static esp_err_t ReadFromFileSystemAndSendIt(httpd_req_t *req, char *FileName_);
@@ -19,14 +19,14 @@ static esp_err_t GetWifiParam(httpd_req_t *req)
     if (httpd_req_get_url_query_str(req, Buf, sizeof(Buf)) == ESP_OK)
     {
         ESP_LOGI(TAG, "\n\n\n%s\n\n", Buf);
-        if (httpd_query_key_value(Buf, "login_username", UserWifiSSID, sizeof(UserWifiSSID)) == ESP_OK && httpd_query_key_value(Buf, "login_password", UserWifiPassWord, sizeof(UserWifiPassWord)) == ESP_OK)
+        if (httpd_query_key_value(Buf, "login_username", UserWifi.SSID, sizeof(UserWifi.SSID)) == ESP_OK && httpd_query_key_value(Buf, "login_password", UserWifi.PassWord, sizeof(UserWifi.PassWord)) == ESP_OK)
         {
             httpd_resp_set_hdr(req, "Location", "http://wificonfig.local/successful");
             httpd_resp_set_type(req, "text/plain");
             httpd_resp_set_status(req, "302");
             httpd_resp_send(req, "", HTTPD_RESP_USE_STRLEN);
-            ESP_LOGI(TAG, "\n\n\nssid=%s\tpass%s\n\n", UserWifiSSID, UserWifiPassWord);
-            xSemaphoreGive(Wait);
+            ESP_LOGI(TAG, "\n\n\nssid=%s\tpass%s\n\n", UserWifi.SSID, UserWifi.PassWord);
+            xSemaphoreGive(WaitSemaphore);
             return ESP_OK;
         }
         else
@@ -49,6 +49,7 @@ static esp_err_t GetWifiParam(httpd_req_t *req)
         return ESP_FAIL;
     }
 }
+
 /**
  * @brief Handles a request for a SecPage page.
  * This function processes an HTTP request for a SecPage page. It reads the contents of the "SecPage.html" file from the SPIFFS file system and sends it as the response to the client.
@@ -60,6 +61,7 @@ static esp_err_t RequestWifiPage(httpd_req_t *req)
     char FileName[] = "spiffs/SecPage.html";
     return ReadFromFileSystemAndSendIt(req, FileName);
 }
+
 /**
  * @brief Handles a request for a logo file.
  * This function processes an HTTP request for a logo file. It reads the contents of the "logo.png" file from the SPIFFS file system and sends it as the response to the client.
@@ -83,6 +85,7 @@ static esp_err_t RequestUserSolidSvg(httpd_req_t *req)
     char FileName[] = "spiffs/user-solid.svg";
     return ReadFromFileSystemAndSendIt(req, FileName);
 }
+
 /**
  * @brief Handles a request for a lock-solid SVG file.
  * This function processes an HTTP request for a lock-solid SVG file. It reads the contents of the "lock-solid.svg" file from the SPIFFS file system and sends it as the response to the client.
@@ -94,6 +97,7 @@ static esp_err_t RequestLockSolidSvg(httpd_req_t *req)
     char FileName[] = "spiffs/lock-solid.svg";
     return ReadFromFileSystemAndSendIt(req, FileName);
 }
+
 /**
  * @brief Handles a request for an unsuccessful page.
  * This function processes an HTTP request for an unsuccessful page. It reads the contents of the "UNSuccessfull.html" file from the SPIFFS file system and sends it as the response to the client.
@@ -105,6 +109,7 @@ static esp_err_t RequestSuccessfulPage(httpd_req_t *req)
     char FileName[] = "spiffs/Successfull.html";
     return ReadFromFileSystemAndSendIt(req, FileName);
 }
+
 /**
  * @brief Handles a request for the Font Awesome CSS file.
  * This function processes an HTTP request for the Font Awesome CSS file. It reads the contents of the "font-awesome.min.css" file from the SPIFFS file system and sends it as the response to the client.
@@ -116,6 +121,7 @@ static esp_err_t FontAweSomeMinCss(httpd_req_t *req)
     char FileName[] = "spiffs/css/font-awesome.min.css";
     return ReadFromFileSystemAndSendIt(req, FileName);
 }
+
 /**
  * @brief Handles a request for an unsuccessful page.
  * This function processes an HTTP request for an unsuccessful page. It reads the contents of the "UNSuccessfull.html" file from the SPIFFS file system and sends it as the response to the client.
@@ -127,6 +133,7 @@ static esp_err_t RequestUNSuccessfulPage(httpd_req_t *req)
     char FileName[] = "spiffs/UNSuccessfull.html";
     return ReadFromFileSystemAndSendIt(req, FileName);
 }
+
 /**
  * Detects the file type based on the file extension and sets the appropriate content type in the HTTP response.
  * @param req The HTTP request object.
@@ -161,6 +168,7 @@ static esp_err_t DetectFileType(httpd_req_t *req, const char *FileName)
     }
     return httpd_resp_set_type(req, "text/plain");
 }
+
 /**
  * Reads a file from the file system and sends it as an HTTP response.
  * @param req The HTTP request object.
@@ -211,12 +219,13 @@ static esp_err_t ReadFromFileSystemAndSendIt(httpd_req_t *req, char *FileName_)
     httpd_resp_send_chunk(req, NULL, 0);
     return ESP_OK;
 }
+
 /**
  * @brief Starts a web server locally.
  * This function starts a web server locally using the default configuration. It registers various URI handlers for different endpoints and returns the server handle.
  * @returns The handle to the started web server.
  */
-static httpd_handle_t StartWebServerLocally(void)
+httpd_handle_t StartWebServerLocally(void)
 {
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.lru_purge_enable = true;
@@ -284,10 +293,11 @@ static httpd_handle_t StartWebServerLocally(void)
  * @param[in] server The handle to the web server.
  * @returns An esp_err_t indicating the success or failure of stopping the web server.
  */
-static esp_err_t StopWebServer(httpd_handle_t server)
+esp_err_t StopWebServer(httpd_handle_t server)
 {
     return httpd_stop(server);
 }
+
 /**
  * @brief Initializes and starts the mDNS service.
  * This function initializes and starts the mDNS (Multicast DNS) service. It sets the hostname and instance name for mDNS.
@@ -303,6 +313,7 @@ void StartMDNSService()
     mdns_hostname_set("wificonfig");
     mdns_instance_name_set("Behnam's ESP32 Thing");
 }
+
 /**
  * @brief Initializes the SPIFFS (SPI Flash File System).
  * This function initializes the SPIFFS file system with the provided configuration. It registers the SPIFFS file system and checks the partition information.
@@ -341,62 +352,5 @@ void SpiffsInit()
     else
     {
         ESP_LOGI(TAG, "Partition size: total: %d, used: %d", total, used);
-    }
-}
-/**
- * @brief Creates a task for handling Wi-Fi connection.
- * This function creates a task for handling Wi-Fi connection. It creates a task with the `WifiConnectionTask` function as the entry point.
- */
-void wifiConnectionTaskCreation()
-{
-    ESP_LOGI(TAG, "creat wifi task");
-    xTaskCreate(&WifiConnectionTask, "WifiConnectionTask", 10000, NULL, 1, NULL);
-}
-/**
- * @brief Entry point for the Wi-Fi connection task.
- * This function is the entry point for the Wi-Fi connection task. It initializes necessary components, sets up the SPIFFS, starts the mDNS service, starts the web server, and waits for Wi-Fi connection events.
- */
-void WifiConnectionTask()
-{
-    ESP_LOGI(TAG, "NVS init");
-    ESP_ERROR_CHECK(nvs_flash_init());
-    ESP_ERROR_CHECK(esp_netif_init());
-    SpiffsInit();
-    ESP_LOGI(TAG, "Eventloop create");
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-    ESP_LOGI(TAG, "init softAP");
-    ESP_ERROR_CHECK(WifiSoftAccessPointMode(ESP_WIFI_SSID, ESP_WIFI_PASS));
-    StartMDNSService();
-    server_ = StartWebServerLocally();
-    ForFirstTimeFlag = 1;
-    Wait = xSemaphoreCreateBinary();
-    ExitFromApMode = xSemaphoreCreateBinary();
-    StayInApModeSemaphore = xSemaphoreCreateBinary();
-    while (1)
-    {
-        ESP_LOGI(TAG, "wait \n");
-        if (xSemaphoreTake(Wait, portMAX_DELAY) == pdTRUE)
-        {
-            vTaskDelay(3000 / portTICK_PERIOD_MS);
-            WifiStationMode(UserWifiSSID, UserWifiPassWord);
-            vTaskDelay(5000 / portTICK_PERIOD_MS);
-            while (1)
-            {
-                if (xSemaphoreTake(ExitFromApMode, 10 / portTICK_PERIOD_MS) == pdTRUE)
-                {
-                    ESP_LOGI(TAG, "\nExitFromApMode");
-                    StopWebServer(server_);
-                    server_ = NULL;
-                    mdns_free();
-                    vTaskDelete(NULL);
-                }
-                if (xSemaphoreTake(StayInApModeSemaphore, 10 / portTICK_PERIOD_MS) == pdTRUE)
-                {
-                    ESP_LOGI(TAG, "\nStayInApModeSemaphore");
-                    ESP_ERROR_CHECK(WifiSoftAccessPointMode(ESP_WIFI_SSID, ESP_WIFI_PASS));
-                    break;
-                }
-            }
-        }
     }
 }

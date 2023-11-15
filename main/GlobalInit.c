@@ -14,5 +14,5 @@ void GlobalInit()
 
     GetResponseSemaphore = xSemaphoreCreateBinary();
     BufQueue1 = xQueueCreate(1, sizeof(char) * sizeof(char[2500]));
-    wifiConnectionTaskCreation();
+    wifiConnectionModule();
 }

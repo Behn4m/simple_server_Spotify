@@ -2,6 +2,7 @@
 #include "GlobalInit.h"
 #include "nvsFlash.h"
 #include "WiFiConfig.h"
+#include"SpotifyAuthorization.h"
 struct Token_ TokenParam;
 struct UserInfo_ UserInfo;
 QueueHandle_t BufQueue1;

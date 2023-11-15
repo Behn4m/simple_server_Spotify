@@ -1,4 +1,5 @@
 #include "GlobalInit.h"
+
 static const char *TAG = "Global init";
 extern QueueHandle_t BufQueue1;
 extern SemaphoreHandle_t GetResponseSemaphore;

@@ -14,6 +14,7 @@ extern "C" {
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
 #include "freertos/queue.h"
+#include "WiFiConfig.h"
 #define LONGBUF 2500
 #define MEDIUMBUF 1000
 #define SMALLBUF   250

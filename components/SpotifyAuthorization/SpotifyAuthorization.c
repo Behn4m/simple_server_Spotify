@@ -187,13 +187,17 @@ void SpotifyModule()
  */
 static void SpotifyTask(void *pvparameters)
 {
-    static httpd_handle_t server = NULL;
-    start_mdns_service();
-    // ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &HttpLocalServerConnectHandler, &server));
-    // ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &HttpLocalServerDisconnectHandler, &server));
+    static httpd_handle_t _Server = NULL;
+    // ESP_ERROR_CHECK(nvs_flash_init());
+    // ESP_ERROR_CHECK(esp_netif_init());
+    // ESP_ERROR_CHECK(esp_event_loop_create_default());
+    StartMDNSService();
+    // ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &HttpLocalServerConnectHandler, &_Server));
+    // ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &HttpLocalServerDisconnectHandler, &_Server));
     // ESP_ERROR_CHECK(example_connect());
-    server=StartWebServer();
-    FinishAthurisiation_FLG = 0;
+    _Server=StartWebServer();
+    ESP_LOGI(TAG, "\nSpotify task creat has done !\n");
+    FinishAthurisiationFlag = 0;
     while (1)
     {
         if (FinishAthurisiationFlag == 1)

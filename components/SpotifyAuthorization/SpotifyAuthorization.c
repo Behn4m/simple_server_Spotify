@@ -182,9 +182,10 @@ static void SpotifyTask(void *pvparameters)
 {
     static httpd_handle_t server = NULL;
     start_mdns_service();
-    ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &HttpLocalServerConnectHandler, &server));
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &HttpLocalServerDisconnectHandler, &server));
-    ESP_ERROR_CHECK(example_connect());
+    // ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &HttpLocalServerConnectHandler, &server));
+    // ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &HttpLocalServerDisconnectHandler, &server));
+    // ESP_ERROR_CHECK(example_connect());
+    server=StartWebServer();
     FinishAthurisiation_FLG = 0;
     while (1)
     {

@@ -1,76 +1,18 @@
 #include "WiFiConfig.h"
-#include"HttpLocalServer.h"
+#include "HttpLocalServer.h"
 #define MAXIMUM_RETRY_TO_CONNECT 1
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT BIT1
-static EventGroupHandle_t s_wifi_event_group;
+static EventGroupHandle_t StationModeEventGroup;
 SemaphoreHandle_t WaitSemaphore;
 SemaphoreHandle_t ExitFromApModeSemaphore;
 SemaphoreHandle_t StayInApModeSemaphore;
+extern SemaphoreHandle_t FinishWifiConfig;
 esp_netif_t *NetifAccessPointStruct;
 httpd_handle_t server_ = NULL;
 static const char *TAG = "wifi station mode";
 static int RetryTime = 0;
 bool ForFirstTimeFlag = 0;
-void WifiConnectionTask();
-/**
- * @brief Creates a task for handling Wi-Fi connection.
- * This function creates a task for handling Wi-Fi connection. It creates a task with the `WifiConnectionTask` function as the entry point.
- */
-void wifiConnectionModule()
-{
-    ESP_LOGI(TAG, "creat wifi task");
-    xTaskCreate(&WifiConnectionTask, "WifiConnectionTask", 10000, NULL, 1, NULL);
-}
-
-/**
- * @brief Entry point for the Wi-Fi connection task.
- * This function is the entry point for the Wi-Fi connection task. It initializes necessary components, sets up the SPIFFS, starts the mDNS service, starts the web server, and waits for Wi-Fi connection events.
- */
-void WifiConnectionTask()
-{
-    ESP_LOGI(TAG, "NVS init");
-    ESP_ERROR_CHECK(nvs_flash_init());
-    ESP_ERROR_CHECK(esp_netif_init());
-    SpiffsInit();
-    ESP_LOGI(TAG, "Eventloop create");
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-    ESP_LOGI(TAG, "init softAP");
-    ESP_ERROR_CHECK(WifiSoftAccessPointMode(ESP_WIFI_SSID, ESP_WIFI_PASS));
-    StartMDNSService();
-    server_ = StartWebServerLocally();
-    ForFirstTimeFlag = 1;
-    WaitSemaphore = xSemaphoreCreateBinary();
-    ExitFromApModeSemaphore = xSemaphoreCreateBinary();
-    StayInApModeSemaphore = xSemaphoreCreateBinary();
-    while (1)
-    {
-        ESP_LOGI(TAG, "wait \n");
-        if (xSemaphoreTake(WaitSemaphore, portMAX_DELAY) == pdTRUE)
-        {
-            vTaskDelay(3000 / portTICK_PERIOD_MS);
-            WifiStationMode(UserWifi.SSID, UserWifi.PassWord);
-            vTaskDelay(5000 / portTICK_PERIOD_MS);
-            while (1)
-            {
-                if (xSemaphoreTake(ExitFromApModeSemaphore, 10 / portTICK_PERIOD_MS) == pdTRUE)
-                {
-                    ESP_LOGI(TAG, "\nExitFromApMode");
-                    StopWebServer(server_);
-                    server_ = NULL;
-                    mdns_free();
-                    vTaskDelete(NULL);
-                }
-                if (xSemaphoreTake(StayInApModeSemaphore, 10 / portTICK_PERIOD_MS) == pdTRUE)
-                {
-                    ESP_LOGI(TAG, "\nStayInApModeSemaphore");
-                    ESP_ERROR_CHECK(WifiSoftAccessPointMode(ESP_WIFI_SSID, ESP_WIFI_PASS));
-                    break;
-                }
-            }
-        }
-    }
-}
 
 /**
  * @brief handler for WiFi and IP events.
@@ -81,7 +23,7 @@ void WifiConnectionTask()
  * @returns None
  */
 static void EventStationModeHandler(void *Arg, esp_event_base_t EventBase,
-                           int32_t EventId, void *EventData)
+                                    int32_t EventId, void *EventData)
 {
     if (EventBase == WIFI_EVENT && EventId == WIFI_EVENT_STA_START)
     {
@@ -97,7 +39,7 @@ static void EventStationModeHandler(void *Arg, esp_event_base_t EventBase,
         }
         else
         {
-            xEventGroupSetBits(s_wifi_event_group, WIFI_FAIL_BIT);
+            xEventGroupSetBits(StationModeEventGroup, WIFI_FAIL_BIT);
             xSemaphoreGive(StayInApModeSemaphore);
         }
         ESP_LOGI(TAG, "connect to the AP fail");
@@ -137,7 +79,7 @@ static void EventStationModeHandler(void *Arg, esp_event_base_t EventBase,
         ip_event_got_ip_t *event = (ip_event_got_ip_t *)EventData;
         ESP_LOGI(TAG, "got ip:" IPSTR, IP2STR(&event->ip_info.ip));
         RetryTime = 0;
-        xEventGroupSetBits(s_wifi_event_group, WIFI_CONNECTED_BIT);
+        xEventGroupSetBits(StationModeEventGroup, WIFI_CONNECTED_BIT);
     }
 }
 
@@ -152,11 +94,11 @@ esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_)
     esp_netif_deinit();
     if (ForFirstTimeFlag == 0)
     {
-    esp_netif_destroy(NetifAccessPointStruct);
+        esp_netif_destroy(NetifAccessPointStruct);
     }
     esp_wifi_stop();
     esp_wifi_deinit();
-    s_wifi_event_group = xEventGroupCreate();
+    StationModeEventGroup = xEventGroupCreate();
     ESP_ERROR_CHECK(esp_netif_init());
     esp_netif_create_default_wifi_sta();
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
@@ -180,7 +122,7 @@ esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_)
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
     ESP_LOGI(TAG, "wifi_init_sta finished.");
-    EventBits_t bits = xEventGroupWaitBits(s_wifi_event_group, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
+    EventBits_t bits = xEventGroupWaitBits(StationModeEventGroup, WIFI_CONNECTED_BIT | WIFI_FAIL_BIT, pdFALSE, pdFALSE, portMAX_DELAY);
     if (bits & WIFI_CONNECTED_BIT)
     {
         ESP_LOGI(TAG, "connected to ap SSID:%s password:%s", UserWifiSSID_, UserWifiPassWord_);
@@ -265,4 +207,64 @@ esp_err_t WifiSoftAccessPointMode(char *WifiAccessPointSSID, char *WifiAccessPoi
     ESP_LOGI(TAG, "WifiSoftAccessPointMode finished. SSID:%s password:%s",
              WifiAccessPointSSID, WifiAccessPointPassWord);
     return ESP_OK;
+}
+void WifiConnectionTask();
+/**
+ * @brief Creates a task for handling Wi-Fi connection.
+ * This function creates a task for handling Wi-Fi connection. It creates a task with the `WifiConnectionTask` function as the entry point.
+ */
+void wifiConnectionModule()
+{
+    ESP_LOGI(TAG, "creat wifi task");
+    xTaskCreate(&WifiConnectionTask, "WifiConnectionTask", 10000, NULL, 1, NULL);
+}
+
+/**
+ * @brief Entry point for the Wi-Fi connection task.
+ * This function is the entry point for the Wi-Fi connection task. It initializes necessary components, sets up the SPIFFS, starts the mDNS service, starts the web server, and waits for Wi-Fi connection events.
+ */
+void WifiConnectionTask()
+{
+    ESP_LOGI(TAG, "NVS init");
+    ESP_ERROR_CHECK(nvs_flash_init());
+    ESP_ERROR_CHECK(esp_netif_init());
+    SpiffsInit();
+    ESP_LOGI(TAG, "Eventloop create");
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
+    ESP_LOGI(TAG, "init softAP");
+    ESP_ERROR_CHECK(WifiSoftAccessPointMode(ESP_WIFI_SSID, ESP_WIFI_PASS));
+    StartMDNSService();
+    server_ = StartWebServerLocally();
+    ForFirstTimeFlag = 1;
+    WaitSemaphore = xSemaphoreCreateBinary();
+    ExitFromApModeSemaphore = xSemaphoreCreateBinary();
+    StayInApModeSemaphore = xSemaphoreCreateBinary();
+    while (1)
+    {
+        ESP_LOGI(TAG, "wait \n");
+        if (xSemaphoreTake(WaitSemaphore, portMAX_DELAY) == pdTRUE)
+        {
+            vTaskDelay(3000 / portTICK_PERIOD_MS);
+            WifiStationMode(UserWifi.SSID, UserWifi.PassWord);
+            vTaskDelay(5000 / portTICK_PERIOD_MS);
+            while (1)
+            {
+                if (xSemaphoreTake(ExitFromApModeSemaphore, 10 / portTICK_PERIOD_MS) == pdTRUE)
+                {
+                    ESP_LOGI(TAG, "\nExitFromApMode");
+                    StopWebServer(server_);
+                    server_ = NULL;
+                    mdns_free();
+                    xSemaphoreGive(FinishWifiConfig);
+                    vTaskDelete(NULL);
+                }
+                if (xSemaphoreTake(StayInApModeSemaphore, 10 / portTICK_PERIOD_MS) == pdTRUE)
+                {
+                    ESP_LOGI(TAG, "\nStayInApModeSemaphore");
+                    ESP_ERROR_CHECK(WifiSoftAccessPointMode(ESP_WIFI_SSID, ESP_WIFI_PASS));
+                    break;
+                }
+            }
+        }
+    }
 }

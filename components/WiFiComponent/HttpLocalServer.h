@@ -7,10 +7,12 @@ extern "C" {
 #define ESP_WIFI_SSID "ESP32-S3"
 #define ESP_WIFI_PASS "87654321"
 #define MAX_STA_CONN 5
-#define IS_FILE_EXT(filename, ext) \
-    (strcasecmp(&filename[strlen(filename) - sizeof(ext) + 1], ext) == 0)
- extern struct UserWifi_ UserWifi;
- 
+struct UserWifiStruct 
+{
+    char PassWord[64];
+    char SSID[32];
+};
+extern struct UserWifiStruct UserWifi;
 /**
  * @brief Initializes the SPIFFS (SPI Flash File System).
  * This function initializes the SPIFFS file system with the provided configuration. It registers the SPIFFS file system and checks the partition information.

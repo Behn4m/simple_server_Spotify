@@ -15,6 +15,7 @@ extern "C" {
 #include "esp_tls_crypto.h"
 #include <esp_http_server.h>
 #include "freertos/FreeRTOS.h"
+#include "freertos/event_groups.h"
 #include "freertos/task.h"
 #include "lwip/err.h"
 #include "lwip/sys.h"
@@ -23,24 +24,17 @@ extern "C" {
 #include <string.h>
 #include "esp_vfs.h"
 #include "esp_spiffs.h"
-
-
-extern bool ForFirstTimeFlag ;
 extern SemaphoreHandle_t WaitSemaphore ;
 extern SemaphoreHandle_t ExitFromApModeSemaphore ;
 extern SemaphoreHandle_t StayInApModeSemaphore ;
 extern esp_netif_t * NetifAccessPointStruct ;
+
+/**
+ * @brief Entry point for the Wi-Fi connection task.
+ * This function is the entry point for the Wi-Fi connection task. It initializes necessary components, sets up the SPIFFS, starts the mDNS service, starts the web server, and waits for Wi-Fi connection events.
+ */
 void wifiConnectionModule();
-esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_);
-esp_err_t WifiSoftAccessPointMode(char *WifiAccessPointSSID, char *WifiAccessPointPassWord);
-
-
-
-
 #endif
-
-
-
 #ifdef __cplusplus
 }
 #endif

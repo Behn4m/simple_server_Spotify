@@ -1,13 +1,11 @@
 #include "WiFiConfig.h"
-struct UserWifi_ UserWifi
-{
-    char PassWord[64];
-    char SSID[32];
-};
+#include "HttpLocalServer.h"
+struct UserWifiStruct UserWifi;
 static const char *TAG = "wifi AP Mode";
 static esp_err_t DetectFileType(httpd_req_t *req, const char *FileName);
 static esp_err_t ReadFromFileSystemAndSendIt(httpd_req_t *req, char *FileName_);
-
+#define IS_FILE_EXT(filename, ext) \
+    (strcasecmp(&filename[strlen(filename) - sizeof(ext) + 1], ext) == 0)
 /**
  * @brief Retrieves the WiFi parameters from the HTTP request and performs necessary actions.
  * @param req The HTTP request object.

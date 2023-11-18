@@ -300,7 +300,7 @@ esp_err_t StopWebServer(httpd_handle_t server)
  * @brief Initializes and starts the mDNS service.
  * This function initializes and starts the mDNS (Multicast DNS) service. It sets the hostname and instance name for mDNS.
  */
-void StartMDNSService()
+void StartMDNSServiceForWifi()
 {
     esp_err_t err = mdns_init();
     if (err)

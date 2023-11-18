@@ -24,6 +24,7 @@ extern "C" {
 #include <string.h>
 #include "esp_vfs.h"
 #include "esp_spiffs.h"
+#include"GlobalInit.h"
 extern SemaphoreHandle_t WaitSemaphore ;
 extern SemaphoreHandle_t ExitFromApModeSemaphore ;
 extern SemaphoreHandle_t StayInApModeSemaphore ;

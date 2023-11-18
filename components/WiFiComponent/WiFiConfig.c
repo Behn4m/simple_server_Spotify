@@ -4,6 +4,7 @@
 #define WIFI_CONNECTED_BIT BIT0
 #define WIFI_FAIL_BIT BIT1
 static EventGroupHandle_t StationModeEventGroup;
+extern SemaphoreHandle_t FinishWifiConfig;
 SemaphoreHandle_t WaitSemaphore;
 SemaphoreHandle_t ExitFromApModeSemaphore;
 SemaphoreHandle_t StayInApModeSemaphore;
@@ -14,6 +15,7 @@ httpd_handle_t server_ = NULL;
 static const char *TAG = "wifi station mode";
 static int RetryTime = 0;
 bool ForFirstTimeFlag = 0;
+void WifiConnectionTask();
 
 /**
  * @brief handler for WiFi and IP events.
@@ -92,7 +94,6 @@ static void EventStationModeHandler(void *Arg, esp_event_base_t EventBase,
  */
 esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_)
 {
-    ESP_LOGI(TAG, 
     esp_netif_deinit();
     if (ForFirstTimeFlag == 0)
     {
@@ -214,7 +215,7 @@ esp_err_t WifiSoftAccessPointMode(char *WifiAccessPointSSID, char *WifiAccessPoi
     ForFirstTimeFlag = 0;
     return ESP_OK;
 }
-void WifiConnectionTask();
+
 /**
  * @brief Creates a task for handling Wi-Fi connection.
  * This function creates a task for handling Wi-Fi connection. It creates a task with the `WifiConnectionTask` function as the entry point.
@@ -222,7 +223,11 @@ void WifiConnectionTask();
 void wifiConnectionModule()
 {
     ESP_LOGI(TAG, "creat wifi task");
-    xTaskCreate(&WifiConnectionTask, "WifiConnectionTask", 10000, NULL, 1, NULL);
+    xTaskCreate(&WifiConnectionTask, "WifiConnectionTask", WifiModuleTaskStackSize, NULL, 1, NULL);
+    if (xSemaphoreTake(FinishWifiConfig, portMAX_DELAY) == pdTRUE)
+    {
+        ESP_LOGI(TAG, "wifi configuration get finish !");
+    }
 }
 
 /**
@@ -235,11 +240,9 @@ void WifiConnectionTask()
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
     SpiffsInit();
-    ESP_LOGI(TAG, "Eventloop create");
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
     ESP_LOGI(TAG, "init softAP");
     ESP_ERROR_CHECK(WifiSoftAccessPointMode(ESP_WIFI_SSID, ESP_WIFI_PASS));
-    StartMDNSService();
+    StartMDNSServiceForWifi();
     server_ = StartWebServerLocally();
     ForFirstTimeFlag = 1;
     WaitSemaphore = xSemaphoreCreateBinary();

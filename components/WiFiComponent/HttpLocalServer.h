@@ -38,7 +38,7 @@ void SpiffsInit();
  * @brief Initializes and starts the mDNS service.
  * This function initializes and starts the mDNS (Multicast DNS) service. It sets the hostname and instance name for mDNS.
  */
-void StartMDNSService();
+void StartMDNSServiceForWifi();
 
 #endif
 #ifdef __cplusplus

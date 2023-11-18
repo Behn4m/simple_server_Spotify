@@ -14,12 +14,13 @@ extern "C" {
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
 #include "freertos/queue.h"
-#include "WiFiConfig.h"
+// #include "WiFiConfig.h"
 #define LONGBUF 2500
 #define MEDIUMBUF 1000
 #define SMALLBUF   250
 #define SpotifyTaskStackSize 10*1000
 #define HttpsTaskStackSize   9*1000
+#define WifiModuleTaskStackSize   10*1000
 #define ReDirectUri "http%3A%2F%2Fdeskhub.local%2Fcallback%2f"
 #define ClientId  "55bb974a0667481ab0b2a49fd0abea6d"
 struct Token_

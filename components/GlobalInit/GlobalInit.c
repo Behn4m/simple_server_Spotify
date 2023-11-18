@@ -14,9 +14,6 @@ void GlobalInit()
     GetResponseSemaphore = xSemaphoreCreateBinary();
     BufQueue1 = xQueueCreate(1, sizeof(char) * sizeof(char[2500]));
     FinishWifiConfig = xSemaphoreCreateBinary();
-    wifiConnectionModule();
-    if (xSemaphoreTake(FinishWifiConfig,portMAX_DELAY) == pdTRUE)
-    {
-        ESP_LOGI(TAG, "wifi configuration get finish !");
-    }
+    ESP_LOGI(TAG, "Eventloop create");
+    ESP_ERROR_CHECK(esp_event_loop_create_default());
 }

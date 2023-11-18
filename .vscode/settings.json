@@ -17,6 +17,7 @@
         "esp_spiffs.h": "c",
         "nvs_flash.h": "c",
         "event_groups.h": "c",
-        "httplocalserver.h": "c"
+        "httplocalserver.h": "c",
+        "spotifyauthorization.h": "c"
     }
 }

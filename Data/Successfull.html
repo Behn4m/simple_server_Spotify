@@ -1,0 +1,103 @@
+<style>
+* {
+  padding: 2%;
+  margin: 0 auto;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  justify-content: center;
+  align-items: center;
+  color: #515151;
+  font-family: 'Open Sans', sans-serif;
+}
+
+#bg img {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    top: 0;
+}
+
+#overlay {
+  position:absolute;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  top: 0;
+  background-color: gray;
+  opacity:0.5;
+}
+
+#container {
+  position: relative;
+  width: 50%;
+  height: 5%;
+  margin: 40% auto;
+  background: #fff;
+  padding: 18% 10%;
+  text-align: center;
+  border-radius: 3%;
+  -webkit-box-shadow: -7px 0px 0px -2px rgba(71,71,71,0.2);
+  -moz-box-shadow: -7px 0px 0px -2px rgba(71,71,71,0.2);
+  box-shadow: -7px 0px 0px -2px rgba(71,71,71,0.2);
+  font-size: 119%;
+}
+
+h1 {
+  margin: 30px 0 20px 0;
+  font-weight: normal;
+}
+
+p {
+  font-size: 0.8em;
+  margin-bottom: 25px;
+}
+
+button {
+  width: 100%;
+  background: #73c242;
+  border: transparent;
+  border-radius: 3%;
+  padding: 10px;
+  text-transform: uppercase;
+  color: white;
+  letter-spacing: 1px;
+}
+
+#circle {
+  position: absolute;
+  width: 30%;
+  height: 40%;
+  background: #00489a;
+  border-radius: 50%;
+  text-align: center;
+  top: -22%;
+  left: 30%;
+}
+
+i {
+  color: white;
+  margin: 25px;
+  font-size: 30px;
+}
+
+</style>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>operation it was Successful !</title>
+ </head>
+<body>
+  <div id="overlay"></div>  
+  <div id="container" id="timer">
+    <div id="circle">
+<img src="logo.png" style="width:97%;height:95%;">
+    </div> 
+
+    <h1>we got your ssid and password !</h1>
+  </div>
+</body>
+</html>

@@ -14,20 +14,11 @@
         "sockets.h": "c",
         "esp_wifi.h": "c",
         "freertos.h": "c",
-        "array": "c",
-        "bitset": "c",
-        "string_view": "c",
-        "initializer_list": "c",
-        "regex": "c",
+        "esp_spiffs.h": "c",
+        "nvs_flash.h": "c",
         "event_groups.h": "c",
-        "queue.h": "c",
-        "string.h": "c",
-        "makespotifyrequest.h": "c",
-        "nvsflash.h": "c",
-        "esp_https_server.h": "c"
-    },
-    "cSpell.words": [
-        "athurisiation",
-        "nesseccry"
-    ]
+        "httplocalserver.h": "c",
+        "spotifyauthorization.h": "c",
+        "queue.h": "c"
+    }
 }

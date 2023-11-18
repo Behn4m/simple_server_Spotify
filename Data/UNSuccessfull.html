@@ -1,0 +1,254 @@
+<style>
+  html,
+  body {
+    height: auto;
+    margin: 0;
+  }
+  body {
+    font-family: "Font Awesome";
+    font-size: 250%;
+    line-height: 1.5;
+    color: #333;
+    min-height: 100%;
+    position: relative;
+  }
+
+  label {
+    margin-top: 6px;
+    line-height: 80px;
+  }
+
+  a {
+    color: #fff;
+  }
+
+  a:focus,
+  a:hover {
+    color: #008080;
+  }
+
+  .checkbox-inline + .checkbox-inline,
+  .radio-inline + .radio-inline {
+    margin-top: 6px;
+  }
+
+  /******* Login Page *******/
+  .relative {
+    position: relative;
+  }
+
+  .login-container-wrapper .logo,
+  .login-container-wrapper .welcome {
+    margin: 40% 0 15% 0;
+    font-size: 120%;
+    color: #000;
+    text-align: center;
+    letter-spacing: 1px;
+    direction: rtl;
+    padding-bottom: 0;
+  }
+
+  .login-container-wrapper .logo {
+    text-align: center;
+    position: absolute;
+    top: -15%;
+    margin: 0 auto;
+    width: 25%;
+    height: 19%;
+    left: 32.5%;
+    border-radius: 50%;
+    background-color: red;
+    padding: 5%;
+    box-shadow: 0px 5px 5px 2px #fff;
+  }
+
+  .login-container-wrapper {
+    max-width: 80%;
+    margin: 20% auto 8%;
+    padding: 2.8%;
+    box-sizing: border-box;
+    background: #cccccc;
+    box-shadow: 1px 1px 0px 1px #000000, 8px 8px 0px 0px #344454,
+      12px 12px 10px 0px #000000;
+    position: relative;
+    padding-top: 2%;
+    padding-bottom: 10%;
+    height: auto;
+    border-radius: 10%;
+  }
+
+  .logo .fa {
+    font-size: 50px;
+  }
+  .login input:focus + .fa {
+    color: #fff;
+  }
+  .login-form .form-group {
+    margin-right: 50px;
+    margin-left: 50px;
+  }
+
+  .login-form i {
+    position: absolute;
+    top: 30%;
+    right: 88%;
+    color: #93a5ab;
+    font-size: 130%;
+  }
+
+  .login-form .input-lg {
+    font-size: 40%;
+    height: 4%;
+    padding: 5% 5%;
+    border-radius: 0;
+    margin: 2%;
+    width: 97%;
+  }
+
+  /*****/
+  button {
+    width: 40%;
+    height: 105px;
+    background: linear-gradient(to left top, #1f3654 30%, #386198 68%);
+    border-style: none;
+    color: #fff;
+    font-size: 100%;
+    letter-spacing: 3px;
+    font-family: "Lato";
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+    position: relative;
+    padding: 0px;
+    overflow: hidden;
+    transition: all 0.5s;
+    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.2);
+    left: 33%;
+    border-radius: 12px;
+  }
+  button span {
+    position: absolute;
+    display: block;
+  }
+  button span:nth-child(1) {
+    height: 3px;
+    width: 200px;
+    top: 0px;
+    left: -200px;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0), #f6e58d);
+    border-top-right-radius: 1px;
+    border-bottom-right-radius: 1px;
+    animation: span1 2s linear infinite;
+    animation-delay: 1s;
+  }
+
+  @keyframes span1 {
+    0% {
+      left: -200px;
+    }
+    100% {
+      left: 200px;
+    }
+  }
+  button span:nth-child(2) {
+    height: 70px;
+    width: 3px;
+    top: -70px;
+    right: 0px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0), #f6e58d);
+    border-bottom-left-radius: 1px;
+    border-bottom-right-radius: 1px;
+    animation: span2 2s linear infinite;
+    animation-delay: 2s;
+  }
+  @keyframes span2 {
+    0% {
+      top: -70px;
+    }
+    100% {
+      top: 70px;
+    }
+  }
+  button span:nth-child(3) {
+    height: 3px;
+    width: 200px;
+    right: -200px;
+    bottom: 0px;
+    background: linear-gradient(to left, rgba(0, 0, 0, 0), #f6e58d);
+    border-top-left-radius: 1px;
+    border-bottom-left-radius: 1px;
+    animation: span3 2s linear infinite;
+    animation-delay: 3s;
+  }
+  @keyframes span3 {
+    0% {
+      right: -200px;
+    }
+    100% {
+      right: 200px;
+    }
+  }
+
+  button span:nth-child(4) {
+    height: 70px;
+    width: 3px;
+    bottom: -70px;
+    left: 0px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0), #f6e58d);
+    border-top-right-radius: 1px;
+    border-top-left-radius: 1px;
+    animation: span4 2s linear infinite;
+    animation-delay: 4s;
+  }
+  @keyframes span4 {
+    0% {
+      bottom: -70px;
+    }
+    100% {
+      bottom: 70px;
+    }
+  }
+
+  button:hover {
+    transition: all 0.5s;
+    transform: rotate(-3deg) scale(1.1);
+    box-shadow: 0px 3px 5px rgba(0, 0, 0, 0.4);
+  }
+  button:hover span {
+    animation-play-state: paused;
+  }
+  i {
+    position: absolute;
+    right: 89%;
+    top: 26%;
+  }
+  /**/
+</style>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Fail</title>
+  </head>
+  <body class="login">
+    <div class="container">
+      <div class="login-container-wrapper clearfix">
+        <div class="logo">
+          <img src="Exclam.png" style="height: 100%" />
+        </div>
+        <div class="welcome"><strong>Fail</strong></div>
+
+        <form action="/" name="Divertpage" class="form-horizontal login-form">
+          <div class="wrapper">
+            <button type="submit">
+              try again !
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

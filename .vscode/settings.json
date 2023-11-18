@@ -18,6 +18,7 @@
         "nvs_flash.h": "c",
         "event_groups.h": "c",
         "httplocalserver.h": "c",
-        "spotifyauthorization.h": "c"
+        "spotifyauthorization.h": "c",
+        "queue.h": "c"
     }
 }

@@ -1,6 +1,6 @@
 
 idf_component_register(
-        SRCS "nvsFlash.c"
+        SRCS "SpiffsManger.c" "nvsFlash.c"
         INCLUDE_DIRS "include"
         REQUIRES nvs_flash
         #PRIV_REQUIRES 

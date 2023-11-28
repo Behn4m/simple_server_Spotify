@@ -13,11 +13,6 @@ struct UserWifiStruct
     char SSID[32];
 };
 extern struct UserWifiStruct UserWifi;
-// /**
-//  * @brief Initializes the SPIFFS (SPI Flash File System).
-//  * This function initializes the SPIFFS file system with the provided configuration. It registers the SPIFFS file system and checks the partition information.
-//  */
-// void SpiffsInit();
 
 /**
  * @brief Starts a web server locally.

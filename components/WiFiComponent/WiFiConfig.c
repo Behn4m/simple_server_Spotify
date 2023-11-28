@@ -12,9 +12,10 @@ extern SemaphoreHandle_t FinishWifiConfig;
 esp_netif_t *NetifAccessPointStruct;
 esp_netif_t *NetifStationStruct;
 httpd_handle_t server_ = NULL;
-static const char *TAG = "wifi station mode";
+static const char *TAG = "wifi config mode";
 static int RetryTime = 0;
 bool ForFirstTimeFlag = 0;
+bool HaveSaveFlag = 0;
 void WifiConnectionTask();
 
 /**
@@ -94,14 +95,17 @@ static void EventStationModeHandler(void *Arg, esp_event_base_t EventBase,
  */
 esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_)
 {
-    esp_netif_deinit();
-    if (ForFirstTimeFlag == 0)
+    if (HaveSaveFlag == 0)
     {
-        esp_netif_destroy(NetifAccessPointStruct);
-        esp_netif_destroy(NetifStationStruct);
+        esp_netif_deinit();
+        if (ForFirstTimeFlag == 0)
+        {
+            esp_netif_destroy(NetifAccessPointStruct);
+            esp_netif_destroy(NetifStationStruct);
+        }
+        esp_wifi_stop();
+        esp_wifi_deinit();
     }
-    esp_wifi_stop();
-    esp_wifi_deinit();
     StationModeEventGroup = xEventGroupCreate();
     ESP_ERROR_CHECK(esp_netif_init());
     NetifStationStruct = esp_netif_create_default_wifi_sta();
@@ -239,14 +243,17 @@ void WifiConnectionTask()
     ESP_LOGI(TAG, "NVS init");
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
-    // SpiffsInit();
+    ExitFromApModeSemaphore = xSemaphoreCreateBinary();
     if (xSemaphoreTake(HaveSaveForWifiSemaphore, 1) == pdTRUE)
     {
         ESP_LOGI(TAG, "we have save file ! ");
-        ReadFileFromSpiffsWithTxtFormat(WifiConfigAddressInSpiffs, "SSID=", UserWifi.SSID, "PASS=", UserWifi.PassWord, NULL, NULL);
+        ReadFileFromSpiffsWithTxtFormat(WifiConfigAddressInSpiffs, "SSID", UserWifi.SSID, "PASS", UserWifi.PassWord, NULL, NULL);
+        HaveSaveFlag = 1;
         WifiStationMode(UserWifi.SSID, UserWifi.PassWord);
         if (xSemaphoreTake(ExitFromApModeSemaphore, 30 * 1000 / portTICK_PERIOD_MS) == pdTRUE)
         {
+            ESP_LOGE(TAG, "FinishWifiConfig semaphore ");
+            vTaskDelay(3 * 1000 / portTICK_PERIOD_MS);
             xSemaphoreGive(FinishWifiConfig);
             vTaskDelete(NULL);
         }
@@ -265,7 +272,6 @@ void WifiConnectionTask()
     server_ = StartWebServerLocally();
     ForFirstTimeFlag = 1;
     WaitSemaphore = xSemaphoreCreateBinary();
-    ExitFromApModeSemaphore = xSemaphoreCreateBinary();
     StayInApModeSemaphore = xSemaphoreCreateBinary();
     while (1)
     {
@@ -274,6 +280,8 @@ void WifiConnectionTask()
         {
             ESP_LOGI(TAG, "give ssid and password but , we do'nt test them");
             vTaskDelay(3000 / portTICK_PERIOD_MS);
+            WifiStationMode(UserWifi.SSID, UserWifi.PassWord);
+            vTaskDelay(10 * 1000 / portTICK_PERIOD_MS);
             while (1)
             {
                 if (xSemaphoreTake(ExitFromApModeSemaphore, 10 / portTICK_PERIOD_MS) == pdTRUE)
@@ -282,7 +290,7 @@ void WifiConnectionTask()
                     StopWebServer(server_);
                     server_ = NULL;
                     mdns_free();
-                    SaveFileInSpiffsWithTxtFormat(WifiConfigAddressInSpiffs, "SSID=", UserWifi.SSID, "PASS=", UserWifi.PassWord, NULL, NULL);
+                    SaveFileInSpiffsWithTxtFormat(WifiConfigAddressInSpiffs, "SSID", UserWifi.SSID, "PASS", UserWifi.PassWord, NULL, NULL);
                     xSemaphoreGive(FinishWifiConfig);
                     vTaskDelete(NULL);
                 }

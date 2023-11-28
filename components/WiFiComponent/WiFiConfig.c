@@ -239,7 +239,26 @@ void WifiConnectionTask()
     ESP_LOGI(TAG, "NVS init");
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
-    SpiffsInit();
+    // SpiffsInit();
+    if (xSemaphoreTake(HaveSaveForWifiSemaphore, 1) == pdTRUE)
+    {
+        ESP_LOGI(TAG, "we have save file ! ");
+        ReadFileFromSpiffsWithTxtFormat(WifiConfigAddressInSpiffs, "SSID=", UserWifi.SSID, "PASS=", UserWifi.PassWord, NULL, NULL);
+        WifiStationMode(UserWifi.SSID, UserWifi.PassWord);
+        if (xSemaphoreTake(ExitFromApModeSemaphore, 30 * 1000 / portTICK_PERIOD_MS) == pdTRUE)
+        {
+            xSemaphoreGive(FinishWifiConfig);
+            vTaskDelete(NULL);
+        }
+        else
+        {
+            ESP_LOGE(TAG, "SSID or Password or wifi have problem !");
+        }
+    }
+    else
+    {
+        ESP_LOGE(TAG, "we does not have save file ! ");
+    }
     ESP_LOGI(TAG, "init softAP");
     ESP_ERROR_CHECK(WifiSoftAccessPointMode(ESP_WIFI_SSID, ESP_WIFI_PASS));
     StartMDNSServiceForWifi();
@@ -253,9 +272,8 @@ void WifiConnectionTask()
         ESP_LOGI(TAG, "wait \n");
         if (xSemaphoreTake(WaitSemaphore, portMAX_DELAY) == pdTRUE)
         {
+            ESP_LOGI(TAG, "give ssid and password but , we do'nt test them");
             vTaskDelay(3000 / portTICK_PERIOD_MS);
-            WifiStationMode(UserWifi.SSID, UserWifi.PassWord);
-            vTaskDelay(5000 / portTICK_PERIOD_MS);
             while (1)
             {
                 if (xSemaphoreTake(ExitFromApModeSemaphore, 10 / portTICK_PERIOD_MS) == pdTRUE)
@@ -264,6 +282,7 @@ void WifiConnectionTask()
                     StopWebServer(server_);
                     server_ = NULL;
                     mdns_free();
+                    SaveFileInSpiffsWithTxtFormat(WifiConfigAddressInSpiffs, "SSID=", UserWifi.SSID, "PASS=", UserWifi.PassWord, NULL, NULL);
                     xSemaphoreGive(FinishWifiConfig);
                     vTaskDelete(NULL);
                 }

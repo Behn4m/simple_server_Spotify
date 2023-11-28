@@ -9,6 +9,18 @@
 #include "esp_spiffs.h"
 #include <stdarg.h>
 #include "cJSON.h"
+#include "GlobalInit.h"
+
+/**
+ *@brief This function does global initialization for Spiffs, checks for save existence, and sends a signal if it exists
+ */
+void SpiffsGlobalConfig();
+
+/**
+ *@brief Perform a SPIFFS check on the specified partition and initd globally
+ * @param conf The SPIFFS configuration.
+ */
+void SpiffsInit();
 
 /**
  *@brief Read the contents of a file in the SPIFFS file system and store it in a buffer.
@@ -41,4 +53,10 @@ void SaveFileInSpiffsWithTxtFormat(char *addressInSpiffs, char *key, char *value
  */
 void ReadFileFromSpiffsWithTxtFormat(char *addressInSpiffs, char *key, char *value, ...);
 
+/**
+ *@brief Check if a file exists in the SPIFFS file system.
+ * @param addressInSpiffs The address of the file in SPIFFS.
+ * @return True if the file exists, false otherwise.
+ */
+bool SpiffsExistenceCheck(char *addressInSpiffs);
 #endif

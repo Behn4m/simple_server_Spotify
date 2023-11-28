@@ -13,6 +13,7 @@ void app_main(void)
 {
     GlobalInit();
     nvsFlashInit();
+    SpiffsGlobalConfig();
     wifiConnectionModule();
     // lvglGui();
     SpotifyModule();

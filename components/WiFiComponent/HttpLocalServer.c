@@ -23,7 +23,7 @@ static esp_err_t GetWifiParam(httpd_req_t *req)
             httpd_resp_set_type(req, "text/plain");
             httpd_resp_set_status(req, "302");
             httpd_resp_send(req, "", HTTPD_RESP_USE_STRLEN);
-            ESP_LOGI(TAG, "\n\n\nssid=%s\tpass%s\n\n", UserWifi.SSID, UserWifi.PassWord);
+            ESP_LOGI(TAG, "\n\n\nssid=%s\tpass=%s\n\n", UserWifi.SSID, UserWifi.PassWord);
             xSemaphoreGive(WaitSemaphore);
             return ESP_OK;
         }
@@ -316,39 +316,39 @@ void StartMDNSServiceForWifi()
  * @brief Initializes the SPIFFS (SPI Flash File System).
  * This function initializes the SPIFFS file system with the provided configuration. It registers the SPIFFS file system and checks the partition information.
  */
-void SpiffsInit()
-{
-    esp_vfs_spiffs_conf_t conf = {
-        .base_path = "/spiffs",
-        .partition_label = NULL,
-        .max_files = 10,
-        .format_if_mount_failed = false};
-    esp_err_t ret = esp_vfs_spiffs_register(&conf);
-    if (ret != ESP_OK)
-    {
-        if (ret == ESP_FAIL)
-        {
-            ESP_LOGE(TAG, "Failed to mount or format filesystem");
-        }
-        else if (ret == ESP_ERR_NOT_FOUND)
-        {
-            ESP_LOGE(TAG, "Failed to find SPIFFS partition");
-        }
-        else
-        {
-            ESP_LOGE(TAG, "Failed to initialize SPIFFS (%s)", esp_err_to_name(ret));
-        }
-        return;
-    }
+// void SpiffsInit()
+// {
+//     esp_vfs_spiffs_conf_t conf = {
+//         .base_path = "/spiffs",
+//         .partition_label = NULL,
+//         .max_files = 10,
+//         .format_if_mount_failed = false};
+//     esp_err_t ret = esp_vfs_spiffs_register(&conf);
+//     if (ret != ESP_OK)
+//     {
+//         if (ret == ESP_FAIL)
+//         {
+//             ESP_LOGE(TAG, "Failed to mount or format filesystem");
+//         }
+//         else if (ret == ESP_ERR_NOT_FOUND)
+//         {
+//             ESP_LOGE(TAG, "Failed to find SPIFFS partition");
+//         }
+//         else
+//         {
+//             ESP_LOGE(TAG, "Failed to initialize SPIFFS (%s)", esp_err_to_name(ret));
+//         }
+//         return;
+//     }
 
-    size_t total = 0, used = 0;
-    ret = esp_spiffs_info(NULL, &total, &used);
-    if (ret != ESP_OK)
-    {
-        ESP_LOGE(TAG, "Failed to get SPIFFS partition information (%s)", esp_err_to_name(ret));
-    }
-    else
-    {
-        ESP_LOGI(TAG, "Partition size: total: %d, used: %d", total, used);
-    }
-}
+//     size_t total = 0, used = 0;
+//     ret = esp_spiffs_info(NULL, &total, &used);
+//     if (ret != ESP_OK)
+//     {
+//         ESP_LOGE(TAG, "Failed to get SPIFFS partition information (%s)", esp_err_to_name(ret));
+//     }
+//     else
+//     {
+//         ESP_LOGI(TAG, "Partition size: total: %d, used: %d", total, used);
+//     }
+// }

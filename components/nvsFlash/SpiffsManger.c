@@ -4,7 +4,7 @@
  *
  * a component for work with Spiffs.
  */
-#include"SpiffsManger.h"
+#include "SpiffsManger.h"
 #define InternalBufSize_ 2 * 1000
 static const char *TAG = "Spiffs";
 
@@ -29,7 +29,7 @@ void SpiffsCheckingPerforming(esp_vfs_spiffs_conf_t conf)
 }
 
 /**
- *@brief Perform a SPIFFS check on the specified partition.
+ *@brief Perform a SPIFFS check on the specified partition and initd globally
  * @param conf The SPIFFS configuration.
  */
 void SpiffsInit()
@@ -359,18 +359,33 @@ void ReadFileFromSpiffsWithTxtFormat(char *addressInSpiffs, char *key, char *val
             const char *itemValue = item->valuestring;
             snprintf(currentValue, strlen(itemValue) + 1, "%s", itemValue);
         }
-
         currentKey = va_arg(args, char *);
         currentValue = va_arg(args, char *);
     }
     va_end(args);
     cJSON_Delete(root);
 }
+
+/**
+ *@brief This function does global initialization for Spiffs, checks for save existence, and sends a signal if it exists
+ */
+void SpiffsGlobalConfig()
+{
+    SpiffsInit();
+    if (SpiffsExistenceCheck(WifiConfigAddressInSpiffs) == 1)
+    {
+        xSemaphoreGive(HaveSaveForWifiSemaphore);
+    }
+    if (SpiffsExistenceCheck(SpotifyConfigAddressInSpiffs) == 1)
+    {
+        xSemaphoreGive(HaveSaveForWifiSemaphore);
+    }
+}
 #ifdef TEST
 /**
  *@brief This function is a test scenario that demonstrates the usage of the SPIFFS and JSON-related functions.
  */
-void Test(void)
+void SpiffsTest(void)
 {
     SpiffsInit();
     SpiffsRemoveFile("/spiffs/hello.txt");
@@ -380,7 +395,7 @@ void Test(void)
     SpiffsWrite("/spiffs/hello.txt", "QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dAr_QABtmfRQr3d");
     SpiffsRead("/spiffs/hello.txt", buf, sizeof(buf));
     printf("\n\n\n\n%s\n\n\n", buf);
-    SaveFileInSpiffsWithTxtFormat("/spiffs/hello.txt", "Key1", "test", "Key2", "544", "Key3", "bos", NULL, NULL);
+    SaveFileInSpiffsWithTxtFormat("/spiffs/hello.txt", "Key1", "test", "Key2", "544", "Key3", "bibibi", NULL, NULL);
     char value1[20];
     char value2[20];
     char value3[20];

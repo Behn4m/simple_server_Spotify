@@ -252,7 +252,7 @@ void WifiConnectionTask()
         WifiStationMode(UserWifi.SSID, UserWifi.PassWord);
         if (xSemaphoreTake(ExitFromApModeSemaphore, 30 * 1000 / portTICK_PERIOD_MS) == pdTRUE)
         {
-            ESP_LOGE(TAG, "FinishWifiConfig semaphore ");
+            ESP_LOGI(TAG, "FinishWifiConfig semaphore ");
             vTaskDelay(3 * 1000 / portTICK_PERIOD_MS);
             xSemaphoreGive(FinishWifiConfig);
             vTaskDelete(NULL);

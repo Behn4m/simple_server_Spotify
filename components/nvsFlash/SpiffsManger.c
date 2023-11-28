@@ -367,7 +367,7 @@ void ReadFileFromSpiffsWithTxtFormat(char *addressInSpiffs, char *key, char *val
 }
 
 /**
- *@brief This function does global initialization for Spiffs, checks for save existence, and sends a signal if it exists
+ *@brief This function does global initialization for Spiffs and checks for save existence, and sends a signal if it exists
  */
 void SpiffsGlobalConfig()
 {
@@ -378,7 +378,7 @@ void SpiffsGlobalConfig()
     }
     if (SpiffsExistenceCheck(SpotifyConfigAddressInSpiffs) == 1)
     {
-        xSemaphoreGive(HaveSaveForWifiSemaphore);
+        xSemaphoreGive(HaveSaveForSpotifySemaphore);
     }
 }
 #ifdef TEST

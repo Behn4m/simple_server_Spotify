@@ -188,26 +188,53 @@ void SpotifyModule()
 static void SpotifyTask(void *pvparameters)
 {
     static httpd_handle_t _Server = NULL;
-    // ESP_ERROR_CHECK(nvs_flash_init());
-    // ESP_ERROR_CHECK(esp_netif_init());
-    // ESP_ERROR_CHECK(esp_event_loop_create_default());
     StartMDNSService();
-    // ESP_ERROR_CHECK(esp_event_handler_register(IP_EVENT, IP_EVENT_STA_GOT_IP, &HttpLocalServerConnectHandler, &_Server));
-    // ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_STA_DISCONNECTED, &HttpLocalServerDisconnectHandler, &_Server));
-    // ESP_ERROR_CHECK(example_connect());
-    _Server=StartWebServer();
+    _Server = StartWebServer();
     ESP_LOGI(TAG, "\nSpotify task creat has done !\n");
-    FinishAthurisiationFlag = 0;
+    bool IsThereSave = 0;
+    bool SecondTimeSave = 0;
+    if (xSemaphoreTake(HaveSaveForSpotifySemaphore, 1) == pdTRUE)
+    {
+        char receivedData[LONGBUF];
+        ReadFileFromSpiffsWithTxtFormat(SpotifyConfigAddressInSpiffs, "refresh_token", TokenParam.refresh_token, NULL, NULL);
+        SendRequest_AndGiveTokenWithRefreshToken(receivedData, sizeof(receivedData), TokenParam.refresh_token);
+        if (xQueueReceive(BufQueue1, receivedData, portMAX_DELAY) == pdTRUE)
+        {
+            ESP_LOGI(TAG, "Received TOKEN by Queue: %s\n", receivedData);
+        }
+        if (FindToken(receivedData, sizeof(receivedData)) != 1)
+        {
+            ESP_LOGI(TAG, "we does not find token !");
+        }
+        FinishAthurisiationFlag = 1;
+        IsThereSave = 1;
+    }
+    else
+    {
+        FinishAthurisiationFlag = 0;
+    }
     while (1)
     {
         if (FinishAthurisiationFlag == 1)
         {
+            if (SecondTimeSave == 1)
+            {
+                SpiffsRemoveFile(SpotifyConfigAddressInSpiffs);
+                SaveFileInSpiffsWithTxtFormat(SpotifyConfigAddressInSpiffs, "refresh_token", TokenParam.refresh_token, NULL, NULL);
+            }
+            if (IsThereSave == 0)
+            {
+                // SaveFileInSpiffsWithTxtFormat(SpotifyConfigAddressInSpiffs, "access_token", TokenParam.access_token,
+                //                               "token_type", TokenParam.token_type, "expires_in", TokenParam.expires_in, "refresh_token", TokenParam.refresh_token, "scope", TokenParam.scope, NULL, NULL);
+                SaveFileInSpiffsWithTxtFormat(SpotifyConfigAddressInSpiffs, "refresh_token", TokenParam.refresh_token, NULL, NULL);
+                SecondTimeSave = 1;
+            }
             char receivedData[LONGBUF];
             ESP_LOGI(TAG, "\nSpotifyAuth has done !\n");
             vTaskDelay((8 * 1000) / portTICK_PERIOD_MS);
             // GetUserStatus();
             GetCurrentPlaying();
-            vTaskDelay((3600 * 1000) / portTICK_PERIOD_MS);
+            vTaskDelay((3500 * 1000) / portTICK_PERIOD_MS);
             SendRequest_AndGiveTokenWithRefreshToken(receivedData, sizeof(receivedData), TokenParam.refresh_token);
         }
         else

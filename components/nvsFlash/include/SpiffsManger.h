@@ -1,5 +1,9 @@
 #ifndef _SPIFFS_MANAGER_H_
 #define _SPIFFS_MANAGER_H_
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 #include <stdio.h>
 #include <string.h>
 #include <sys/unistd.h>
@@ -59,4 +63,7 @@ void ReadFileFromSpiffsWithTxtFormat(char *addressInSpiffs, char *key, char *val
  * @return True if the file exists, false otherwise.
  */
 bool SpiffsExistenceCheck(char *addressInSpiffs);
+#endif
+#ifdef __cplusplus
+}
 #endif

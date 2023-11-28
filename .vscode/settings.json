@@ -20,5 +20,8 @@
         "httplocalserver.h": "c",
         "spotifyauthorization.h": "c",
         "queue.h": "c"
-    }
+    },
+    "cSpell.words": [
+        "Athurisiation"
+    ]
 }

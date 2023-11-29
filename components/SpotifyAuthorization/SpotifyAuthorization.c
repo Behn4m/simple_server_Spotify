@@ -2,7 +2,7 @@
 #include "SpotifyAuthorization.h"
 #include "GlobalInit.h"
 #include "JsonExtraction.h"
-bool FinishAthurisiationFlag;
+bool AuthorisationFinishedFlag;
 SemaphoreHandle_t FindCodeSemaphore = NULL;
 SemaphoreHandle_t FailToFindCodeSemaphore = NULL;
 extern QueueHandle_t BufQueue1;
@@ -49,7 +49,7 @@ static esp_err_t HttpsUserCallBackFunc(httpd_req_t *req)
         ESP_LOGI(TAG, "\na=%d", a);
         if (a == 1)
         {
-            vTaskDelay(1000 / portTICK_PERIOD_MS);
+            vTaskDelay(Sec / portTICK_PERIOD_MS);
             xSemaphoreGive(FindCodeSemaphore);
             if (xQueueSend(BufQueue1, Buf, 0) == pdTRUE)
             {
@@ -193,7 +193,7 @@ static void SpotifyTask(void *pvparameters)
     ESP_LOGI(TAG, "\nSpotify task creat has done !\n");
     bool IsThereSave = 0;
     bool SecondTimeSave = 0;
-    if (xSemaphoreTake(HaveSaveForSpotifySemaphore, 1) == pdTRUE)
+    if (xSemaphoreTake(SpotifyParamExistenceCheckerSemaphore, 1) == pdTRUE)
     {
         char receivedData[LONGBUF];
         ReadFileFromSpiffsWithTxtFormat(SpotifyConfigAddressInSpiffs, "refresh_token", TokenParam.refresh_token, NULL, NULL);
@@ -206,16 +206,16 @@ static void SpotifyTask(void *pvparameters)
         {
             ESP_LOGI(TAG, "we does not find token !");
         }
-        FinishAthurisiationFlag = 1;
+        AuthorisationFinishedFlag = 1;
         IsThereSave = 1;
     }
     else
     {
-        FinishAthurisiationFlag = 0;
+        AuthorisationFinishedFlag = 0;
     }
     while (1)
     {
-        if (FinishAthurisiationFlag == 1)
+        if (AuthorisationFinishedFlag == 1)
         {
             if (SecondTimeSave == 1)
             {
@@ -231,10 +231,10 @@ static void SpotifyTask(void *pvparameters)
             }
             char receivedData[LONGBUF];
             ESP_LOGI(TAG, "\nSpotifyAuth has done !\n");
-            vTaskDelay((8 * 1000) / portTICK_PERIOD_MS);
+            vTaskDelay((8 * Sec) / portTICK_PERIOD_MS);
             // GetUserStatus();
             GetCurrentPlaying();
-            vTaskDelay((3500 * 1000) / portTICK_PERIOD_MS);
+            vTaskDelay(((Hour * Sec) -100) / portTICK_PERIOD_MS);
             SendRequest_AndGiveTokenWithRefreshToken(receivedData, sizeof(receivedData), TokenParam.refresh_token);
         }
         else
@@ -305,7 +305,7 @@ void SpotifyAuth()
             // 3-  extract json from RAW response
             if (FindToken(receivedData, sizeof(receivedData)) != 1)
             {
-                vTaskDelay((60 * 1000) / portTICK_PERIOD_MS);
+                vTaskDelay((60 * Sec) / portTICK_PERIOD_MS);
                 SendRequestAndGiveToken(receivedData, sizeof(receivedData), receivedData, sizeof(receivedData));
                 if (FindToken(receivedData, sizeof(receivedData)) != 1)
                 {
@@ -315,7 +315,7 @@ void SpotifyAuth()
             }
             //  4-extract JSON and get param from needed parameter
             ExtractionJsonParamForFindAccessToken(receivedData, sizeof(receivedData));
-            FinishAthurisiationFlag = 1;
+            AuthorisationFinishedFlag = 1;
         }
     }
     else

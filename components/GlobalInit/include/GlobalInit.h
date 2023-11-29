@@ -23,10 +23,12 @@ extern "C" {
 #define WifiModuleTaskStackSize   10*1000
 #define ReDirectUri "http%3A%2F%2Fdeskhub.local%2Fcallback%2f"
 #define ClientId  "55bb974a0667481ab0b2a49fd0abea6d"
-#define WifiConfigAddressInSpiffs  "/spiffs/WifiConfig.txt"
+#define WifiConfigDirectoryAddressInSpiffs  "/spiffs/WifiConfig.txt"
 #define SpotifyConfigAddressInSpiffs "/spiffs/SpotifyConfig.txt"
-extern SemaphoreHandle_t HaveSaveForWifiSemaphore;
-extern SemaphoreHandle_t HaveSaveForSpotifySemaphore;
+#define Sec 1000
+#define Hour 3600
+extern SemaphoreHandle_t WifiParamExistenceCheckerSemaphore;
+extern SemaphoreHandle_t SpotifyParamExistenceCheckerSemaphore;
 struct Token_
 {
     char access_token[500];

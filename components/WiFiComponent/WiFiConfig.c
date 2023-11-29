@@ -14,8 +14,8 @@ esp_netif_t *NetifStationStruct;
 httpd_handle_t server_ = NULL;
 static const char *TAG = "wifi config mode";
 static int RetryTime = 0;
-bool ForFirstTimeFlag = 0;
-bool HaveSaveFlag = 0;
+bool IsFirstTimeFlag = 0;
+bool IsThereSaveFlag = 0;
 void WifiConnectionTask();
 
 /**
@@ -95,10 +95,10 @@ static void EventStationModeHandler(void *Arg, esp_event_base_t EventBase,
  */
 esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_)
 {
-    if (HaveSaveFlag == 0)
+    if (IsThereSaveFlag == 0)
     {
         esp_netif_deinit();
-        if (ForFirstTimeFlag == 0)
+        if (IsFirstTimeFlag == 0)
         {
             esp_netif_destroy(NetifAccessPointStruct);
             esp_netif_destroy(NetifStationStruct);
@@ -178,7 +178,7 @@ static void WifiAccessPointEvenHandler(void *arg, esp_event_base_t EventBase, in
  */
 esp_err_t WifiSoftAccessPointMode(char *WifiAccessPointSSID, char *WifiAccessPointPassWord)
 {
-    if (ForFirstTimeFlag == 1)
+    if (IsFirstTimeFlag == 1)
     {
         vTaskDelay(100 / portTICK_PERIOD_MS);
         esp_netif_deinit();
@@ -216,7 +216,7 @@ esp_err_t WifiSoftAccessPointMode(char *WifiAccessPointSSID, char *WifiAccessPoi
     ESP_ERROR_CHECK(esp_wifi_start());
     ESP_LOGI(TAG, "WifiSoftAccessPointMode finished. SSID:%s password:%s",
              WifiAccessPointSSID, WifiAccessPointPassWord);
-    ForFirstTimeFlag = 0;
+    IsFirstTimeFlag = 0;
     return ESP_OK;
 }
 
@@ -244,16 +244,16 @@ void WifiConnectionTask()
     ESP_ERROR_CHECK(nvs_flash_init());
     ESP_ERROR_CHECK(esp_netif_init());
     ExitFromApModeSemaphore = xSemaphoreCreateBinary();
-    if (xSemaphoreTake(HaveSaveForWifiSemaphore, 1) == pdTRUE)
+    if (xSemaphoreTake(WifiParamExistenceCheckerSemaphore, 1) == pdTRUE)
     {
         ESP_LOGI(TAG, "we have save file ! ");
-        ReadFileFromSpiffsWithTxtFormat(WifiConfigAddressInSpiffs, "SSID", UserWifi.SSID, "PASS", UserWifi.PassWord, NULL, NULL);
-        HaveSaveFlag = 1;
+        ReadFileFromSpiffsWithTxtFormat(WifiConfigDirectoryAddressInSpiffs, "SSID", UserWifi.SSID, "PASS", UserWifi.PassWord, NULL, NULL);
+        IsThereSaveFlag = 1;
         WifiStationMode(UserWifi.SSID, UserWifi.PassWord);
-        if (xSemaphoreTake(ExitFromApModeSemaphore, 30 * 1000 / portTICK_PERIOD_MS) == pdTRUE)
+        if (xSemaphoreTake(ExitFromApModeSemaphore, 30 * Sec / portTICK_PERIOD_MS) == pdTRUE)
         {
             ESP_LOGI(TAG, "FinishWifiConfig semaphore ");
-            vTaskDelay(3 * 1000 / portTICK_PERIOD_MS);
+            vTaskDelay(3 * Sec / portTICK_PERIOD_MS);
             xSemaphoreGive(FinishWifiConfig);
             vTaskDelete(NULL);
         }
@@ -270,7 +270,7 @@ void WifiConnectionTask()
     ESP_ERROR_CHECK(WifiSoftAccessPointMode(ESP_WIFI_SSID, ESP_WIFI_PASS));
     StartMDNSServiceForWifi();
     server_ = StartWebServerLocally();
-    ForFirstTimeFlag = 1;
+    IsFirstTimeFlag = 1;
     WaitSemaphore = xSemaphoreCreateBinary();
     StayInApModeSemaphore = xSemaphoreCreateBinary();
     while (1)
@@ -279,9 +279,9 @@ void WifiConnectionTask()
         if (xSemaphoreTake(WaitSemaphore, portMAX_DELAY) == pdTRUE)
         {
             ESP_LOGI(TAG, "give ssid and password but , we do'nt test them");
-            vTaskDelay(3000 / portTICK_PERIOD_MS);
+            vTaskDelay(3*Sec / portTICK_PERIOD_MS);
             WifiStationMode(UserWifi.SSID, UserWifi.PassWord);
-            vTaskDelay(10 * 1000 / portTICK_PERIOD_MS);
+            vTaskDelay(10 * Sec / portTICK_PERIOD_MS);
             while (1)
             {
                 if (xSemaphoreTake(ExitFromApModeSemaphore, 10 / portTICK_PERIOD_MS) == pdTRUE)
@@ -290,7 +290,7 @@ void WifiConnectionTask()
                     StopWebServer(server_);
                     server_ = NULL;
                     mdns_free();
-                    SaveFileInSpiffsWithTxtFormat(WifiConfigAddressInSpiffs, "SSID", UserWifi.SSID, "PASS", UserWifi.PassWord, NULL, NULL);
+                    SaveFileInSpiffsWithTxtFormat(WifiConfigDirectoryAddressInSpiffs, "SSID", UserWifi.SSID, "PASS", UserWifi.PassWord, NULL, NULL);
                     xSemaphoreGive(FinishWifiConfig);
                     vTaskDelete(NULL);
                 }

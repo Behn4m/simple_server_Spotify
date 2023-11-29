@@ -372,13 +372,13 @@ void ReadFileFromSpiffsWithTxtFormat(char *addressInSpiffs, char *key, char *val
 void SpiffsGlobalConfig()
 {
     SpiffsInit();
-    if (SpiffsExistenceCheck(WifiConfigAddressInSpiffs) == 1)
+    if (SpiffsExistenceCheck(WifiConfigDirectoryAddressInSpiffs) == 1)
     {
-        xSemaphoreGive(HaveSaveForWifiSemaphore);
+        xSemaphoreGive(WifiParamExistenceCheckerSemaphore);
     }
     if (SpiffsExistenceCheck(SpotifyConfigAddressInSpiffs) == 1)
     {
-        xSemaphoreGive(HaveSaveForSpotifySemaphore);
+        xSemaphoreGive(SpotifyParamExistenceCheckerSemaphore);
     }
 }
 #ifdef TEST
@@ -389,7 +389,7 @@ void SpiffsTest(void)
 {
     SpiffsInit();
     SpiffsRemoveFile("/spiffs/hello.txt");
-    SpiffsWrite("/spiffs/hello.txt", "I'm Mohammad javad Abbasi !");
+    SpiffsWrite("/spiffs/hello.txt", "This is Test!");
     char buf[1000];
     SpiffsRead("/spiffs/hello.txt", buf, sizeof(buf));
     SpiffsWrite("/spiffs/hello.txt", "QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dQABtmfRQr3dAr_QABtmfRQr3dAr_QABtmfRQr3d");

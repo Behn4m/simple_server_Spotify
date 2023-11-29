@@ -14,6 +14,7 @@ extern "C" {
 #include "freertos/task.h"
 #include "freertos/event_groups.h"
 #include "freertos/queue.h"
+#include "SpiffsManger.h"
 #define LONGBUF 2500
 #define MEDIUMBUF 1000
 #define SMALLBUF   250
@@ -22,6 +23,12 @@ extern "C" {
 #define WifiModuleTaskStackSize   10*1000
 #define ReDirectUri "http%3A%2F%2Fdeskhub.local%2Fcallback%2f"
 #define ClientId  "55bb974a0667481ab0b2a49fd0abea6d"
+#define WifiConfigDirectoryAddressInSpiffs  "/spiffs/WifiConfig.txt"
+#define SpotifyConfigAddressInSpiffs "/spiffs/SpotifyConfig.txt"
+#define Sec 1000
+#define Hour 3600
+extern SemaphoreHandle_t WifiParamExistenceCheckerSemaphore;
+extern SemaphoreHandle_t SpotifyParamExistenceCheckerSemaphore;
 struct Token_
 {
     char access_token[500];

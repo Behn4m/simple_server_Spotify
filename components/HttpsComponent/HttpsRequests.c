@@ -155,7 +155,7 @@ exit:
     for (int countdown = 10; countdown >= 0; countdown--)
     {
         ESP_LOGI(TAG, "%d...", countdown);
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        vTaskDelay(Sec / portTICK_PERIOD_MS);
     }
 }
 

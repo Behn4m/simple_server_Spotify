@@ -63,6 +63,13 @@ void ReadFileFromSpiffsWithTxtFormat(char *addressInSpiffs, char *key, char *val
  * @return True if the file exists, false otherwise.
  */
 bool SpiffsExistenceCheck(char *addressInSpiffs);
+
+/**
+ *@brief This function removes a file from SPIFFS.
+ *@param[in] filename The name of the file to be removed.
+ *@return Returns true if the file removal is successful, and false otherwise.
+ */
+bool SpiffsRemoveFile(char *addressInSpiffs);
 #endif
 #ifdef __cplusplus
 }

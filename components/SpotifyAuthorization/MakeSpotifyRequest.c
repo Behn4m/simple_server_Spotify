@@ -251,7 +251,7 @@ void GetCurrentPlaying()
  * @param[in] code is parameter that we give it before .
  * @return This function does not return a value.
  */
-void SendRequest_AndGiveTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *RefreshToken_)
+void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *RefreshToken_)
 {
     char RefreshToken[SMALLBUF+150];
     strcpy(RefreshToken, RefreshToken_);

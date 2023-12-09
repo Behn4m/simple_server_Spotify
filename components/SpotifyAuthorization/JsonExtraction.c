@@ -24,7 +24,7 @@ void ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson)
     // Extract values from the cJSON object
     cJSON *accessTokenObj = cJSON_GetObjectItem(J_Token, "access_token");
     cJSON *tokenTypeObj = cJSON_GetObjectItem(J_Token, "token_type");
-    cJSON *expiresInObj = cJSON_GetObjectItem(J_Token, "expires_in");
+    cJSON *expiresInObj = cJSON_GetObjectItem(J_Token, "expires_in_ms");
     cJSON *refreshTokenObj = cJSON_GetObjectItem(J_Token, "refresh_token");
     cJSON *scopeObj = cJSON_GetObjectItem(J_Token, "scope");
     if (accessTokenObj != NULL && accessTokenObj->type == cJSON_String)
@@ -39,7 +39,7 @@ void ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson)
     }
     if (expiresInObj != NULL && expiresInObj->type == cJSON_Number)
     {
-        TokenParam.expires_in = expiresInObj->valueint;
+        TokenParam.expires_in_ms = expiresInObj->valueint;
     }
     if (refreshTokenObj != NULL && refreshTokenObj->type == cJSON_String)
     {
@@ -48,15 +48,15 @@ void ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson)
     }
     if (scopeObj != NULL && scopeObj->type == cJSON_String)
     {
-        strncpy(TokenParam.scope, scopeObj->valuestring, sizeof(TokenParam.scope) - 1);
-        TokenParam.scope[sizeof(TokenParam.scope) - 1] = '\0';
+        strncpy(TokenParam.granted_scope, scopeObj->valuestring, sizeof(TokenParam.granted_scope) - 1);
+        TokenParam.granted_scope[sizeof(TokenParam.granted_scope) - 1] = '\0';
     }
     // Print the values from the TokenParam struct
     ESP_LOGI(TAG,"Access Token: %s\n", TokenParam.access_token);
     ESP_LOGI(TAG,"Token Type: %s\n", TokenParam.token_type);
-    ESP_LOGI(TAG,"Expires In: %d seconds\n", TokenParam.expires_in);
+    ESP_LOGI(TAG,"Expires In: %d seconds\n", TokenParam.expires_in_ms);
     ESP_LOGI(TAG,"Refresh Token: %s\n", TokenParam.refresh_token);
-    ESP_LOGI(TAG,"Scope: %s\n", TokenParam.scope);
+    ESP_LOGI(TAG,"Scope: %s\n", TokenParam.granted_scope);
     cJSON_Delete(J_Token);
 }
 

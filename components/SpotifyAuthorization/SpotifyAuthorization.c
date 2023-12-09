@@ -2,7 +2,7 @@
 #include "SpotifyAuthorization.h"
 #include "GlobalInit.h"
 #include "JsonExtraction.h"
-bool AuthorisationFinishedFlag;
+bool SpotifyAuthorizationSuccessful;
 SemaphoreHandle_t FindCodeSemaphore = NULL;
 SemaphoreHandle_t FailToFindCodeSemaphore = NULL;
 extern QueueHandle_t BufQueue1;
@@ -12,6 +12,7 @@ static const char *TAG_APP = "SPOTIFY";
 extern struct Token_ TokenParam;
 extern struct UserInfo_ UserInfo;
 void SpotifyAuth();
+bool SpotifyTokenRenew();
 static void SpotifyTask(void *pvparameters);
 
 /**
@@ -188,54 +189,52 @@ void SpotifyModule()
 static void SpotifyTask(void *pvparameters)
 {
     static httpd_handle_t _Server = NULL;
+    
+    // start the Local Server for Spotify
     StartMDNSService();
     _Server = StartWebServer();
-    ESP_LOGI(TAG, "\nSpotify task creat has done !\n");
-    bool IsThereSave = 0;
-    bool SecondTimeSave = 0;
-    if (xSemaphoreTake(SpotifyParamExistenceCheckerSemaphore, 1) == pdTRUE)
+    
+    ESP_LOGI(TAG, "\nSpotify local server created!\n");
+    
+    bool TokenSaved = 0;
+    bool RefreshTokenSaved = 0;
+    // check if Spotify already authorized or not
+    if (xSemaphoreTake(IsSpotifyAthurizedSemaphore, 1) == pdTRUE)
     {
-        char receivedData[LONGBUF];
-        ReadFileFromSpiffsWithTxtFormat(SpotifyConfigAddressInSpiffs, "refresh_token", TokenParam.refresh_token, NULL, NULL);
-        SendRequest_AndGiveTokenWithRefreshToken(receivedData, sizeof(receivedData), TokenParam.refresh_token);
-        if (xQueueReceive(BufQueue1, receivedData, portMAX_DELAY) == pdTRUE)
-        {
-            ESP_LOGI(TAG, "Received TOKEN by Queue: %s\n", receivedData);
-        }
-        if (FindToken(receivedData, sizeof(receivedData)) != 1)
-        {
-            ESP_LOGI(TAG, "we does not find token !");
-        }
-        AuthorisationFinishedFlag = 1;
-        IsThereSave = 1;
+        SpotifyAuthorizationSuccessful = SpotifyTokenRenew();
     }
     else
     {
-        AuthorisationFinishedFlag = 0;
+        SpotifyAuthorizationSuccessful = 0;
     }
+
     while (1)
     {
-        if (AuthorisationFinishedFlag == 1)
+        if (SpotifyAuthorizationSuccessful == 1)
         {
-            if (SecondTimeSave == 1)
+            if (RefreshTokenSaved == 1)
             {
                 SpiffsRemoveFile(SpotifyConfigAddressInSpiffs);
                 SaveFileInSpiffsWithTxtFormat(SpotifyConfigAddressInSpiffs, "refresh_token", TokenParam.refresh_token, NULL, NULL);
             }
-            if (IsThereSave == 0)
+            if (TokenSaved == 0)
             {
                 // SaveFileInSpiffsWithTxtFormat(SpotifyConfigAddressInSpiffs, "access_token", TokenParam.access_token,
-                //                               "token_type", TokenParam.token_type, "expires_in", TokenParam.expires_in, "refresh_token", TokenParam.refresh_token, "scope", TokenParam.scope, NULL, NULL);
+                //                               "token_type", TokenParam.token_type, "expires_in_ms", TokenParam.expires_in_ms, "refresh_token", TokenParam.refresh_token, "scope", TokenParam.scope, NULL, NULL);
                 SaveFileInSpiffsWithTxtFormat(SpotifyConfigAddressInSpiffs, "refresh_token", TokenParam.refresh_token, NULL, NULL);
-                SecondTimeSave = 1;
+                RefreshTokenSaved = 1;
+                TokenSaved = 1;
             }
             char receivedData[LONGBUF];
             ESP_LOGI(TAG, "\nSpotifyAuth has done !\n");
             vTaskDelay((8 * Sec) / portTICK_PERIOD_MS);
+            
             // GetUserStatus();
             GetCurrentPlaying();
             vTaskDelay(((Hour * Sec) -100) / portTICK_PERIOD_MS);
-            SendRequest_AndGiveTokenWithRefreshToken(receivedData, sizeof(receivedData), TokenParam.refresh_token);
+            
+            // DO WE NEED THIS?
+            SendRequest_ExchangeTokenWithRefreshToken(receivedData, sizeof(receivedData), TokenParam.refresh_token);
         }
         else
         {
@@ -298,10 +297,18 @@ void SpotifyAuth()
         if (xSemaphoreTake(GetResponseSemaphore, portMAX_DELAY) == pdTRUE)
         {
             memset(receivedData, 0x0, sizeof(receivedData));
+            // wait until get the response from Spotify
+            ESP_LOGI(TAG, "waiting for spotify to response\n");
+
             if (xQueueReceive(BufQueue1, receivedData, portMAX_DELAY) == pdTRUE)
             {
                 ESP_LOGI(TAG, "Received TOKEN by Queue: %s\n", receivedData);
             }
+            else
+            {
+                ESP_LOGI(TAG, "Spotify not responds %s\n", receivedData);
+            }
+
             // 3-  extract json from RAW response
             if (FindToken(receivedData, sizeof(receivedData)) != 1)
             {
@@ -315,7 +322,7 @@ void SpotifyAuth()
             }
             //  4-extract JSON and get param from needed parameter
             ExtractionJsonParamForFindAccessToken(receivedData, sizeof(receivedData));
-            AuthorisationFinishedFlag = 1;
+            SpotifyAuthorizationSuccessful = 1;
         }
     }
     else
@@ -323,4 +330,40 @@ void SpotifyAuth()
         ESP_LOGI(TAG, "fail to get code !!!");
         esp_restart();
     }
+}
+
+/**
+ * @brief This function reads refresh token from spiffs and send request for new token
+ * @param null
+ * @return True if token received and saved, false for otherwise
+ */
+bool SpotifyTokenRenew(void)
+{
+    char receivedData[LONGBUF];
+
+    ReadTxtFileFromSpiffs(SpotifyConfigAddressInSpiffs, "refresh_token", TokenParam.refresh_token, NULL, NULL);
+    SendRequest_ExchangeTokenWithRefreshToken(receivedData, sizeof(receivedData), TokenParam.refresh_token);
+    if (xQueueReceive(BufQueue1, receivedData, portMAX_DELAY) == pdTRUE)
+    {
+        ESP_LOGI(TAG, "Token received by Queue: %s\n", receivedData);
+        if (FindToken(receivedData, sizeof(receivedData)) == 1)
+        {
+            ESP_LOGI(TAG, "Token found!");
+            return true;
+        }
+        else
+        {
+            ESP_LOGW(TAG, "Token not found!");
+            return false;
+        }
+    }
+    else
+    {
+        // SpotifyAuthorizationSuccessful = 0;
+        ESP_LOGW(TAG, "timeout - Spotify not respond!");
+        return false;
+    }
+
+    // TokenSaved = 1;
+        
 }

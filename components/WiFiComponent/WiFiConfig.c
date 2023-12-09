@@ -247,7 +247,7 @@ void WifiConnectionTask()
     if (xSemaphoreTake(WifiParamExistenceCheckerSemaphore, 1) == pdTRUE)
     {
         ESP_LOGI(TAG, "we have save file ! ");
-        ReadFileFromSpiffsWithTxtFormat(WifiConfigDirectoryAddressInSpiffs, "SSID", UserWifi.SSID, "PASS", UserWifi.PassWord, NULL, NULL);
+        ReadTxtFileFromSpiffs(WifiConfigDirectoryAddressInSpiffs, "SSID", UserWifi.SSID, "PASS", UserWifi.PassWord, NULL, NULL);
         IsThereSaveFlag = 1;
         WifiStationMode(UserWifi.SSID, UserWifi.PassWord);
         if (xSemaphoreTake(ExitFromApModeSemaphore, 30 * Sec / portTICK_PERIOD_MS) == pdTRUE)

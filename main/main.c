@@ -16,5 +16,8 @@ void app_main(void)
     SpiffsGlobalConfig();
     wifiConnectionModule();
     // lvglGui();
+    
+#ifdef SpotifyEnable
     SpotifyModule();
+#endif
 }

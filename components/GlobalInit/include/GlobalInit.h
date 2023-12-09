@@ -27,15 +27,20 @@ extern "C" {
 #define SpotifyConfigAddressInSpiffs "/spiffs/SpotifyConfig.txt"
 #define Sec 1000
 #define Hour 3600
+
+#define SpotifyEnable   true
+
 extern SemaphoreHandle_t WifiParamExistenceCheckerSemaphore;
-extern SemaphoreHandle_t SpotifyParamExistenceCheckerSemaphore;
+
+#ifdef SpotifyEnable
+extern SemaphoreHandle_t IsSpotifyAthurizedSemaphore;
 struct Token_
 {
-    char access_token[500];
-    char token_type[20];
-    int expires_in;
-    char refresh_token[500];
-    char scope[200];
+    char    access_token[500];
+    char    token_type[20];
+    int     expires_in_ms;
+    char    refresh_token[500];
+    char    granted_scope[200];
 };
 struct UserInfo_
 {
@@ -48,6 +53,7 @@ struct UserInfo_
     char Country[30];
     char Product[30];
 };
+#endif
 
 /**
  * in this function we init hardware or variable that need them

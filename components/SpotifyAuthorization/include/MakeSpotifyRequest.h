@@ -17,7 +17,7 @@ void GetCurrentPlaying();
  * @param[in] code is parameter that we give it before .
  * @return This function does not return a value.
  */
-void SendRequest_AndGiveTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *RefreshToken_);
+void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *RefreshToken_);
 
 /**
 * @brief This function searches for a token within a character array and extracts the corresponding JSON object.

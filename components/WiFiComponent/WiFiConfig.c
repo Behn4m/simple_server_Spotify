@@ -51,31 +51,35 @@ static void EventStationModeHandler(void *Arg, esp_event_base_t EventBase,
     else if (EventBase == WIFI_EVENT && EventId == WIFI_EVENT_STA_CONNECTED)
     {
         ESP_LOGI(TAG, "WiFi connected ... \n");
-        xSemaphoreGive(ExitFromApModeSemaphore);
+        // check if the ExitFromApModeSemaphore is defined in AP mode, then give it
+        if (ExitFromApModeSemaphore != NULL) 
+        {
+            xSemaphoreGive(ExitFromApModeSemaphore);
+        }
     }
     else if (EventBase == WIFI_EVENT && EventId == WIFI_EVENT_STA_WPS_ER_FAILED)
     {
-        ESP_LOGI(TAG, "WiFi WIFI_EVENT_STA_WPS_ER_FAILED config  failed... \n");
+        ESP_LOGW(TAG, "WiFi WIFI_EVENT_STA_WPS_ER_FAILED config  failed... \n");
         xSemaphoreGive(StayInApModeSemaphore);
     }
     else if (EventBase == WIFI_EVENT && EventId == WIFI_EVENT_STA_WPS_ER_TIMEOUT)
     {
-        ESP_LOGI(TAG, "WiFi WIFI_EVENT_STA_WPS_ER_TIMEOUT config failed... \n");
+        ESP_LOGW(TAG, "WiFi WIFI_EVENT_STA_WPS_ER_TIMEOUT config failed... \n");
         xSemaphoreGive(StayInApModeSemaphore);
     }
     else if (EventBase == WIFI_EVENT && EventId == WIFI_EVENT_STA_WPS_ER_PIN)
     {
-        ESP_LOGI(TAG, "WiFi WIFI_EVENT_STA_WPS_ER_PIN config failed... \n");
+        ESP_LOGW(TAG, "WiFi WIFI_EVENT_STA_WPS_ER_PIN config failed... \n");
         xSemaphoreGive(StayInApModeSemaphore);
     }
     else if (EventBase == WIFI_EVENT && EventId == WIFI_EVENT_STA_WPS_ER_PBC_OVERLAP)
     {
-        ESP_LOGI(TAG, "WiFi WIFI_EVENT_STA_WPS_ER_PBC_OVERLAPconfig failed... \n");
+        ESP_LOGW(TAG, "WiFi WIFI_EVENT_STA_WPS_ER_PBC_OVERLAPconfig failed... \n");
         xSemaphoreGive(StayInApModeSemaphore);
     }
     else if (EventBase == WIFI_EVENT && EventId == WIFI_EVENT_STA_BEACON_TIMEOUT)
     {
-        ESP_LOGI(TAG, "WiFi WIFI_EVENT_STA_BEACON_TIMEOUT config failed... \n");
+        ESP_LOGW(TAG, "WiFi WIFI_EVENT_STA_BEACON_TIMEOUT config failed... \n");
         xSemaphoreGive(StayInApModeSemaphore);
     }
     else if (EventBase == IP_EVENT && EventId == IP_EVENT_STA_GOT_IP)
@@ -95,6 +99,7 @@ static void EventStationModeHandler(void *Arg, esp_event_base_t EventBase,
  */
 esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_)
 {
+    #ifndef WIFI_INIT_STA_MODE
     if (IsThereSaveFlag == 0)
     {
         esp_netif_deinit();
@@ -106,6 +111,7 @@ esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_)
         esp_wifi_stop();
         esp_wifi_deinit();
     }
+    #endif
     StationModeEventGroup = xEventGroupCreate();
     ESP_ERROR_CHECK(esp_netif_init());
     NetifStationStruct = esp_netif_create_default_wifi_sta();

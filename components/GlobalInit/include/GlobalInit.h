@@ -58,7 +58,7 @@ struct UserInfo_
  * timeout definition part 
 */
 #define ServerTimeOut (30*1000)/portTICK_PERIOD_MS
-#define DirectConnection
+#define WIFI_INIT_STA_MODE
 /**
  * in this function we init hardware or variable that need them
  *  globally

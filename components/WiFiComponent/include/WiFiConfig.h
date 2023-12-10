@@ -36,7 +36,7 @@ extern esp_netif_t * NetifAccessPointStruct ;
  */
 void wifiConnectionModule();
 
-#ifdef DirectConnection
+#ifdef WIFI_INIT_STA_MODE
 /**
  * @brief Sets up WiFi station mode.
  * @param[in] ssid      SSID of the access point.
@@ -45,6 +45,7 @@ void wifiConnectionModule();
  */
 esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_);
 #endif
+
 #endif
 #ifdef __cplusplus
 }

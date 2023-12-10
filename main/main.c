@@ -14,7 +14,7 @@ void app_main(void)
     GlobalInit();
     nvsFlashInit();
     SpiffsGlobalConfig();
-#ifdef DirectConnection
+#ifdef WIFI_INIT_STA_MODE
     WifiStationMode("SSidTest","PasswordTest");
 #else
     wifiConnectionModule();

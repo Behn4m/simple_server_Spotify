@@ -14,9 +14,13 @@ void app_main(void)
     GlobalInit();
     nvsFlashInit();
     SpiffsGlobalConfig();
+#ifdef DirectConnection
+    WifiStationMode("SSidTest","PasswordTest");
+#else
     wifiConnectionModule();
+#endif
     // lvglGui();
-    
+
 #ifdef SpotifyEnable
     SpotifyModule();
 #endif

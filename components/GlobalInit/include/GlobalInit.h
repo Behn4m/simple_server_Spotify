@@ -33,7 +33,7 @@ extern "C" {
 extern SemaphoreHandle_t WifiParamExistenceCheckerSemaphore;
 
 #ifdef SpotifyEnable
-extern SemaphoreHandle_t IsSpotifyAthurizedSemaphore;
+extern SemaphoreHandle_t IsSpotifyAuthorizedSemaphore;
 struct Token_
 {
     char    access_token[500];
@@ -54,7 +54,11 @@ struct UserInfo_
     char Product[30];
 };
 #endif
-
+/**
+ * timeout definition part 
+*/
+#define ServerTimeOut (30*1000)/portTICK_PERIOD_MS
+#define DirectConnection
 /**
  * in this function we init hardware or variable that need them
  *  globally

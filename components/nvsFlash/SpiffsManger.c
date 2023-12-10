@@ -378,7 +378,7 @@ void SpiffsGlobalConfig()
     }
     if (SpiffsExistenceCheck(SpotifyConfigAddressInSpiffs) == 1)
     {
-        xSemaphoreGive(IsSpotifyAthurizedSemaphore);
+        xSemaphoreGive(IsSpotifyAuthorizedSemaphore);
     }
 }
 #ifdef TEST

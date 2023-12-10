@@ -8,7 +8,7 @@ extern SemaphoreHandle_t FinishWifiConfig;
 
 #ifdef SpotifyEnable
 SemaphoreHandle_t WifiParamExistenceCheckerSemaphore = NULL;
-SemaphoreHandle_t IsSpotifyAthurizedSemaphore = NULL;
+SemaphoreHandle_t IsSpotifyAuthorizedSemaphore = NULL;
 #endif
 /**
  * in this function we init hardware or variable that need them
@@ -22,7 +22,7 @@ void GlobalInit()
     WifiParamExistenceCheckerSemaphore = xSemaphoreCreateBinary();
 
 #ifdef SpotifyEnable
-    IsSpotifyAthurizedSemaphore = xSemaphoreCreateBinary();
+    IsSpotifyAuthorizedSemaphore = xSemaphoreCreateBinary();
 #endif
 
     ESP_LOGI(TAG, "Eventloop create");

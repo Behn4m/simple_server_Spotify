@@ -19,7 +19,7 @@ void ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson)
     cJSON *J_Token = cJSON_Parse(Json);
     if (J_Token == NULL)
     {
-        ESP_LOGI(TAG,"Failed to parse JSON\n");
+        ESP_LOGE(TAG,"Failed to parse JSON\n");
     }
     // Extract values from the cJSON object
     cJSON *accessTokenObj = cJSON_GetObjectItem(J_Token, "access_token");

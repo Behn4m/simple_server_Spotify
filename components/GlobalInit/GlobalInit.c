@@ -4,7 +4,8 @@
 static const char *TAG = "Global init";
 extern QueueHandle_t BufQueue1;
 extern SemaphoreHandle_t GetResponseSemaphore;
-extern SemaphoreHandle_t FinishWifiConfig;
+SemaphoreHandle_t FinishWifiConfig = NULL;
+
 
 #ifdef SpotifyEnable
 SemaphoreHandle_t WifiParamExistenceCheckerSemaphore = NULL;

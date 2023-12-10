@@ -31,7 +31,7 @@ extern "C" {
 #define SpotifyEnable   true
 
 extern SemaphoreHandle_t WifiParamExistenceCheckerSemaphore;
-
+extern SemaphoreHandle_t FinishWifiConfig;
 #ifdef SpotifyEnable
 extern SemaphoreHandle_t IsSpotifyAuthorizedSemaphore;
 struct Token_

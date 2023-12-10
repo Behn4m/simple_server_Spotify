@@ -237,7 +237,6 @@ void SpotifyModule()
 static void SpotifyTask(void *pvparameters)
 {
     static httpd_handle_t _Server = NULL;
-
     // start the Local Server for Spotify
     StartMDNSService();
     _Server = StartWebServer();

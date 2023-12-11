@@ -15,23 +15,32 @@ extern "C" {
 #include "freertos/event_groups.h"
 #include "freertos/queue.h"
 #include "SpiffsManger.h"
+
+// **************************************************************** applicaiton configurations
+#define SpotifyEnable
+#define WIFI_INIT_STA_MODE
+
+// spiffs directories
+#define WifiConfigDirectoryAddressInSpiffs  "/spiffs/WifiConfig.txt"
+#define SpotifyConfigAddressInSpiffs "/spiffs/SpotifyConfig.txt"
+
+// **************************************************************** constant macros
+#define Sec 1000
+#define Hour 3600
 #define LONGBUF 2500
 #define MEDIUMBUF 1000
 #define SMALLBUF   250
 #define SpotifyTaskStackSize 10*1000
 #define HttpsTaskStackSize   9*1000
 #define WifiModuleTaskStackSize   10*1000
+
+// **************************************************************** URI links
 #define ReDirectUri "http%3A%2F%2Fdeskhub.local%2Fcallback%2f"
 #define ClientId  "55bb974a0667481ab0b2a49fd0abea6d"
-#define WifiConfigDirectoryAddressInSpiffs  "/spiffs/WifiConfig.txt"
-#define SpotifyConfigAddressInSpiffs "/spiffs/SpotifyConfig.txt"
-#define Sec 1000
-#define Hour 3600
-
-#define SpotifyEnable   true
 
 extern SemaphoreHandle_t WifiParamExistenceCheckerSemaphore;
 extern SemaphoreHandle_t FinishWifiConfig;
+
 #ifdef SpotifyEnable
 extern SemaphoreHandle_t IsSpotifyAuthorizedSemaphore;
 struct Token_
@@ -53,12 +62,13 @@ struct UserInfo_
     char Country[30];
     char Product[30];
 };
-#endif
 /**
  * timeout definition part 
 */
-#define ServerTimeOut (30*1000)/portTICK_PERIOD_MS
-#define WIFI_INIT_STA_MODE
+#define SpotifyServerTimeOut (30*1000)/portTICK_PERIOD_MS
+#endif
+
+// **************************************************************** initilization functions
 /**
  * in this function we init hardware or variable that need them
  *  globally

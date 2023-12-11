@@ -376,10 +376,13 @@ void SpiffsGlobalConfig()
     {
         xSemaphoreGive(WifiParamExistenceCheckerSemaphore);
     }
+
+    #ifdef SpotifyEnable
     if (SpiffsExistenceCheck(SpotifyConfigAddressInSpiffs) == 1)
     {
         xSemaphoreGive(IsSpotifyAuthorizedSemaphore);
     }
+    #endif
 }
 #ifdef TEST
 /**

@@ -15,13 +15,13 @@ void app_main(void)
     nvsFlashInit();
     SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
-    WifiStationMode("SSidTest","PasswordTest");
+    WifiStationMode("BELL789","167271A164A9");
 #else
     wifiConnectionModule();
 #endif
     // lvglGui();
 
 #ifdef SpotifyEnable
-    SpotifyModule();
+    Spotify_TaskInit();
 #endif
 }

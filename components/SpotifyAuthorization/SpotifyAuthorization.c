@@ -11,15 +11,27 @@ static const char *TAG = "SpotifyTask";
 static const char *TAG_APP = "SPOTIFY";
 extern struct Token_ TokenParam;
 extern struct UserInfo_ UserInfo;
-void SpotifyAuth();
-static void SpotifyTask(void *pvparameters);
+void Spotify_Authorization();
+static void Spotify_MainTask(void *pvparameters);
+
+/**
+ * @brief This function initiates the Spotify authorization process.
+ * @param none
+ * @return none
+ */
+void Spotify_TaskInit()
+{
+    FindCodeSemaphore = xSemaphoreCreateBinary();
+    FailToFindCodeSemaphore = xSemaphoreCreateBinary();
+    xTaskCreate(&Spotify_MainTask, "Spotify_MainTask", SpotifyTaskStackSize, NULL, 1, NULL);
+}
 
 /**
  * @brief This function handles the first HTTPS request to Spotify and redirects the user to the authorization page.
  * @param[in] req The HTTP request object.
  * @return Returns ESP_OK if the request is processed successfully.
  */
-static esp_err_t FirstRequest(httpd_req_t *req)
+static esp_err_t Spotify_RequestDataAccess(httpd_req_t *req)
 {
     char loc_url[SMALLBUF + 150];
     ESP_LOGI(TAG, "here send to client - Request_\n");
@@ -36,7 +48,7 @@ static esp_err_t FirstRequest(httpd_req_t *req)
  * @param[in] req The HTTP request object.
  * @return Returns ESP_OK if the request is processed successfully.
  */
-static esp_err_t HttpsUserCallBackFunc(httpd_req_t *req)
+static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *req)
 {
     char Buf[MEDIUMBUF];
     if (httpd_req_get_url_query_str(req, Buf, sizeof(Buf)) == ESP_OK)
@@ -71,20 +83,20 @@ static esp_err_t HttpsUserCallBackFunc(httpd_req_t *req)
 }
 
 /**
- * this strcut is http URL handler if receive "/" FirstRequest getting run
+ * this strcut is http URL handler if receive "/" Spotify_RequestDataAccess getting run
  */
 static const httpd_uri_t Request_ = {
     .uri = "/",
     .method = HTTP_GET,
-    .handler = FirstRequest};
+    .handler = Spotify_RequestDataAccess};
 
 /**
- * this strcut is http URL handler if receive "/callback" HttpsUserCallBackFunc getting run
+ * this strcut is http URL handler if receive "/callback" Spotify_HttpsCallbackHandler getting run
  */
 static const httpd_uri_t Responce_ = {
     .uri = "/callback/",
     .method = HTTP_GET,
-    .handler = HttpsUserCallBackFunc};
+    .handler = Spotify_HttpsCallbackHandler};
 
 /**
  * @brief This function starts the web server for handling HTTPS requests.
@@ -176,7 +188,7 @@ void StartMDNSService()
  * @param null
  * @return True if token received and saved, false for otherwise
  */
-bool SpotifyTokenRenew(void)
+bool Spotify_TokenRenew(void)
 {
     char receivedData[LONGBUF];
     ReadTxtFileFromSpiffs(SpotifyConfigAddressInSpiffs, "refresh_token", TokenParam.refresh_token, NULL, NULL);
@@ -207,7 +219,7 @@ bool SpotifyTokenRenew(void)
  * @brief This function find token in HTTP body request and check it for 
  * accuracy , if we doesn't find token for two time ESP getting restart !
  */
-void FindAndCheckAccuracyOfToken(char *receivedData, size_t SizeOfReceivedData)
+void Spotify_FindTokenInHttpsBody(char *receivedData, size_t SizeOfReceivedData)
 {
     if (FindToken(receivedData, SizeOfReceivedData) != 1)
     {
@@ -220,21 +232,14 @@ void FindAndCheckAccuracyOfToken(char *receivedData, size_t SizeOfReceivedData)
         }
     }
 }
-/**
- * @brief This function handles the Spotify authorization process.
- */
-void SpotifyModule()
-{
-    FindCodeSemaphore = xSemaphoreCreateBinary();
-    FailToFindCodeSemaphore = xSemaphoreCreateBinary();
-    xTaskCreate(&SpotifyTask, "SpotifyTask", SpotifyTaskStackSize, NULL, 1, NULL);
-}
+
 
 /**
  * @brief This function is the entry point for handling HTTPS requests for Spotify authorization.
- * @param[in] pvparameters  need it because its Task !
+ * @param[in] pvparameters because it is a Task!
+ * @return none
  */
-static void SpotifyTask(void *pvparameters)
+static void Spotify_MainTask(void *pvparameters)
 {
     static httpd_handle_t _Server = NULL;
     // start the Local Server for Spotify
@@ -245,15 +250,17 @@ static void SpotifyTask(void *pvparameters)
 
     bool TokenSaved = 0;
     bool RefreshTokenSaved = 0;
+    
     // check if Spotify already authorized or not
     if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, 1) == pdTRUE)
     {
-        SpotifyAuthorizationSuccessful = SpotifyTokenRenew();
+        SpotifyAuthorizationSuccessful = Spotify_TokenRenew();
     }
     else
     {
         SpotifyAuthorizationSuccessful = 0;
     }
+
     while (1)
     {
         if (SpotifyAuthorizationSuccessful == 1)
@@ -282,7 +289,7 @@ static void SpotifyTask(void *pvparameters)
         }
         else
         {
-            SpotifyAuth();
+            Spotify_Authorization();
         }
     }
 }
@@ -326,28 +333,28 @@ static void SpotifyTask(void *pvparameters)
  * 3-  extract json from RAW response
  * 4-extract JSON and get param from needed parameter
  */
-void SpotifyAuth()
+void Spotify_Authorization()
 {
     char receivedData[LONGBUF];
     if (xSemaphoreTake(FindCodeSemaphore, portMAX_DELAY) == pdTRUE)
     {
         // 1-give CODE
-        if (xQueueReceive(BufQueue1, receivedData, ServerTimeOut) == pdTRUE)
+        if (xQueueReceive(BufQueue1, receivedData, SpotifyServerTimeOut) == pdTRUE)
         {
             ESP_LOGI(TAG, "Received CODE by Queue: %s\n", receivedData);
             // 2-send request for give access token
             SendRequestAndGiveToken(receivedData, sizeof(receivedData), receivedData, sizeof(receivedData));
-            if (xSemaphoreTake(GetResponseSemaphore, ServerTimeOut) == pdTRUE)
+            if (xSemaphoreTake(GetResponseSemaphore, SpotifyServerTimeOut) == pdTRUE)
             {
                 memset(receivedData, 0x0, sizeof(receivedData));
                 // wait until get the response from Spotify
                 ESP_LOGW(TAG, "waiting for spotify to response\n");
 
-                if (xQueueReceive(BufQueue1, receivedData, ServerTimeOut) == pdTRUE)
+                if (xQueueReceive(BufQueue1, receivedData, SpotifyServerTimeOut) == pdTRUE)
                 {
                     ESP_LOGI(TAG, "Received TOKEN by Queue: %s", receivedData);
                     // 3-  extract json from RAW response
-                    FindAndCheckAccuracyOfToken(receivedData, sizeof(receivedData));
+                    Spotify_FindTokenInHttpsBody(receivedData, sizeof(receivedData));
                     //  4-extract JSON and get param from needed parameter
                     ExtractionJsonParamForFindAccessToken(receivedData, sizeof(receivedData));
                     SpotifyAuthorizationSuccessful = 1;

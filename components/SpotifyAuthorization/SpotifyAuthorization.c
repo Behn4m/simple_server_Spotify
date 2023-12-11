@@ -2,15 +2,21 @@
 #include "SpotifyAuthorization.h"
 #include "GlobalInit.h"
 #include "JsonExtraction.h"
+
+// ****************************** Extern Variables 
+extern struct Token_ TokenParam;
+extern struct UserInfo_ UserInfo;
+
+// ****************************** Local Variables 
 bool SpotifyAuthorizationSuccessful;
-SemaphoreHandle_t FindCodeSemaphore = NULL;
+SemaphoreHandle_t Spotify_FindCodeSemaphore = NULL;
 SemaphoreHandle_t FailToFindCodeSemaphore = NULL;
-extern QueueHandle_t BufQueue1;
 extern SemaphoreHandle_t GetResponseSemaphore;
 static const char *TAG = "SpotifyTask";
 static const char *TAG_APP = "SPOTIFY";
-extern struct Token_ TokenParam;
-extern struct UserInfo_ UserInfo;
+QueueHandle_t Spotify_BufQueue;
+
+// ****************************** Local Functions 
 void Spotify_Authorization();
 static void Spotify_MainTask(void *pvparameters);
 
@@ -21,9 +27,16 @@ static void Spotify_MainTask(void *pvparameters);
  */
 void Spotify_TaskInit()
 {
-    FindCodeSemaphore = xSemaphoreCreateBinary();
+    Spotify_FindCodeSemaphore = xSemaphoreCreateBinary();
     FailToFindCodeSemaphore = xSemaphoreCreateBinary();
+    Spotify_BufQueue = xQueueCreate(1, sizeof(char) * sizeof(char[2500]));
     xTaskCreate(&Spotify_MainTask, "Spotify_MainTask", SpotifyTaskStackSize, NULL, 1, NULL);
+}
+
+void Spotify_UpdateStatus()
+{
+    GetCurrentPlaying();
+    ESP_LOGI(TAG, "Trying to get NOW PLAYING");
 }
 
 /**
@@ -34,7 +47,7 @@ void Spotify_TaskInit()
 static esp_err_t Spotify_RequestDataAccess(httpd_req_t *req)
 {
     char loc_url[SMALLBUF + 150];
-    ESP_LOGI(TAG, "here send to client - Request_\n");
+    ESP_LOGI(TAG, "here send to client - Spotify_Request_Access_URI\n");
     sprintf(loc_url, "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state", ClientId, ReDirectUri);
     httpd_resp_set_hdr(req, "Location", loc_url);
     httpd_resp_set_type(req, "text/plain");
@@ -62,8 +75,8 @@ static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *req)
         if (a == 1)
         {
             vTaskDelay(Sec / portTICK_PERIOD_MS);
-            xSemaphoreGive(FindCodeSemaphore);
-            if (xQueueSend(BufQueue1, Buf, 0) == pdTRUE)
+            xSemaphoreGive(Spotify_FindCodeSemaphore);
+            if (xQueueSend(Spotify_BufQueue, Buf, 0) == pdTRUE)
             {
                 ESP_LOGI(TAG, "Sent CODE with queue \n");
             }
@@ -83,17 +96,25 @@ static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *req)
 }
 
 /**
+ * this strcut is http URL handler if receive "/" Spotify_Update_Info getting run
+ */
+static const httpd_uri_t Spotify_Update_Info = {
+    .uri = "/spotify/update",
+    .method = HTTP_GET,
+    .handler = Spotify_UpdateStatus};
+
+/**
  * this strcut is http URL handler if receive "/" Spotify_RequestDataAccess getting run
  */
-static const httpd_uri_t Request_ = {
-    .uri = "/",
+static const httpd_uri_t Spotify_Request_Access_URI = {
+    .uri = "/spotify/init",
     .method = HTTP_GET,
     .handler = Spotify_RequestDataAccess};
 
 /**
  * this strcut is http URL handler if receive "/callback" Spotify_HttpsCallbackHandler getting run
  */
-static const httpd_uri_t Responce_ = {
+static const httpd_uri_t Spotify_Get_Access_Response_URI = {
     .uri = "/callback/",
     .method = HTTP_GET,
     .handler = Spotify_HttpsCallbackHandler};
@@ -111,8 +132,9 @@ static httpd_handle_t StartWebServer(void)
     if (httpd_start(&Server_, &config) == ESP_OK)
     {
         ESP_LOGI(TAG, "Registering URI handlers");
-        httpd_register_uri_handler(Server_, &Request_);
-        httpd_register_uri_handler(Server_, &Responce_);
+        httpd_register_uri_handler(Server_, &Spotify_Request_Access_URI);
+        httpd_register_uri_handler(Server_, &Spotify_Get_Access_Response_URI);
+        httpd_register_uri_handler(Server_, &Spotify_Update_Info);
         return Server_;
     }
     return Server_;
@@ -193,7 +215,7 @@ bool Spotify_TokenRenew(void)
     char receivedData[LONGBUF];
     ReadTxtFileFromSpiffs(SpotifyConfigAddressInSpiffs, "refresh_token", TokenParam.refresh_token, NULL, NULL);
     SendRequest_ExchangeTokenWithRefreshToken(receivedData, sizeof(receivedData), TokenParam.refresh_token);
-    if (xQueueReceive(BufQueue1, receivedData, portMAX_DELAY) == pdTRUE)
+    if (xQueueReceive(Spotify_BufQueue, receivedData, portMAX_DELAY) == pdTRUE)
     {
         ESP_LOGI(TAG, "Token received by Queue: %s\n", receivedData);
         if (FindToken(receivedData, sizeof(receivedData)) == 1)
@@ -295,13 +317,14 @@ static void Spotify_MainTask(void *pvparameters)
 }
 
 /**
- *  The authorization code grant type is used to obtain both access
+ * The authorization code grant type is used to obtain both access
  * tokens and refresh tokens and is optimized for confidential clients.
  * Since this is a redirection-based flow, the client must be capable of
    interacting with the resource owner's user-agent (typically a web
    browser) and capable of receiving incoming requests (via redirection)
    from the authorization server.
- *  *     +----------+
+ **  +----------+
+     |          |
      | Resource |
      |   Owner  |
      |          |
@@ -336,10 +359,10 @@ static void Spotify_MainTask(void *pvparameters)
 void Spotify_Authorization()
 {
     char receivedData[LONGBUF];
-    if (xSemaphoreTake(FindCodeSemaphore, portMAX_DELAY) == pdTRUE)
+    if (xSemaphoreTake(Spotify_FindCodeSemaphore, portMAX_DELAY) == pdTRUE)
     {
         // 1-give CODE
-        if (xQueueReceive(BufQueue1, receivedData, SpotifyServerTimeOut) == pdTRUE)
+        if (xQueueReceive(Spotify_BufQueue, receivedData, SpotifyServerTimeOut) == pdTRUE)
         {
             ESP_LOGI(TAG, "Received CODE by Queue: %s\n", receivedData);
             // 2-send request for give access token
@@ -350,7 +373,7 @@ void Spotify_Authorization()
                 // wait until get the response from Spotify
                 ESP_LOGW(TAG, "waiting for spotify to response\n");
 
-                if (xQueueReceive(BufQueue1, receivedData, SpotifyServerTimeOut) == pdTRUE)
+                if (xQueueReceive(Spotify_BufQueue, receivedData, SpotifyServerTimeOut) == pdTRUE)
                 {
                     ESP_LOGI(TAG, "Received TOKEN by Queue: %s", receivedData);
                     // 3-  extract json from RAW response

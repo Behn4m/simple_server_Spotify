@@ -16,7 +16,8 @@ extern "C" {
 #include "sdkconfig.h"
 #include "mdns.h"
 #include "GlobalInit.h"
-#include"MakeSpotifyRequest.h"
+#include "MakeSpotifyRequest.h"
+#include "freertos/queue.h"
 
 /**
  * @brief This function handles the Spotify authorization process.

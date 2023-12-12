@@ -19,10 +19,38 @@ extern "C" {
 #include "MakeSpotifyRequest.h"
 #include "freertos/queue.h"
 
+typedef struct Token_t {
+    char access_token[500];
+    char token_type[20];
+    int expires_in_ms;
+    char refresh_token[500];
+    char granted_scope[200];
+} Token_t;
+
+typedef struct UserInfo_t {
+    char DisplayName[128];
+    char SpotifyProfileURL[256];
+    char UserID[128];
+    char Image1[256];
+    char Image2[256];
+    int Follower;
+    char Country[30];
+    char Product[30];
+} UserInfo_t;
+
+typedef struct {
+    QueueHandle_t *BufQueue;
+    char    code[MEDIUMBUF];
+    Token_t token;        // Nested struct for token information
+    UserInfo_t userInfo;  // Nested struct for user information
+} SpotifyInterfaceHandler_t;
+
 /**
- * @brief This function handles the Spotify authorization process.
+ * @brief This function initiates the Spotify authorization process.
+ * @param SpotifyInterfaceHandler as the handler
+ * @return true if task run to the end
  */
-void Spotify_TaskInit();
+bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler);
 #endif
 
 #ifdef __cplusplus

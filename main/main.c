@@ -3,12 +3,13 @@
 #include "nvsFlash.h"
 #include "WiFiConfig.h"
 #include "SpotifyAuthorization.h"
-struct Token_ TokenParam;
-struct UserInfo_ UserInfo;
+
+// ****************************** GLobal Variables ****************************** //
 QueueHandle_t BufQueue1;
 SemaphoreHandle_t GetResponseSemaphore = NULL;
+SpotifyInterfaceHandler_t SpotifyInterfaceHandler;  
 
-
+// ****************************** GLobal Functions ****************************** //
 void app_main(void)
 {
     GlobalInit();
@@ -22,6 +23,7 @@ void app_main(void)
     // lvglGui();
 
 #ifdef SpotifyEnable
-    Spotify_TaskInit();
+    SpotifyInterfaceHandler.BufQueue = &BufQueue1;
+    Spotify_TaskInit(&SpotifyInterfaceHandler);
 #endif
 }

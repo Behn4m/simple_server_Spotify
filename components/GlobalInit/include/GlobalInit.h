@@ -43,29 +43,10 @@ extern SemaphoreHandle_t FinishWifiConfig;
 
 #ifdef SpotifyEnable
 extern SemaphoreHandle_t IsSpotifyAuthorizedSemaphore;
-struct Token_
-{
-    char    access_token[500];
-    char    token_type[20];
-    int     expires_in_ms;
-    char    refresh_token[500];
-    char    granted_scope[200];
-};
-struct UserInfo_
-{
-    char DisplayName[128];
-    char SpotifyProfileURL[256];
-    char UserID[128];
-    char Image1[256];
-    char Image2[256];
-    int Follower;
-    char Country[30];
-    char Product[30];
-};
 /**
  * timeout definition part 
 */
-#define SpotifyServerTimeOut (30*1000)/portTICK_PERIOD_MS
+#define SPOTIFY_RESPONSE_TIMEOUT (30*1000)/portTICK_PERIOD_MS
 #endif
 
 // **************************************************************** initilization functions

@@ -53,7 +53,7 @@ void SendRequestAndGiveToken(char *Buf, size_t SizeBuf, char *code, size_t SizeC
 * @param[in] SizeBuf The size of the character buffer.
 * @return This function does not return a value.
 */
-void MakePlayerCommandAndSendIt(const char *Method_, const char *Command_, char *Buf, size_t SizeBuf);
+void MakePlayerCommandAndSendIt(const char *Method_, const char *Command_, char *Buf, size_t SizeBuf, char *access_token);
 
 /**
 * @brief This function sends a request to the Spotify API to pause the current track in the player.
@@ -83,28 +83,22 @@ void SendRequestForNext();
 * @brief This function sends a request to the Spotify API to retrieve the user's current status.
 * @return This function does not return a value.
 */
-void GetUserStatus();
+void GetUserStatus(char *access_token);
 
 /**
 * @brief This function sends a request to the Spotify API to retrieve the user's top item.
 * @return This function does not return a value.
 */
-void GetUserTopItems();
+void GetUserTopItems(char *access_token);
 
 /**
 * @brief This function sends a request to the Spotify API to retrieve the profile information of a specific user.
 * @param[in] UserId_ The ID of the user whose profile information is to be retrieved.
 * @return This function does not return a value.
 */
-void GetUserProfile(char *UserId_);
+void GetUserProfile(char *UserId_, char *Token);
 
-/**
- * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a TokenParam structure.
- * @param[in] Json The input JSON string.
- * @param[in] SizeJson The size of the JSON string.
- * @return This function does not return a value.
- */
-void ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson);
+
 #endif
 #ifdef __cplusplus
 }

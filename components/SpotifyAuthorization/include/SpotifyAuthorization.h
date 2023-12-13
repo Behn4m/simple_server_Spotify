@@ -19,23 +19,36 @@ extern "C" {
 #include "MakeSpotifyRequest.h"
 #include "freertos/queue.h"
 
+#define access_token_str_size   512
+#define token_type_str_size     20
+#define refresh_token_str_size  512
+#define granted_scope_str_size  512
+
+#define DisplayName_str_size    128
+#define ProfileURL_str_size     256
+#define UserID_str_size         128
+#define Image1_str_size         256
+#define Image2_str_size         256
+#define Country_str_size        30
+#define Product_str_size        30
+
 typedef struct Token_t {
-    char access_token[500];
-    char token_type[20];
+    char access_token[access_token_str_size];
+    char token_type[token_type_str_size];
     int  expires_in_ms;
-    char refresh_token[500];
-    char granted_scope[200];
+    char refresh_token[refresh_token_str_size];
+    char granted_scope[granted_scope_str_size];
 } Token_t;
 
 typedef struct UserInfo_t {
-    char DisplayName[128];
-    char SpotifyProfileURL[256];
-    char UserID[128];
-    char Image1[256];
-    char Image2[256];
+    char DisplayName[DisplayName_str_size];
+    char ProfileURL[ProfileURL_str_size];
+    char UserID[UserID_str_size];
+    char Image1[Image1_str_size];
+    char Image2[Image2_str_size];
     int Follower;
-    char Country[30];
-    char Product[30];
+    char Country[Country_str_size];
+    char Product[Product_str_size];
 } UserInfo_t;
 
 typedef enum {

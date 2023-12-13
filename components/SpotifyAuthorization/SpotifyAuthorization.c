@@ -422,17 +422,22 @@ void Spotify_GetToken(char *code)
                 esp_restart();
             }
         }
-        InterfaceHandler.status = ACTIVE_USER;
 
-        ExtractionJsonParamForFindAccessToken(receivedData, sizeof(receivedData), 
-                                                InterfaceHandler.token.access_token,
-                                                InterfaceHandler.token.token_type, 
-                                                InterfaceHandler.token.refresh_token, 
-                                                InterfaceHandler.token.granted_scope, 
-                                                InterfaceHandler.token.expires_in_ms);
+        if (ExtractionJsonParamForFindAccessToken(receivedData, sizeof(receivedData), 
+                                                  InterfaceHandler.token.access_token,
+                                                  InterfaceHandler.token.token_type, 
+                                                  InterfaceHandler.token.refresh_token, 
+                                                  InterfaceHandler.token.granted_scope, 
+                                                  InterfaceHandler.token.expires_in_ms) == true)
+        {
+                    InterfaceHandler.status = ACTIVE_USER;
+                    ESP_LOGD(TAG, "ACTIVE_USER");
 
+        }
+        else
+        {
 
-        // AuthorisationFinishedFlag = 1;
+        }
     }
 }
 

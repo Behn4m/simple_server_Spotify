@@ -25,7 +25,7 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *
 * @param[in] SizeRes The size of the character array.
 * @return Returns true if the token is found and the corresponding JSON object is successfully extracted, otherwise returns false.
 */
-bool FindToken(char *Res, uint16_t SizeRes);
+bool Spotify_FindToken(char *Res, uint16_t SizeRes);
 
 /**
 * @brief This function searches for specific patterns ('code' and 'state') within a character array and returns a boolean value indicating if either pattern was found.
@@ -33,7 +33,7 @@ bool FindToken(char *Res, uint16_t SizeRes);
 * @param[in] SizeRes The size of the character array.
 * @return Returns true if either the 'code' or 'state' pattern was found, and false otherwise.
 */
-bool FindCode(char *Res, uint16_t SizeRes);
+bool Spotify_FindCode(char *Res, uint16_t SizeRes);
 
 /**
 * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.
@@ -43,7 +43,7 @@ bool FindCode(char *Res, uint16_t SizeRes);
 * @param[in] SizeCode The size of the authorization code.
 * @return This function does not return a value.
 */
-void SendRequestAndGiveToken(char *Buf, size_t SizeBuf, char *code, size_t SizeCode);
+void Spotify_SendTokenRequest(char *Buf, size_t SizeBuf, char *code, size_t SizeCode);
 
 /**
 * @brief This function sends a request to the Spotify API to perform a player command.

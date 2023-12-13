@@ -15,7 +15,7 @@ static const char *TAG = "SpotifyTask";
 * @param[in] SizeRes The size of the character array.
 * @return Returns true if either the 'code' or 'state' pattern was found, and false otherwise.
 */
-bool FindCode(char *Res, uint16_t SizeRes)
+bool Spotify_FindCode(char *Res, uint16_t SizeRes)
 {
     bool FLGFindCode = false;
     for (uint16_t i = 0; i < SizeRes; i++)
@@ -24,7 +24,7 @@ bool FindCode(char *Res, uint16_t SizeRes)
         {
             if (Res[i + 1] == 'o' && Res[i + 2] == 'd' && Res[i + 3] == 'e')
             {
-                ESP_LOGI(TAG,"The CODE found in the response!\n");
+                ESP_LOGI(TAG,"The CODE found in the response!");
                 FLGFindCode = true;
             }
         }
@@ -38,7 +38,7 @@ bool FindCode(char *Res, uint16_t SizeRes)
 * @param[in] SizeRes The size of the character array.
 * @return Returns true if the token is found and the corresponding JSON object is successfully extracted, otherwise returns false.
 */
-bool FindToken(char *Res, uint16_t SizeRes)
+bool Spotify_FindToken(char *Res, uint16_t SizeRes)
 {
     uint8_t FlgFindToken = 0;
     uint32_t SizeOfJson = 0;
@@ -77,10 +77,10 @@ bool FindToken(char *Res, uint16_t SizeRes)
 * @param[in] SizeCode The size of the authorization code.
 * @return This function does not return a value.
 */
-void SendRequestAndGiveToken(char *Buf, size_t SizeBuf, char *code, size_t SizeCode)
+void Spotify_SendTokenRequest(char *Buf, size_t SizeBuf, char *code, size_t SizeCode)
 {
     char grand[MEDIUMBUF] = {0};
-    ESP_LOGI(TAG,"\n\n\n\n%s\n\n\n", code);
+    ESP_LOGI(TAG,"\n%s\n", code);
     sprintf(grand, "grant_type=authorization_code&redirect_uri=%s&%s", ReDirectUri, code);
     memset(Buf, 0x0, SizeBuf);
     sprintf(Buf, "POST /api/token HTTP/1.1 \r\n"
@@ -266,7 +266,7 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *
                  "\r\n"
                  "%s\r",
             strlen(grand), grand);
-    ESP_LOGI(TAG,"\n\n\n%s\n\n\n", Buf);
+    ESP_LOGI(TAG,"\n%s\n", Buf);
     char url[SMALLBUF] = "https://accounts.spotify.com/api/token";
     char server[SMALLBUF] = "accounts.spotify.com";
     HttpsHandler(Buf, SizeBuf, url, sizeof(url), server, sizeof(server));

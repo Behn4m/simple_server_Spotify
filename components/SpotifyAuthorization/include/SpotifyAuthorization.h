@@ -22,7 +22,7 @@ extern "C" {
 typedef struct Token_t {
     char access_token[500];
     char token_type[20];
-    int expires_in_ms;
+    int  expires_in_ms;
     char refresh_token[500];
     char granted_scope[200];
 } Token_t;
@@ -38,11 +38,19 @@ typedef struct UserInfo_t {
     char Product[30];
 } UserInfo_t;
 
+typedef enum {
+    IDLE = 0,
+    AUTHORIZED = 1,
+    ACTIVE_USER = 2,
+    EXPIRED_USER = 3
+} TokenStatus;
+
 typedef struct {
     QueueHandle_t *BufQueue;
     char    code[MEDIUMBUF];
     Token_t token;        // Nested struct for token information
     UserInfo_t userInfo;  // Nested struct for user information
+    TokenStatus    status;
 } SpotifyInterfaceHandler_t;
 
 /**

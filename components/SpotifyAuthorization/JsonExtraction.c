@@ -14,7 +14,12 @@ static const char *TAG = "JsonExTraction";
  * @param[in] SizeJson The size of the JSON string.
  * @return This function does not return a value.
  */
-void ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson, char *access_token, char *token_type, char *refresh_token, char *granted_scope, int *expires_in_ms)
+void ExtractionJsonParamForFindAccessToken( char *Json, size_t SizeJson, 
+                                            char *access_token, 
+                                            char *token_type, 
+                                            char *refresh_token, 
+                                            char *granted_scope, 
+                                            int  *expires_in_ms)
 {
     cJSON *J_Token = cJSON_Parse(Json);
     if (J_Token == NULL)
@@ -39,7 +44,7 @@ void ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson, char *ac
     }
     if (expiresInObj != NULL && expiresInObj->type == cJSON_Number)
     {
-        expires_in_ms = expiresInObj->valueint;
+        // *expires_in_ms = expiresInObj->valueint;
     }
     if (refreshTokenObj != NULL && refreshTokenObj->type == cJSON_String)
     {
@@ -52,11 +57,11 @@ void ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson, char *ac
         granted_scope[sizeof(granted_scope) - 1] = '\0';
     }
     // Print the values from the TokenParam struct
-    ESP_LOGI(TAG,"Access Token: %s\n", access_token);
-    ESP_LOGI(TAG,"Token Type: %s\n", token_type);
-    ESP_LOGI(TAG,"Expires In: %d seconds\n", *expires_in_ms);
-    ESP_LOGI(TAG,"Refresh Token: %s\n", refresh_token);
-    ESP_LOGI(TAG,"Scope: %s\n", granted_scope);
+    ESP_LOGI(TAG,"Access Token: %s", access_token);
+    ESP_LOGI(TAG,"Token Type: %s", token_type);
+    // ESP_LOGI(TAG,"Expires In: %d seconds\n", *expires_in_ms);
+    ESP_LOGI(TAG,"Refresh Token: %s", refresh_token);
+    ESP_LOGI(TAG,"Scope: %s", granted_scope);
     cJSON_Delete(J_Token);
 }
 

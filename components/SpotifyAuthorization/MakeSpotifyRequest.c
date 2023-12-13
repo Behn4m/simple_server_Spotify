@@ -1,6 +1,7 @@
 #include "SpotifyAuthorization.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "HttpsRequests.h"
 #include "cJSON.h"
 #include "GlobalInit.h"
@@ -17,19 +18,32 @@ static const char *TAG = "SpotifyTask";
 */
 bool Spotify_FindCode(char *Res, uint16_t SizeRes)
 {
-    bool FLGFindCode = false;
-    for (uint16_t i = 0; i < SizeRes; i++)
+    char *codestring = {"code"};
+    uint16_t codeLength = strlen(codestring);
+
+    if (Res == NULL || SizeRes < codeLength) 
     {
-        if (Res[i] == 'c')
+        // Invalid input, either null pointer or insufficient buffer size
+        return false;
+    }
+
+    for (uint16_t i = 0; i <= SizeRes - codeLength; ++i) 
+    {
+        bool found = true;
+        for (uint16_t j = 0; j < codeLength; ++j)
         {
-            if (Res[i + 1] == 'o' && Res[i + 2] == 'd' && Res[i + 3] == 'e')
+            if (Res[i + j] != codestring[j])
             {
-                ESP_LOGI(TAG,"The CODE found in the response!");
-                FLGFindCode = true;
+                found = false;
+                break;
             }
         }
+        if (found)
+        {
+            return true; // Found the access token substring
+        }
     }
-    return FLGFindCode;
+    return false; // Access token substring not found
 }
 
 /**
@@ -38,35 +52,34 @@ bool Spotify_FindCode(char *Res, uint16_t SizeRes)
 * @param[in] SizeRes The size of the character array.
 * @return Returns true if the token is found and the corresponding JSON object is successfully extracted, otherwise returns false.
 */
-bool Spotify_FindToken(char *Res, uint16_t SizeRes)
-{
-    uint8_t FlgFindToken = 0;
-    uint32_t SizeOfJson = 0;
-    char json[MEDIUMBUF] = {0};
-    for (uint16_t i = 0; i < SizeRes; i++)
+bool Spotify_FindToken(char *Res, uint16_t SizeRes) {
+    const char *tokenString = "{\"access_token\"";
+    uint16_t tokenLength = strlen(tokenString);
+
+    if (Res == NULL || SizeRes < tokenLength)
     {
-        if (Res[i] == '{')
+        // Invalid input, either null pointer or insufficient buffer size
+        return false;
+    }
+
+    for (uint16_t i = 0; i <= SizeRes - tokenLength; ++i) 
+    {
+        bool found = true;
+        for (uint16_t j = 0; j < tokenLength; ++j)
         {
-            if (Res[i + 1] == '"' && Res[i + 2] == 'a' && Res[i + 3] == 'c' && Res[i + 4] == 'c' && Res[i + 5] == 'e' && Res[i + 6] == 's')
+            if (Res[i + j] != tokenString[j])
             {
-                FlgFindToken = 1;
-                SizeOfJson = i;
+                found = false;
+                break;
             }
         }
-        if (Res[i] == '}')
+        if (found)
         {
-            for (uint16_t j = SizeOfJson; j <= i; j++)
-            {
-                json[j - SizeOfJson] = Res[j];
-            }
-            memset(Res, 0x000, SizeRes);
-            for (uint16_t j = 0; j < sizeof(json); j++)
-            {
-                Res[j] = json[j];
-            }
+            return true; // Found the access token substring
         }
     }
-    return FlgFindToken;
+
+    return false; // Access token substring not found
 }
 
 /**

@@ -40,7 +40,7 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
     FailToFindCodeSemaphore = xSemaphoreCreateBinary();
     InterfaceHandler.status = IDLE; 
     InterfaceHandler = *SpotifyInterfaceHandler;
-    xTaskCreate(&Spotify_MainTask, "Spotify_MainTask", SpotifyTaskStackSize, NULL, 1, NULL);
+    xTaskCreate(&Spotify_MainTask, "Spotify_MainTask", SpotifyTaskStackSize, NULL, 9, NULL);
     return true;
 }
 
@@ -310,16 +310,6 @@ static void Spotify_MainTask(void *pvparameters)
     bool TokenSaved = 0;
     bool RefreshTokenSaved = 0;
     
-    // check if Spotify already authorized or not
-    // if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, 1) == pdTRUE)
-    // {
-    //     SpotifyAuthorizationSuccessful = Spotify_TokenRenew(InterfaceHandler.code);
-    // }
-    // else
-    // {
-    //     SpotifyAuthorizationSuccessful = 0;
-    // }
-
     while (1)
     {
         if (InterfaceHandler.status == ACTIVE_USER)
@@ -354,6 +344,8 @@ static void Spotify_MainTask(void *pvparameters)
         {
             Spotify_GetToken(InterfaceHandler.code);
         }
+        
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 /**
@@ -365,36 +357,32 @@ static void Spotify_MainTask(void *pvparameters)
 void Spotify_GetToken(char *code)
 {
     ESP_LOGI(TAG, "Spotify_GetToken RUN");
-    char receivedData[LONGBUF];
+    char receivedData[LONGBUF], JSON[LONGBUF];
+    memset(receivedData, 0x0, sizeof(receivedData));
 
-    // Send request to get TOKEN
+    // Send request to get Response
     Spotify_SendTokenRequest(receivedData, sizeof(receivedData), InterfaceHandler.code, sizeof(InterfaceHandler.code));
     
-    memset(receivedData, 0x0, sizeof(receivedData));
-    if (xSemaphoreTake(GetResponseSemaphore, portMAX_DELAY) == pdTRUE)
+    if (xSemaphoreTake(GetResponseSemaphore, portMAX_DELAY*10) == pdTRUE)
     {
         if (xQueueReceive(*(InterfaceHandler.BufQueue), receivedData, portMAX_DELAY) == pdTRUE)
         {
             ESP_LOGI(TAG, "Received TOKEN by Queue: %s\n", receivedData);
         }
-        // 3-  extract json from RAW response
-        if (Spotify_FindToken(receivedData, sizeof(receivedData)) != 1)
-        {
-            vTaskDelay((60 * Sec) / portTICK_PERIOD_MS);
-            Spotify_SendTokenRequest(receivedData, sizeof(receivedData), receivedData, sizeof(receivedData));
-            if (Spotify_FindToken(receivedData, sizeof(receivedData)) != 1)
-            {
-                ESP_LOGI(TAG, "fail to get Token !!!");
-                esp_restart();
-            }
-        }
-
-        if (ExtractionJsonParamForFindAccessToken(receivedData, sizeof(receivedData), 
-                                                  InterfaceHandler.token.access_token,
-                                                  InterfaceHandler.token.token_type, 
-                                                  InterfaceHandler.token.refresh_token, 
-                                                  InterfaceHandler.token.granted_scope, 
-                                                  InterfaceHandler.token.expires_in_ms) == true)
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Timeout, Spotify dont respond"); 
+    }
+    // extract keys from JSON
+    if (ExtractJsonFromHttpResponse(receivedData, receivedData) == true)
+    {
+        if (ExtractionJsonParamForFindAccessToken(receivedData, LONGBUF, 
+                                                InterfaceHandler.token.access_token,
+                                                InterfaceHandler.token.token_type, 
+                                                InterfaceHandler.token.refresh_token, 
+                                                InterfaceHandler.token.granted_scope, 
+                                                InterfaceHandler.token.expires_in_ms) == true)
         {
             InterfaceHandler.status = ACTIVE_USER;
             ESP_LOGI(TAG, "ACTIVE_USER");
@@ -404,6 +392,10 @@ void Spotify_GetToken(char *code)
             InterfaceHandler.status = IDLE;
             ESP_LOGE(TAG, "TOKEN extracction failed, back to IDLE state");
         }
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Something went wrong, response doesn't include JSON file");
     }
 }
 

@@ -9,71 +9,97 @@ extern  struct  UserInfo_t UserInfo;
 static const char *TAG = "JsonExTraction";
 
 /**
+ * @brief Extracts JSON content from an HTTP response string.
+ * This function separates the JSON content from an HTTP response header and extracts the JSON string.
+ * @param[in] HttpResponse The input string containing an HTTP response with JSON content.
+ * @param[out] Json The output buffer to store the extracted JSON content.
+ * @return Returns true if the JSON content is successfully extracted, otherwise false.
+ */
+bool ExtractJsonFromHttpResponse(char *HttpResponse, char *Json) 
+{
+    const char *jsonPrefix = "\r\n\r\n";
+    char *jsonStart = strstr(HttpResponse, jsonPrefix);
+
+    if (jsonStart != NULL) 
+    {
+        // Move the pointer to the start of JSON content
+        jsonStart += strlen(jsonPrefix);
+        strcpy(Json, jsonStart);
+        return true;
+    }
+
+    return false;
+}
+
+/**
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a TokenParam structure.
  * @param[in] Json The input JSON string.
  * @param[in] SizeJson The size of the JSON string.
  * @return fasle if fail, true if finish successfull.
  */
-bool ExtractionJsonParamForFindAccessToken( char *Json, size_t SizeJson, 
-                                            char *access_token, 
-                                            char *token_type, 
-                                            char *refresh_token, 
-                                            char *granted_scope, 
-                                            int  *expires_in_ms)
-{
-    cJSON *J_Token = cJSON_Parse(Json);
-    if (J_Token == NULL)
+bool ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson,
+                                           char *access_token,
+                                           char *token_type,
+                                           char *refresh_token,
+                                           char *granted_scope,
+                                           int *expires_in_ms) 
     {
-        ESP_LOGE(TAG,"Failed to parse JSON\n");
+    cJSON *J_Token = cJSON_Parse(Json);
+    if (J_Token == NULL) 
+    {
+        ESP_LOGE(TAG, "Failed to parse JSON\n");
         return false;
     }
-    // Extract values from the cJSON object
+
     cJSON *accessTokenObj = cJSON_GetObjectItem(J_Token, "access_token");
     cJSON *tokenTypeObj = cJSON_GetObjectItem(J_Token, "token_type");
-    cJSON *expiresInObj = cJSON_GetObjectItem(J_Token, "expires_in_ms");
+    cJSON *expiresInObj = cJSON_GetObjectItem(J_Token, "expires_in");
     cJSON *refreshTokenObj = cJSON_GetObjectItem(J_Token, "refresh_token");
     cJSON *scopeObj = cJSON_GetObjectItem(J_Token, "scope");
-    
-    if (accessTokenObj != NULL && accessTokenObj->type == cJSON_String)
+
+    if (accessTokenObj != NULL && accessTokenObj->type == cJSON_String) 
     {
-        if (access_token != NULL && access_token_str_size > 0)
+        if (access_token != NULL && access_token_str_size > 0) 
         {
             strncpy(access_token, accessTokenObj->valuestring, access_token_str_size - 1);
             access_token[access_token_str_size - 1] = '\0';
         }
     }
-    if (tokenTypeObj != NULL && tokenTypeObj->type == cJSON_String)
+    if (tokenTypeObj != NULL && tokenTypeObj->type == cJSON_String) 
     {
-        if(token_type != NULL && token_type_str_size > 0)
+        if (token_type != NULL && token_type_str_size > 0) 
         {
             strncpy(token_type, tokenTypeObj->valuestring, token_type_str_size - 1);
             token_type[token_type_str_size - 1] = '\0';
         }
     }
-    if (expiresInObj != NULL && expiresInObj->type == cJSON_Number)
+    if (expiresInObj != NULL && expiresInObj->type == cJSON_Number) 
     {
         // *expires_in_ms = expiresInObj->valueint;
     }
-    if (refreshTokenObj != NULL && refreshTokenObj->type == cJSON_String)
+    if (refreshTokenObj != NULL && refreshTokenObj->type == cJSON_String) 
     {
-        if(refresh_token != NULL && refresh_token_str_size > 0)
+        if (refresh_token != NULL && refresh_token_str_size > 0) 
         {
             strncpy(refresh_token, refreshTokenObj->valuestring, refresh_token_str_size - 1);
             refresh_token[refresh_token_str_size - 1] = '\0';
         }
     }
-    if (scopeObj != NULL && scopeObj->type == cJSON_String)
+    if (scopeObj != NULL && scopeObj->type == cJSON_String) 
     {
-        if(granted_scope != NULL && granted_scope_str_size > 0)
-        strncpy(granted_scope, scopeObj->valuestring, granted_scope_str_size - 1);
-        granted_scope[granted_scope_str_size - 1] = '\0';
+        if (granted_scope != NULL && granted_scope_str_size > 0) 
+        {
+            strncpy(granted_scope, scopeObj->valuestring, granted_scope_str_size - 1);
+            granted_scope[granted_scope_str_size - 1] = '\0';
+        }
     }
-    // Print the values from the TokenParam struct
-    ESP_LOGI(TAG,"Access Token: %s", access_token);
-    ESP_LOGI(TAG,"Token Type: %s", token_type);
-    // ESP_LOGI(TAG,"Expires In: %d seconds\n", *expires_in_ms);
-    ESP_LOGI(TAG,"Refresh Token: %s", refresh_token);
-    ESP_LOGI(TAG,"Scope: %s", granted_scope);
+
+    ESP_LOGI(TAG, "Access Token: %s", access_token);
+    ESP_LOGI(TAG, "Token Type: %s", token_type);
+    // ESP_LOGI(TAG, "Expires In: %d seconds\n", *expires_in_ms);
+    ESP_LOGI(TAG, "Refresh Token: %s", refresh_token);
+    ESP_LOGI(TAG, "Scope: %s", granted_scope);
+
     cJSON_Delete(J_Token);
     return true;
 }

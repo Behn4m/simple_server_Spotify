@@ -5,6 +5,15 @@ extern "C" {
 #define  JSON_EXTRACTION_H_
 
 /**
+ * @brief Extracts JSON content from an HTTP response string.
+ * This function separates the JSON content from an HTTP response header and extracts the JSON string.
+ * @param[in] HttpResponse The input string containing an HTTP response with JSON content.
+ * @param[out] Json The output buffer to store the extracted JSON content.
+ * @return Returns true if the JSON content is successfully extracted, otherwise false.
+ */
+bool ExtractJsonFromHttpResponse(char *HttpResponse, char *Json); 
+
+/**
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a TokenParam structure.
  * @param[in] Json The input JSON string.
  * @param[in] SizeJson The size of the JSON string.

@@ -356,46 +356,12 @@ static void Spotify_MainTask(void *pvparameters)
         }
     }
 }
-
 /**
- * The authorization code grant type is used to obtain both access
- * tokens and refresh tokens and is optimized for confidential clients.
- * Since this is a redirection-based flow, the client must be capable of
-   interacting with the resource owner's user-agent (typically a web
-   browser) and capable of receiving incoming requests (via redirection)
-   from the authorization server.
- **  +----------+
-     |          |
-     | Resource |
-     |   Owner  |
-     |          |
-     +----------+
-          ^
-          |
-         (B)
-     +----|-----+          Client Identifier      +---------------+
-     |         -+----(A)-- & Redirection URI ---->|               |
-     |  User-   |                                 | Authorization |
-     |  Agent  -+----(B)-- User authenticates --->|     Server    |
-     |          |                                 |               |
-     |         -+----(C)-- Authorization Code ---<|               |
-     +-|----|---+                                 +---------------+
-       |    |                                         ^      v
-      (A)  (C)                                        |      |
-       |    |                                         |      |
-       ^    v                                         |      |
-     +---------+                                      |      |
-     |         |>---(D)-- Authorization Code ---------'      |
-     |  Client |          & Redirection URI                  |
-     |         |                                             |
-     |         |<---(E)----- Access Token -------------------'
-     +---------+       (w/ Optional Refresh Token)
- * @brief This function do all thing for authorisation in Spotify web api
- ** we have 4 stage for pass authorisation in Spotify server
- * 2- send request for  access token
- * 3- extract json from RAW response
- * 4- extract JSON and get param from needed parameter
- */
+ * @brief Retrieves the Spotify token based on the provided code.
+ * This function sends a request to obtain the Spotify token and processes the response data.
+ * @param code The code used to request the Spotify token.
+ * @return None
+ * */
 void Spotify_GetToken(char *code)
 {
     ESP_LOGI(TAG, "Spotify_GetToken RUN");
@@ -430,13 +396,13 @@ void Spotify_GetToken(char *code)
                                                   InterfaceHandler.token.granted_scope, 
                                                   InterfaceHandler.token.expires_in_ms) == true)
         {
-                    InterfaceHandler.status = ACTIVE_USER;
-                    ESP_LOGD(TAG, "ACTIVE_USER");
-
+            InterfaceHandler.status = ACTIVE_USER;
+            ESP_LOGI(TAG, "ACTIVE_USER");
         }
         else
         {
-
+            InterfaceHandler.status = IDLE;
+            ESP_LOGE(TAG, "TOKEN extracction failed, back to IDLE state");
         }
     }
 }

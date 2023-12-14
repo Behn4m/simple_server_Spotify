@@ -32,6 +32,23 @@ extern "C" {
 #define Country_str_size        30
 #define Product_str_size        30
 
+#define IDLE                    0
+#define AUTHORIZED              1
+#define ACTIVE_USER             2
+#define EXPIRED_USER            3
+
+#define NO_COMMAND              0
+#define PLAY_PAUSE              1
+#define PLAY_NEXT               2
+#define PLAY_PREV               3
+#define STOP                    4
+#define PLAY                    5
+#define PAUSE                   6
+#define GET_NOW_PLAYING         7
+#define GET_USER_INFO           8
+#define GET_SONG_IMAGE_URL      9
+#define GET_ARTIST_IMAGE_URL    10
+
 typedef struct Token_t {
     char access_token[access_token_str_size];
     char token_type[token_type_str_size];
@@ -52,18 +69,33 @@ typedef struct UserInfo_t {
 } UserInfo_t;
 
 typedef enum {
-    IDLE = 0,
-    AUTHORIZED = 1,
-    ACTIVE_USER = 2,
-    EXPIRED_USER = 3
-} TokenStatus;
+    idle = 0,
+    authorized = 1,
+    active_user = 2,
+    expired_user = 3
+} Status_t;
+
+typedef enum {
+    NoCommand =         0,
+    PlayPause =         1,
+    PlayNext =          2,
+    PlayPrev =          3,
+    Stop =              4,
+    Play =              5,
+    Pause =             6,
+    GetNowPlaying =     7,
+    GetUserInfo =       8,
+    GetSongImageUrl =   9,
+    GetArtisImageUrl =  10,
+} Command_t;
 
 typedef struct {
     QueueHandle_t *BufQueue;
     char    code[MEDIUMBUF];
     Token_t token;        // Nested struct for token information
     UserInfo_t userInfo;  // Nested struct for user information
-    TokenStatus    status;
+    Status_t    status;
+    Command_t   command;
 } SpotifyInterfaceHandler_t;
 
 /**

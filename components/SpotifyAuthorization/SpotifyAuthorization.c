@@ -4,11 +4,6 @@
 #include "GlobalInit.h"
 #include "JsonExtraction.h"
 
-#define IDLE            0
-#define AUTHORIZED      1
-#define ACTIVE_USER     2
-#define EXPIRED_USER    3
-
 // ****************************** Extern Variables 
 extern struct Token_t TokenParam;
 extern struct UserInfo_t UserInfo;
@@ -27,6 +22,9 @@ static SpotifyInterfaceHandler_t  InterfaceHandler;
 
 // ****************************** Local Functions 
 void Spotify_GetToken(char *code);
+bool Spotify_IsTokenValid(void);
+bool Spotify_SendCommand(Command_t *command);
+void Spotify_RenewAccessToken(Token_t *token);
 static void Spotify_MainTask(void *pvparameters);
 
 /**
@@ -40,6 +38,7 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
     FailToFindCodeSemaphore = xSemaphoreCreateBinary();
     InterfaceHandler.status = IDLE; 
     InterfaceHandler = *SpotifyInterfaceHandler;
+    InterfaceHandler.command = NO_COMMAND;
     xTaskCreate(&Spotify_MainTask, "Spotify_MainTask", SpotifyTaskStackSize, NULL, 9, NULL);
     return true;
 }
@@ -312,42 +311,51 @@ static void Spotify_MainTask(void *pvparameters)
     
     while (1)
     {
-        if (InterfaceHandler.status == ACTIVE_USER)
+        switch (InterfaceHandler.status)
         {
-
-        }
-        else if (InterfaceHandler.status == EXPIRED_USER)       
-        {
-            if (RefreshTokenSaved == 1) //RefreshTokenSaved
+            case IDLE:
             {
-                SpiffsRemoveFile(SpotifyConfigAddressInSpiffs);
-                SaveFileInSpiffsWithTxtFormat(SpotifyConfigAddressInSpiffs, "refresh_token", InterfaceHandler.token.refresh_token, NULL, NULL);
+                // wait for user to ask for authentication
+                break;
             }
-            if (TokenSaved == 0) //TokenSaved
+            case AUTHORIZED:
             {
-                // SaveFileInSpiffsWithTxtFormat(SpotifyConfigAddressInSpiffs, "access_token", TokenParam.access_token,
-                //                               "token_type", TokenParam.token_type, "expires_in_ms", TokenParam.expires_in_ms, "refresh_token", TokenParam.refresh_token, "scope", TokenParam.scope, NULL, NULL);
-                SaveFileInSpiffsWithTxtFormat(SpotifyConfigAddressInSpiffs, "refresh_token", InterfaceHandler.token.refresh_token, NULL, NULL);
-                RefreshTokenSaved = 1;
-                TokenSaved = 1;
+                Spotify_GetToken(InterfaceHandler.code);
+                break;
             }
-            char receivedData[LONGBUF];
-            ESP_LOGI(TAG, "SpotifyAuth has done!");
-            vTaskDelay((8 * Sec) / portTICK_PERIOD_MS);
-            //GetUserStatus(InterfaceHandler.token.access_token);
-            GetCurrentPlaying();
-            vTaskDelay(((Hour * Sec) - 100) / portTICK_PERIOD_MS);
-            // DO WE NEED THIS?
-            SendRequest_ExchangeTokenWithRefreshToken(receivedData, sizeof(receivedData), InterfaceHandler.token.refresh_token);
-        }
-        else if (InterfaceHandler.status == AUTHORIZED)
-        {
-            Spotify_GetToken(InterfaceHandler.code);
+            case ACTIVE_USER:
+            {
+                if (Spotify_IsTokenValid() != true)
+                {
+                    InterfaceHandler.status = EXPIRED_USER;
+                }
+                else
+                {
+                    if (InterfaceHandler.command != NO_COMMAND)
+                    {
+                        if (Spotify_SendCommand(&InterfaceHandler.command) == true)
+                        {
+                            ESP_LOGI(TAG, "Command succssefully applied");
+                        }
+                        else
+                        {
+                            ESP_LOGE(TAG, "Command not applied");   
+                        }
+                        InterfaceHandler.command = NO_COMMAND;
+                    }
+                }
+                break;
+            }
+            case EXPIRED_USER:     
+            {
+                void Spotify_RenewAccessToken(Token_t *token);
+            }
         }
         
-        vTaskDelay(pdMS_TO_TICKS(100));
+    vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
+
 /**
  * @brief Retrieves the Spotify token based on the provided code.
  * This function sends a request to obtain the Spotify token and processes the response data.
@@ -373,6 +381,8 @@ void Spotify_GetToken(char *code)
     else
     {
         ESP_LOGE(TAG, "Timeout, Spotify dont respond"); 
+        // TO DO: the handler should reset here
+
     }
     // extract keys from JSON
     if (ExtractJsonFromHttpResponse(receivedData, receivedData) == true)
@@ -391,11 +401,102 @@ void Spotify_GetToken(char *code)
         {
             InterfaceHandler.status = IDLE;
             ESP_LOGE(TAG, "TOKEN extracction failed, back to IDLE state");
+            // TO DO: the handler should reset here
         }
     }
     else
     {
         ESP_LOGE(TAG, "Something went wrong, response doesn't include JSON file");
+        // TO DO: the handler should reset here
     }
 }
 
+/**
+ * @brief Renews the Spotify access token using the refresh token.
+ * This function renews the Spotify access token by utilizing the provided refresh token.
+ * The refreshed access token will be updated in the provided token structure.
+ * @param token A pointer to the Token_t structure containing the refresh token.
+ */
+void Spotify_RenewAccessToken(Token_t *token)
+{
+    // TO DO: send request and get new access token, and save it on memory
+}
+
+/**
+ * @brief 
+ * @param code T
+ * @return true if valid, false if not valid
+ * */
+bool Spotify_IsTokenValid(void)
+{
+    // TO DO: check the time of last access_token update
+    return true;
+}
+
+/**
+ * @brief Sends a command to control Spotify.
+ * This function sends various commands to control the Spotify application based on the given command value.
+ * @param command A pointer to the command to be sent to Spotify.
+ * @return true if the command is successfully sent, false otherwise.
+ * 
+ * @note Possible command values include:
+ * - NO_COMMAND: Waits for a command.
+ * - PLAY: Sends the PLAY command to Spotify.
+ * - PAUSE: Sends the PAUSE command to Spotify.
+ * - STOP: Sends the STOP command to Spotify.
+ * - PLAY_PAUSE: Sends the PLAY_PAUSE command to Spotify.
+ * - PLAY_NEXT: Sends the PLAY_NEXT command to Spotify.
+ * - PLAY_PREV: Sends the PLAY_PREV command to Spotify.
+ * - GET_NOW_PLAYING: Sends the GET_NOW_PLAYING command to Spotify.
+ * - GET_USER_INFO: Sends the GET_USER_INFO command to Spotify.
+ * - GET_SONG_IMAGE_URL: Sends the GET_SONG_IMAGE_URL command to Spotify.
+ * - GET_ARTIST_IMAGE_URL: Sends the GET_ARTIST_IMAGE_URL command to Spotify.
+ */
+bool Spotify_SendCommand(Command_t *command)
+{
+    bool retValue = true;
+    int userCommand = *command;
+    ESP_LOGI(TAG, "user Command is %d", userCommand);
+    switch (userCommand)
+    {
+        // To DO: handle comamnds by sending request to Spotify and get the respond 
+        case NO_COMMAND:
+            /* wait for command */
+            break;                        
+        case PLAY:
+            /* Send PLAY command to Spotify */
+            break;
+        case PAUSE:
+            /* Send PAUSE command to Spotify */
+            break;
+        case STOP:
+            /* Send STOP command to Spotify */
+            break;
+        case PLAY_PAUSE:
+            /* Send PLAY_PAUSE command to Spotify */
+            break;
+        case PLAY_NEXT:
+            /* Send PLAY_NEXT command to Spotify */
+            break;
+        case PLAY_PREV:
+            /* Send PLAY_PREV command to Spotify */
+            break;
+        case GET_NOW_PLAYING:
+            /* Send GET_NOW_PLAYING command to Spotify */
+            break;
+        case GET_USER_INFO:
+            /* Send GET_USER_INFO command to Spotify */
+            break;
+        case GET_SONG_IMAGE_URL:
+            /* Send GET_SONG_IMAGE_URL command to Spotify */
+            break;
+        case GET_ARTIST_IMAGE_URL:
+            /* Send GET_ARTIST_IMAGE_URL command to Spotify */
+            break;
+        default:
+            /* Handle any other case or do nothing */
+            break;
+    }
+
+    return retValue;
+}

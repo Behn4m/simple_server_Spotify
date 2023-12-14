@@ -26,7 +26,11 @@
         "esp_log.h": "c",
         "esp_netif.h": "c",
         "httpsrequests.h": "c",
-        "sdkconfig.h": "c"
+        "sdkconfig.h": "c",
+        "spotifyinterface.h": "c",
+        "jsonextraction.h": "c",
+        "stdlib.h": "c",
+        "stdio.h": "c"
     },
     "cSpell.words": [
         "Athurisiation"

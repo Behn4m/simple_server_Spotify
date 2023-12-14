@@ -1,4 +1,4 @@
-idf_component_register(SRCS "JsonExtraction.c" "SpotifyAuthorization.c" "MakeSpotifyRequest.c" 
+idf_component_register(SRCS "JsonExtraction.c" "SpotifyInterface.c" "MakeSpotifyRequest.c" 
                     INCLUDE_DIRS "include" 
                     EMBED_TXTFILES "certs/servercert.pem"
                                    "certs/prvtkey.pem"

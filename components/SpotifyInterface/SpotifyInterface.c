@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include "SpotifyAuthorization.h"
+#include "SpotifyInterface.h"
 #include "MakeSpotifyRequest.h"
 #include "GlobalInit.h"
 #include "JsonExtraction.h"

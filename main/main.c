@@ -2,7 +2,7 @@
 #include "GlobalInit.h"
 #include "nvsFlash.h"
 #include "WiFiConfig.h"
-#include "SpotifyAuthorization.h"
+#include "SpotifyInterface.h"
 
 // ****************************** GLobal Variables ****************************** //
 QueueHandle_t BufQueue1;

@@ -38,6 +38,7 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
     if (InterfaceHandler.CheckAddressInSpiffs != NULL && 
         InterfaceHandler.ReadTxtFileFromSpiffs != NULL && 
         InterfaceHandler.WriteTxtFileToSpiffs != NULL &&
+        InterfaceHandler.ConfigAddressInSpiffs != NULL &&
         InterfaceHandler.HttpsResponseReadySemaphore != NULL &&
         InterfaceHandler.HttpsBufQueue != NULL)
     {
@@ -84,10 +85,10 @@ static esp_err_t Spotify_RequestDataAccess(httpd_req_t *req)
     char loc_url[SMALLBUF + 150];
     if ((InterfaceHandler.status == IDLE))
     {
-        if (SpiffsExistenceCheck(SpotifyConfigAddressInSpiffs) == true)
+        if (SpiffsExistenceCheck(InterfaceHandler.ConfigAddressInSpiffs) == true)
         {
             char ReadBuf[MEDIUMBUF];
-            SpiffsRead(SpotifyConfigAddressInSpiffs, ReadBuf, sizeof(ReadBuf));
+            SpiffsRead(InterfaceHandler.ConfigAddressInSpiffs, ReadBuf, sizeof(ReadBuf));
             ESP_LOGI(TAG, "refresh token found on device");
             InterfaceHandler.status = EXPIRED_USER;
         }
@@ -266,7 +267,7 @@ bool StartMDNSService()
 bool Spotify_TokenRenew(QueueHandle_t HttpsBufQueue)
 {
     char receivedData[LONGBUF];
-    ReadTxtFileFromSpiffs(SpotifyConfigAddressInSpiffs, "refresh_token", InterfaceHandler.token.refresh_token, NULL, NULL);
+    ReadTxtFileFromSpiffs(InterfaceHandler.ConfigAddressInSpiffs, "refresh_token", InterfaceHandler.token.refresh_token, NULL, NULL);
     SendRequest_ExchangeTokenWithRefreshToken(receivedData, sizeof(receivedData), InterfaceHandler.token.refresh_token);
     if (xQueueReceive(HttpsBufQueue, receivedData, SPOTIFY_RESPONSE_TIMEOUT) == pdTRUE)
     {

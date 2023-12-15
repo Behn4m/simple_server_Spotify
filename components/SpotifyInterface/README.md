@@ -3,14 +3,13 @@
 This module facilitates Spotify authorization and communication with the Spotify web service using ESP-IDF (Espressif IoT Development Framework).
 
 ## Table of Contents
+
 - [Introduction](#introduction)
 - [File Structure](#file-structure)
 - [Dependencies](#dependencies)
 - [Features](#features)
-- [Usage](#usage)
 - [API Reference](#api-reference)
-- [Installation](#installation)
-
+- [How to use it](#how-to-use-it)
 
 ## Introduction
 
@@ -40,22 +39,25 @@ The Spotify Interface Module is designed to handle authorization and communicati
 ## API Reference
 
 **Spotify_TaskInit:** Checks if all mandatory fileds are addressed
+
 ```c
 bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler);
 ```
 
 **Spotify_PlayBackCommand:** Gets the command and sends releavant request to Spotify web service
+
 ```c
 bool Spotify_IsConnected(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler);
 ```
 
-
 **Spotify_IsConnected:** Checks if Authorization is done successfully
 ```c
+
 bool Spotify_PlaybackCommand(char *command);
 ```
 
 ## How to use it
+
 This guide provides instructions on how to use the Spotify Interface Handler module in your project. The Spotify Interface Handler facilitates interactions with the Spotify service, allowing you to perform various operations like sending commands, managing tokens, and checking the service's status.
 
 **Step 1:** Include Header File
@@ -65,6 +67,7 @@ This guide provides instructions on how to use the Spotify Interface Handler mod
 ```
 
 **Step 2:** Create an Instance
+
 ```c
 SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 ```

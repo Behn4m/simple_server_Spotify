@@ -100,7 +100,7 @@ typedef struct {
     Status_t    status;
     Command_t   command;
     QueueHandle_t *HttpsBufQueue;
-    SemaphoreHandle_t HttpsResponseReadySemaphore;
+    SemaphoreHandle_t *HttpsResponseReadySemaphore;
     char *ConfigAddressInSpiffs;
     ReadTxtFileFromSpiffsPtr ReadTxtFileFromSpiffs;
     WriteTxtFileToSpiffsPtr WriteTxtFileToSpiffs;

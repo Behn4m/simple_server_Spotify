@@ -10,7 +10,6 @@ extern struct UserInfo_t UserInfo;
 extern QueueHandle_t BufQueue1;
 
 // ****************************** Local Variables 
-bool SpotifyAuthorizationSuccessful = 0;
 static const char *TAG = "SpotifyTask";
 static const char *TAG_APP = "SPOTIFY";
 static SpotifyInterfaceHandler_t  InterfaceHandler;
@@ -285,7 +284,6 @@ bool Spotify_TokenRenew(QueueHandle_t HttpsBufQueue)
     }
     else
     {
-        // SpotifyAuthorizationSuccessful = 0;
         ESP_LOGW(TAG, "timeout - Spotify not respond!");
         return false;
     }   

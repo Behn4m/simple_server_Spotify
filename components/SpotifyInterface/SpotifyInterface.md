@@ -37,61 +37,39 @@ The Spotify Interface Module is designed to handle authorization and communicati
 - Handling user information and tokens securely.
 - Sending commands to Spotify (play, pause, stop, next, previous, etc.).
 
-## Usage
-
-To use this module, include `SpotifyInterface.h` in your ESP-IDF project and link necessary dependencies.
-
 ## API Reference
 
-### Spotify_TaskInit
-Checks if all mandatory fileds are addressed
+**Spotify_TaskInit:** Checks if all mandatory fileds are addressed
 ```c
 bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler);
 ```
 
-### Spotify_PlayBackCommand
-Gets the command and sends releavant request to Spotify web service
+**Spotify_PlayBackCommand:** Gets the command and sends releavant request to Spotify web service
 ```c
 bool Spotify_IsConnected(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler);
 ```
 
 
-### Spotify_IsConnected
-Checks if Authorization is done successfully
+**Spotify_IsConnected:** Checks if Authorization is done successfully
 ```c
 bool Spotify_PlaybackCommand(char *command);
 ```
 
 ## How to use it
-
-# Spotify Interface Handler Usage Guide
-
-## Introduction
-
 This guide provides instructions on how to use the Spotify Interface Handler module in your project. The Spotify Interface Handler facilitates interactions with the Spotify service, allowing you to perform various operations like sending commands, managing tokens, and checking the service's status.
 
-### Initialization Steps
-
-Step 1: Include Header File
+**Step 1:** Include Header File
 
 ```c
 #include "https_spotify.h"
 ```
 
-Step 2: Create an Instance
+**Step 2:** Create an Instance
 ```c
 SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 ```
 
-Step 3: Initialize the Handler
-
-```c
-SpotifyInterfaceHandler.code = "Your_Spotify_Code";
-SpotifyInterfaceHandler.status = IDLE;
-// Initialize other members as needed
-```
-
-Step 4: Setup pointers, assign addresses and the call Initialization Function
+**Step 3:** Initialize the Handler
 
 ```c
 SpotifyInterfaceHandler.HttpsBufQueue = BufQueue1;
@@ -100,7 +78,11 @@ SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
 SpotifyInterfaceHandler.ReadTxtFileFromSpiffs = &SpiffsWrite;
 SpotifyInterfaceHandler.WriteTxtFileToSpiffs = &SaveFileInSpiffsWithTxtFormat;
 SpotifyInterfaceHandler.CheckAddressInSpiffs = &SpiffsExistenceCheck;
+```
 
+**Step 4:** Call Initialization Function
+
+```c
 if (Spotify_TaskInit(&SpotifyInterfaceHandler))
 {
     // Handler initialized successfully
@@ -109,7 +91,8 @@ if (Spotify_TaskInit(&SpotifyInterfaceHandler))
     // Handler initialization failed, handle the error
 }
 ```
-Step 4: Use APIs to send Playback commands to Spotify
+
+**Step 5:** Use APIs to send Playback commands to Spotify
 
 ```c
 if(Spotify_PlaybackCommand("play"))

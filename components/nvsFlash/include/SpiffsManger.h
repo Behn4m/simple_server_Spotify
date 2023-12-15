@@ -16,6 +16,13 @@ extern "C"
 #include "GlobalInit.h"
 
 /**
+ *@brief This function removes a file from SPIFFS.
+ *@param[in] filename The name of the file to be removed.
+ *@return Returns true if the file removal is successful, and false otherwise.
+ */
+bool SpiffsRemoveFile(char *addressInSpiffs);
+
+/**
  *@brief This function does global initialization for Spiffs, checks for save existence, and sends a signal if it exists
  */
 void SpiffsGlobalConfig();

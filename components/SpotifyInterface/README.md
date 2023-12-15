@@ -75,12 +75,12 @@ SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 **Step 3:** Initialize the Handler
 
 ```c
-SpotifyInterfaceHandler.HttpsBufQueue = BufQueue1;
-SpotifyInterfaceHandler.HttpsResponseReadySemaphore = HttpsResponseReadySemaphore;
+SpotifyInterfaceHandler.HttpsBufQueue = QueueSharedWithHttpsModule;
+SpotifyInterfaceHandler.HttpsResponseReadySemaphore = SemaphoreSharedWithHttpsModule;
 SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
-SpotifyInterfaceHandler.ReadTxtFileFromSpiffs = &SpiffsWrite;
-SpotifyInterfaceHandler.WriteTxtFileToSpiffs = &SaveFileInSpiffsWithTxtFormat;
-SpotifyInterfaceHandler.CheckAddressInSpiffs = &SpiffsExistenceCheck;
+SpotifyInterfaceHandler.ReadTxtFileFromSpiffs = &SpiffsWritefunction;
+SpotifyInterfaceHandler.WriteTxtFileToSpiffs = &SpiffsReadfunction;
+SpotifyInterfaceHandler.CheckAddressInSpiffs = &SpiffsAddressCheckfunction;
 ```
 
 **Step 4:** Call Initialization Function

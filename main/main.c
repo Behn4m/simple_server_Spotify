@@ -6,7 +6,7 @@
 
 // ****************************** GLobal Variables ****************************** //
 QueueHandle_t BufQueue1;
-SemaphoreHandle_t GetResponseSemaphore = NULL;
+SemaphoreHandle_t HttpsResponseReadySemaphore = NULL;
 SpotifyInterfaceHandler_t SpotifyInterfaceHandler;  
 
 // ****************************** GLobal Functions ****************************** //
@@ -23,7 +23,12 @@ void app_main(void)
     // lvglGui();
 
 #ifdef SpotifyEnable
-    SpotifyInterfaceHandler.BufQueue = &BufQueue1;
+    SpotifyInterfaceHandler.HttpsBufQueue = &BufQueue1;
+    SpotifyInterfaceHandler.HttpsResponseReadySemaphore = HttpsResponseReadySemaphore;
+    SpotifyInterfaceHandler.ReadTxtFileFromSpiffs = &SpiffsWrite;
+    SpotifyInterfaceHandler.WriteTxtFileToSpiffs = &SaveFileInSpiffsWithTxtFormat;
+    SpotifyInterfaceHandler.CheckAddressInSpiffs = &SpiffsExistenceCheck;
+    
     Spotify_TaskInit(&SpotifyInterfaceHandler);
 #endif
 }

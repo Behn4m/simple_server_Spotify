@@ -11,9 +11,6 @@ extern QueueHandle_t BufQueue1;
 
 // ****************************** Local Variables 
 bool SpotifyAuthorizationSuccessful = 0;
-SemaphoreHandle_t Spotify_FindCodeSemaphore = NULL;
-SemaphoreHandle_t FailToFindCodeSemaphore = NULL;
-extern SemaphoreHandle_t GetResponseSemaphore;
 static const char *TAG = "SpotifyTask";
 static const char *TAG_APP = "SPOTIFY";
 static SpotifyInterfaceHandler_t  InterfaceHandler;
@@ -21,10 +18,10 @@ static SpotifyInterfaceHandler_t  InterfaceHandler;
 // QueueHandle_t Spotify_BufQueue;
 
 // ****************************** Local Functions 
-void Spotify_GetToken(char *code);
-bool Spotify_IsTokenValid(void);
-bool Spotify_SendCommand(Command_t *command);
-void Spotify_RenewAccessToken(Token_t *token);
+static void Spotify_GetToken(char *code);
+static bool Spotify_IsTokenValid(void);
+static bool Spotify_SendCommand(Command_t *command);
+static void Spotify_RenewAccessToken(Token_t *token);
 static void Spotify_MainTask(void *pvparameters);
 
 /**
@@ -34,19 +31,47 @@ static void Spotify_MainTask(void *pvparameters);
  */
 bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
 {
-    Spotify_FindCodeSemaphore = xSemaphoreCreateBinary();
-    FailToFindCodeSemaphore = xSemaphoreCreateBinary();
-    InterfaceHandler.status = IDLE; 
     InterfaceHandler = *SpotifyInterfaceHandler;
+    InterfaceHandler.status = IDLE; 
     InterfaceHandler.command = NO_COMMAND;
-    xTaskCreate(&Spotify_MainTask, "Spotify_MainTask", SpotifyTaskStackSize, NULL, 9, NULL);
+
+    if (InterfaceHandler.CheckAddressInSpiffs != NULL && 
+        InterfaceHandler.ReadTxtFileFromSpiffs != NULL && 
+        InterfaceHandler.WriteTxtFileToSpiffs != NULL &&
+        InterfaceHandler.HttpsResponseReadySemaphore != NULL &&
+        InterfaceHandler.HttpsBufQueue != NULL)
+    {
+        xTaskCreate(&Spotify_MainTask, "Spotify_MainTask", SpotifyTaskStackSize, NULL, 9, NULL);
+        ESP_LOGI(TAG, "Spotify app initiated successfully");
+    }
+    else
+    {
+        ESP_LOGE(TAG, "SpotifyIntefaceHandler is is missing some pointers, can not run the app");
+        return false;
+    }
     return true;
 }
 
-void Spotify_UpdateStatus()
+/**
+ * @brief This checks if the applciaiton is initiated and connected to Spotify web service
+ * @param SpotifyInterfaceHandler as the handler
+ * @return true if everything is OK, flase for ERROR
+ */
+bool Spotify_IsConnected(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
 {
-    GetCurrentPlaying();
-    ESP_LOGI(TAG, "Trying to get NOW PLAYING");
+    // TO DO: implement the funciton
+    return true;
+}
+
+/**
+ * @brief This function get and apply the command to Spotify service.
+ * @param command could be play, pause, stop, next, previous, user_info, song_img, artist_img, etc.  
+ * @return true if function successfully sent the command to Spotify
+ */
+bool Spotify_PlaybackCommand(char *command)
+{
+    // TO DO: implement the funciton
+    return true;
 }
 
 /**
@@ -99,7 +124,6 @@ static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *req)
         if (Spotify_FindCode(Buf, sizeof(Buf)) == true)
         {
             vTaskDelay(Sec / portTICK_PERIOD_MS);
-            xSemaphoreGive(Spotify_FindCodeSemaphore);
             strncpy(InterfaceHandler.code, Buf, sizeof(Buf));
             InterfaceHandler.status = AUTHORIZED;
             ESP_LOGI(TAG, "CODE copied in the Handler: %s\n", InterfaceHandler.code);
@@ -108,12 +132,9 @@ static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *req)
         {
             ESP_LOGE(TAG, "response does not include code at the begining ");
         }
-        
     }
     else
     {
-        xSemaphoreGive(FailToFindCodeSemaphore);
-        sprintf(Buf, "BAD ARGS");
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_set_status(req, HTTPD_500);
         httpd_resp_send(req, Buf, HTTPD_RESP_USE_STRLEN);
@@ -126,9 +147,9 @@ static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *req)
  * this strcut is http URL handler if receive "/" Spotify_Update_Info getting run
  */
 static const httpd_uri_t Spotify_Update_Info = {
-    .uri = "/spotify/update",
+    .uri = "/spotify/IsConnected",
     .method = HTTP_GET,
-    .handler = Spotify_UpdateStatus};
+    .handler = Spotify_IsConnected};
 
 /**
  * this strcut is http URL handler if receive "/" Spotify_RequestDataAccess getting run
@@ -220,16 +241,21 @@ static void HttpLocalServerConnectHandler(void *arg, esp_event_base_t event_base
 /**
  * @brief This function starts the mDNS service.
  */
-void StartMDNSService()
+bool StartMDNSService()
 {
     esp_err_t err = mdns_init();
     if (err)
     {
         ESP_LOGE(TAG_APP, "MDNS Init failed: %d", err);
-        return;
+        return false;
     }
-    mdns_hostname_set("deskhub");
-    mdns_instance_name_set("Spotify");
+    else
+    {
+        mdns_hostname_set("deskhub");
+        mdns_instance_name_set("Spotify");
+        return true;
+    }
+ 
 }
 
 /**
@@ -237,12 +263,12 @@ void StartMDNSService()
  * @param null
  * @return True if token received and saved, false for otherwise
  */
-bool Spotify_TokenRenew(QueueHandle_t BufQueue)
+bool Spotify_TokenRenew(QueueHandle_t HttpsBufQueue)
 {
     char receivedData[LONGBUF];
     ReadTxtFileFromSpiffs(SpotifyConfigAddressInSpiffs, "refresh_token", InterfaceHandler.token.refresh_token, NULL, NULL);
     SendRequest_ExchangeTokenWithRefreshToken(receivedData, sizeof(receivedData), InterfaceHandler.token.refresh_token);
-    if (xQueueReceive(BufQueue, receivedData, SPOTIFY_RESPONSE_TIMEOUT) == pdTRUE)
+    if (xQueueReceive(HttpsBufQueue, receivedData, SPOTIFY_RESPONSE_TIMEOUT) == pdTRUE)
     {
         ESP_LOGI(TAG, "Token received by Queue. %s", receivedData);
         if (Spotify_FindToken(receivedData, sizeof(receivedData)) == 1)
@@ -261,7 +287,7 @@ bool Spotify_TokenRenew(QueueHandle_t BufQueue)
         // SpotifyAuthorizationSuccessful = 0;
         ESP_LOGW(TAG, "timeout - Spotify not respond!");
         return false;
-    }
+    }   
 }
 
 /**
@@ -371,9 +397,9 @@ void Spotify_GetToken(char *code)
     // Send request to get Response
     Spotify_SendTokenRequest(receivedData, sizeof(receivedData), InterfaceHandler.code, sizeof(InterfaceHandler.code));
     
-    if (xSemaphoreTake(GetResponseSemaphore, portMAX_DELAY*10) == pdTRUE)
+    if (xSemaphoreTake(InterfaceHandler.HttpsResponseReadySemaphore, portMAX_DELAY) == pdTRUE)
     {
-        if (xQueueReceive(*(InterfaceHandler.BufQueue), receivedData, portMAX_DELAY) == pdTRUE)
+        if (xQueueReceive(*(InterfaceHandler.HttpsBufQueue), receivedData, portMAX_DELAY) == pdTRUE)
         {
             ESP_LOGI(TAG, "Received TOKEN by Queue: %s\n", receivedData);
         }

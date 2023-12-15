@@ -44,7 +44,7 @@
 #endif
 #include "time_sync.h"
 #include"GlobalInit.h"
-extern SemaphoreHandle_t GetResponseSemaphore;
+extern SemaphoreHandle_t HttpsResponseReadySemaphore;
 extern QueueHandle_t BufQueue1;
 TaskHandle_t xTaskHandlerHTTPS;
 char *WebServerAddress;
@@ -143,7 +143,7 @@ static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, con
         ESP_LOGD(TAG, "%d bytes read", len);
         buf[len + 1] = '\n';
         printf("\n\n\n%s\n\n\n", buf);
-        xSemaphoreGive(GetResponseSemaphore);
+        xSemaphoreGive(HttpsResponseReadySemaphore);
         if (xQueueSend(BufQueue1, buf, 0) == pdTRUE)
         {
             printf("Sent data with queue \n");

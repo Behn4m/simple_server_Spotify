@@ -12,6 +12,7 @@ extern QueueHandle_t BufQueue1;
 // ****************************** Local Variables 
 static const char *TAG = "SpotifyTask";
 static const char *TAG_APP = "SPOTIFY";
+static SpotifyPrivateHandler_t PrivateHandler;
 static SpotifyInterfaceHandler_t  InterfaceHandler;
 
 // QueueHandle_t Spotify_BufQueue;
@@ -31,8 +32,8 @@ static void Spotify_MainTask(void *pvparameters);
 bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
 {
     InterfaceHandler = *SpotifyInterfaceHandler;
-    InterfaceHandler.status = IDLE; 
-    InterfaceHandler.command = NO_COMMAND;
+    PrivateHandler.status = IDLE; 
+    PrivateHandler.command = NO_COMMAND;
 
     if (InterfaceHandler.CheckAddressInSpiffs != NULL && 
         InterfaceHandler.ReadTxtFileFromSpiffs != NULL && 
@@ -82,14 +83,14 @@ bool Spotify_PlaybackCommand(char *command)
 static esp_err_t Spotify_RequestDataAccess(httpd_req_t *req)
 {
     char loc_url[SMALLBUF + 150];
-    if ((InterfaceHandler.status == IDLE))
+    if ((PrivateHandler.status == IDLE))
     {
         if (SpiffsExistenceCheck(InterfaceHandler.ConfigAddressInSpiffs) == true)
         {
             char ReadBuf[MEDIUMBUF];
             SpiffsRead(InterfaceHandler.ConfigAddressInSpiffs, ReadBuf, sizeof(ReadBuf));
             ESP_LOGI(TAG, "refresh token found on device");
-            InterfaceHandler.status = EXPIRED_USER;
+            PrivateHandler.status = EXPIRED_USER;
         }
         else
         {
@@ -124,13 +125,23 @@ static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *req)
         if (Spotify_FindCode(Buf, sizeof(Buf)) == true)
         {
             vTaskDelay(Sec / portTICK_PERIOD_MS);
-            strncpy(InterfaceHandler.code, Buf, sizeof(Buf));
-            InterfaceHandler.status = AUTHORIZED;
-            ESP_LOGI(TAG, "CODE copied in the Handler: %s\n", InterfaceHandler.code);
+            PrivateHandler.code = malloc(MEDIUMBUF);
+            if (PrivateHandler.code != NULL)
+            {
+                strncpy(PrivateHandler.code, Buf, MEDIUMBUF);
+                PrivateHandler.status = AUTHORIZED;
+                ESP_LOGI(TAG, "CODE copied in the Handler: %s\n", PrivateHandler.code);
+            }
+            else
+            {
+                ESP_LOGE(TAG, "Error in memory allocation for CODE");
+                return ESP_FAIL;
+            }
         }
         else
         {
             ESP_LOGE(TAG, "response does not include code at the begining ");
+            return ESP_FAIL;
         }
     }
     else
@@ -266,8 +277,8 @@ bool StartMDNSService()
 bool Spotify_TokenRenew(QueueHandle_t HttpsBufQueue)
 {
     char receivedData[LONGBUF];
-    ReadTxtFileFromSpiffs(InterfaceHandler.ConfigAddressInSpiffs, "refresh_token", InterfaceHandler.token.refresh_token, NULL, NULL);
-    SendRequest_ExchangeTokenWithRefreshToken(receivedData, sizeof(receivedData), InterfaceHandler.token.refresh_token);
+    ReadTxtFileFromSpiffs(InterfaceHandler.ConfigAddressInSpiffs, "refresh_token", PrivateHandler.token.refresh_token, NULL, NULL);
+    SendRequest_ExchangeTokenWithRefreshToken(receivedData, sizeof(receivedData), PrivateHandler.token.refresh_token);
     if (xQueueReceive(HttpsBufQueue, receivedData, SPOTIFY_RESPONSE_TIMEOUT) == pdTRUE)
     {
         ESP_LOGI(TAG, "Token received by Queue. %s", receivedData);
@@ -336,7 +347,7 @@ static void Spotify_MainTask(void *pvparameters)
     
     while (1)
     {
-        switch (InterfaceHandler.status)
+        switch (PrivateHandler.status)
         {
             case IDLE:
             {
@@ -345,20 +356,20 @@ static void Spotify_MainTask(void *pvparameters)
             }
             case AUTHORIZED:
             {
-                Spotify_GetToken(InterfaceHandler.code);
+                Spotify_GetToken(PrivateHandler.code);
                 break;
             }
             case ACTIVE_USER:
             {
                 if (Spotify_IsTokenValid() != true)
                 {
-                    InterfaceHandler.status = EXPIRED_USER;
+                    PrivateHandler.status = EXPIRED_USER;
                 }
                 else
                 {
-                    if (InterfaceHandler.command != NO_COMMAND)
+                    if (PrivateHandler.command != NO_COMMAND)
                     {
-                        if (Spotify_SendCommand(&InterfaceHandler.command) == true)
+                        if (Spotify_SendCommand(&PrivateHandler.command) == true)
                         {
                             ESP_LOGI(TAG, "Command succssefully applied");
                         }
@@ -366,7 +377,7 @@ static void Spotify_MainTask(void *pvparameters)
                         {
                             ESP_LOGE(TAG, "Command not applied");   
                         }
-                        InterfaceHandler.command = NO_COMMAND;
+                        PrivateHandler.command = NO_COMMAND;
                     }
                 }
                 break;
@@ -394,7 +405,7 @@ void Spotify_GetToken(char *code)
     memset(receivedData, 0x0, sizeof(receivedData));
 
     // Send request to get Response
-    Spotify_SendTokenRequest(receivedData, sizeof(receivedData), InterfaceHandler.code, sizeof(InterfaceHandler.code));
+    Spotify_SendTokenRequest(receivedData, sizeof(receivedData), PrivateHandler.code, sizeof(PrivateHandler.code));
     
     if (xSemaphoreTake(InterfaceHandler.HttpsResponseReadySemaphore, portMAX_DELAY) == pdTRUE)
     {
@@ -413,18 +424,18 @@ void Spotify_GetToken(char *code)
     if (ExtractJsonFromHttpResponse(receivedData, receivedData) == true)
     {
         if (ExtractionJsonParamForFindAccessToken(receivedData, LONGBUF, 
-                                                InterfaceHandler.token.access_token,
-                                                InterfaceHandler.token.token_type, 
-                                                InterfaceHandler.token.refresh_token, 
-                                                InterfaceHandler.token.granted_scope, 
-                                                InterfaceHandler.token.expires_in_ms) == true)
+                                                PrivateHandler.token.access_token,
+                                                PrivateHandler.token.token_type, 
+                                                PrivateHandler.token.refresh_token, 
+                                                PrivateHandler.token.granted_scope, 
+                                                PrivateHandler.token.expires_in_ms) == true)
         {
-            InterfaceHandler.status = ACTIVE_USER;
+            PrivateHandler.status = ACTIVE_USER;
             ESP_LOGI(TAG, "ACTIVE_USER");
         }
         else
         {
-            InterfaceHandler.status = IDLE;
+            PrivateHandler.status = IDLE;
             ESP_LOGE(TAG, "TOKEN extracction failed, back to IDLE state");
             // TO DO: the handler should reset here
         }

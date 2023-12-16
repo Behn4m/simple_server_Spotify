@@ -94,18 +94,20 @@ typedef void (*WriteTxtFileToSpiffsPtr)(char *addressInSpiffs, char *data);
 typedef bool (*CheckAddressInSpiffsPtr)(char *addressInSpiffs);
 
 typedef struct {
-    char    code[MEDIUMBUF];
+    char    *code;
     Token_t token;        // Nested struct for token information
     UserInfo_t userInfo;  // Nested struct for user information
     Status_t    status;
     Command_t   command;
+} SpotifyPrivateHandler_t;
+
+typedef struct {
     QueueHandle_t *HttpsBufQueue;
     SemaphoreHandle_t *HttpsResponseReadySemaphore;
     char *ConfigAddressInSpiffs;
     ReadTxtFileFromSpiffsPtr ReadTxtFileFromSpiffs;
     WriteTxtFileToSpiffsPtr WriteTxtFileToSpiffs;
     CheckAddressInSpiffsPtr CheckAddressInSpiffs;
-    
 } SpotifyInterfaceHandler_t;
 
 /**

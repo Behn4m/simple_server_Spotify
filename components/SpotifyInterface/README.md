@@ -108,3 +108,6 @@ else
 }
 ```
 
+## Code structure:
+
+![Diagram](/components/SpotifyInterface/SpotifyInterface%20structure.png)

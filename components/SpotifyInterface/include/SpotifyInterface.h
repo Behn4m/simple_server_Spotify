@@ -15,9 +15,19 @@ extern "C" {
 #include "esp_tls.h"
 #include "sdkconfig.h"
 #include "mdns.h"
-#include "GlobalInit.h"
 #include "MakeSpotifyRequest.h"
 #include "freertos/queue.h"
+
+// **************************************************************** URI links
+#define ReDirectUri "http%3A%2F%2Fdeskhub.local%2Fcallback%2f"
+#define ClientId  "55bb974a0667481ab0b2a49fd0abea6d"
+
+// **************************************************************** 
+#define Sec 1000
+#define Hour 3600
+#define LONGBUF 2500
+#define MEDIUMBUF 1000
+#define SMALLBUF   250
 
 #define access_token_str_size   512
 #define token_type_str_size     20
@@ -115,7 +125,7 @@ typedef struct {
  * @param SpotifyInterfaceHandler as the handler
  * @return true if task run to the end
  */
-bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler);
+bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler, uint16_t SpotifyTaskStackSize);
 
 /**
  * @brief This checks if the applciaiton is initiated and connected to Spotify web service

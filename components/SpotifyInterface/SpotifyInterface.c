@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "SpotifyInterface.h"
 #include "MakeSpotifyRequest.h"
-#include "GlobalInit.h"
 #include "JsonExtraction.h"
 
 // ****************************** Extern Variables 
@@ -29,7 +28,7 @@ static void Spotify_MainTask(void *pvparameters);
  * @param SpotifyInterfaceHandler as the handler
  * @return true if task run to the end
  */
-bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
+bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler, uint16_t SpotifyTaskStackSize)
 {
     InterfaceHandler = *SpotifyInterfaceHandler;
     PrivateHandler.status = IDLE; 
@@ -85,10 +84,10 @@ static esp_err_t Spotify_RequestDataAccess(httpd_req_t *req)
     char loc_url[SMALLBUF + 150];
     if ((PrivateHandler.status == IDLE))
     {
-        if (SpiffsExistenceCheck(InterfaceHandler.ConfigAddressInSpiffs) == true)
+        if (InterfaceHandler.CheckAddressInSpiffs(InterfaceHandler.ConfigAddressInSpiffs) == true)
         {
             char ReadBuf[MEDIUMBUF];
-            SpiffsRead(InterfaceHandler.ConfigAddressInSpiffs, ReadBuf, sizeof(ReadBuf));
+            InterfaceHandler.ReadTxtFileFromSpiffs(InterfaceHandler.ConfigAddressInSpiffs, ReadBuf, sizeof(ReadBuf));
             ESP_LOGI(TAG, "refresh token found on device");
             PrivateHandler.status = EXPIRED_USER;
         }

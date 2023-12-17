@@ -30,13 +30,9 @@ extern "C" {
 #define LONGBUF 2500
 #define MEDIUMBUF 1000
 #define SMALLBUF   250
-#define SpotifyTaskStackSize 10*1000
-#define HttpsTaskStackSize   9*1000
-#define WifiModuleTaskStackSize   10*1000
-
-// **************************************************************** URI links
-#define ReDirectUri "http%3A%2F%2Fdeskhub.local%2Fcallback%2f"
-#define ClientId  "55bb974a0667481ab0b2a49fd0abea6d"
+#define SPOTIFY_TASK_STACK_SIZE (uint16_t)(10*1000U)
+#define HttpsTaskStackSize   (uint16_t)(9*1000U)
+#define WifiModuleTaskStackSize   (uint16_t)(10*1000U)
 
 extern SemaphoreHandle_t WifiParamExistenceCheckerSemaphore;
 extern SemaphoreHandle_t FinishWifiConfig;

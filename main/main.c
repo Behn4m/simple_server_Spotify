@@ -26,10 +26,10 @@ void app_main(void)
     SpotifyInterfaceHandler.HttpsBufQueue = &BufQueue1;
     SpotifyInterfaceHandler.HttpsResponseReadySemaphore = HttpsResponseReadySemaphore;
     SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
-    SpotifyInterfaceHandler.ReadTxtFileFromSpiffs = &SpiffsWrite;
-    SpotifyInterfaceHandler.WriteTxtFileToSpiffs = &SaveFileInSpiffsWithTxtFormat;
-    SpotifyInterfaceHandler.CheckAddressInSpiffs = &SpiffsExistenceCheck;
+    SpotifyInterfaceHandler.ReadTxtFileFromSpiffs = SpiffsWrite;
+    SpotifyInterfaceHandler.WriteTxtFileToSpiffs = SaveFileInSpiffsWithTxtFormat;
+    SpotifyInterfaceHandler.CheckAddressInSpiffs = SpiffsExistenceCheck;
 
-    Spotify_TaskInit(&SpotifyInterfaceHandler);
+    Spotify_TaskInit(&SpotifyInterfaceHandler, SPOTIFY_TASK_STACK_SIZE);
 #endif
 }

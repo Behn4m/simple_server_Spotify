@@ -269,71 +269,14 @@ bool StartMDNSService()
  
 }
 
-/**
- * @brief This function reads refresh token from spiffs and send request for new token
- * @param null
- * @return True if token received and saved, false for otherwise
- */
-bool Spotify_TokenRenew(QueueHandle_t HttpsBufQueue)
-{
-    char receivedData[LONGBUF];
-    ReadTxtFileFromSpiffs(InterfaceHandler.ConfigAddressInSpiffs, "refresh_token", PrivateHandler.token.refresh_token, NULL, NULL);
-    SendRequest_ExchangeTokenWithRefreshToken(receivedData, sizeof(receivedData), PrivateHandler.token.refresh_token);
-    if (xQueueReceive(HttpsBufQueue, receivedData, SPOTIFY_RESPONSE_TIMEOUT) == pdTRUE)
-    {
-        ESP_LOGI(TAG, "Token received by Queue. %s", receivedData);
-        if (Spotify_FindToken(receivedData, sizeof(receivedData)) == 1)
-        {
-            ESP_LOGI(TAG, "Token found!");
-            return true;
-        }
-        else
-        {
-            ESP_LOGW(TAG, "Token not found!");
-            return false;
-        }
-    }
-    else
-    {
-        ESP_LOGW(TAG, "timeout - Spotify not respond!");
-        return false;
-    }   
-}
 
-/**
- * @brief This function find token in HTTP body request and check it for 
- * accuracy , if we doesn't find token for two time ESP getting restart !
- * @return true if token found, flase otherwisw
- */
-void Spotify_FindTokenInHttpsBody(char *receivedData, size_t SizeOfReceivedData)
-{
-    if (Spotify_FindToken(receivedData, SizeOfReceivedData) != 1)
-    {
-        ESP_LOGI(TAG, "looing for TOKEN!!!");
-        vTaskDelay((60 * Sec) / portTICK_PERIOD_MS);
-        Spotify_SendTokenRequest(receivedData, SizeOfReceivedData, receivedData, SizeOfReceivedData);
-        if (Spotify_FindToken(receivedData, SizeOfReceivedData) != 1)
-        {
-            ESP_LOGI(TAG, "fail to get Token !!!");
-            esp_restart();
-        }
-        else
-        {
-            ESP_LOGI(TAG, "TOKEN found in second try");
-        }
-    }
-    else
-    {
-        ESP_LOGI(TAG, "TOKEN found in first try");
-    }
-}
 
 /**
  * @brief This function is the entry point for handling HTTPS requests for Spotify authorization.
  * @param[in] pvparameters because it is a Task!
  * @return none
  */
-static void Spotify_MainTask(void *pvparameters)
+static void Spotify_MainTask()
 {
     static httpd_handle_t _Server = NULL;
     // start the Local Server for Spotify

@@ -184,19 +184,22 @@ static const httpd_uri_t Spotify_Get_Access_Response_URI = {
  */
 static httpd_handle_t StartWebServer(void)
 {
-    httpd_handle_t Server_ = NULL;
+    httpd_handle_t localServer = NULL;
     httpd_config_t config = HTTPD_DEFAULT_CONFIG();
     config.lru_purge_enable = true;
     ESP_LOGI(TAG, "Starting server on port: '%d'", config.server_port);
-    if (httpd_start(&Server_, &config) == ESP_OK)
+    if (httpd_start(&localServer, &config) == ESP_OK)
     {
         ESP_LOGI(TAG, "Registering URI handlers");
-        httpd_register_uri_handler(Server_, &Spotify_Request_Access_URI);
-        httpd_register_uri_handler(Server_, &Spotify_Get_Access_Response_URI);
-        httpd_register_uri_handler(Server_, &Spotify_Update_Info);
-        return Server_;
+        httpd_register_uri_handler(localServer, &Spotify_Request_Access_URI);
+        httpd_register_uri_handler(localServer, &Spotify_Get_Access_Response_URI);
+        httpd_register_uri_handler(localServer, &Spotify_Update_Info);
+        return localServer;
     }
-    return Server_;
+    else
+    {
+        return NULL;
+    }
 }
 
 /**
@@ -278,16 +281,19 @@ bool StartMDNSService()
  */
 static void Spotify_MainTask()
 {
-    static httpd_handle_t _Server = NULL;
+    static httpd_handle_t SpotifyLocalServer = NULL;
     // start the Local Server for Spotify
     StartMDNSService();
-    _Server = StartWebServer();
+    SpotifyLocalServer = StartWebServer();
+    if (SpotifyLocalServer != NULL)
+    {
+        ESP_LOGI(TAG, "** Spotify local server created! **");
+    }
+    else
+    {
+        ESP_LOGW(TAG, "Creating Spotify local server failed!");        
+    }
 
-    ESP_LOGI(TAG, "** Spotify local server created! **");
-
-    bool TokenSaved = 0;
-    bool RefreshTokenSaved = 0;
-    
     while (1)
     {
         switch (PrivateHandler.status)

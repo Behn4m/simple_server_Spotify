@@ -35,7 +35,7 @@ bool ExtractJsonFromHttpResponse(char *HttpResponse, char *Json)
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a TokenParam structure.
  * @param[in] Json The input JSON string.
  * @param[in] SizeJson The size of the JSON string.
- * @return fasle if fail, true if finish successfull.
+ * @return false if fail, true if finish successful.
  */
 bool ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson,
                                            char *access_token,

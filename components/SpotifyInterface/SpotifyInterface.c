@@ -53,13 +53,13 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler, uint16
 }
 
 /**
- * @brief This checks if the applciaiton is initiated and connected to Spotify web service
+ * @brief This checks if the application is initiated and connected to Spotify web service
  * @param SpotifyInterfaceHandler as the handler
- * @return true if everything is OK, flase for ERROR
+ * @return true if everything is OK, false for ERROR
  */
 bool Spotify_IsConnected(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
 {
-    // TO DO: implement the funciton
+    // TO DO: implement the function
     return true;
 }
 
@@ -70,7 +70,7 @@ bool Spotify_IsConnected(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
  */
 bool Spotify_PlaybackCommand(char *command)
 {
-    // TO DO: implement the funciton
+    // TO DO: implement the function
     return true;
 }
 
@@ -443,7 +443,7 @@ bool Spotify_SendCommand(Command_t *command)
     ESP_LOGI(TAG, "user Command is %d", userCommand);
     switch (userCommand)
     {
-        // To DO: handle comamnds by sending request to Spotify and get the respond 
+        // To DO: handle commands by sending request to Spotify and get the respond 
         case NO_COMMAND:
             /* wait for command */
             break;                        

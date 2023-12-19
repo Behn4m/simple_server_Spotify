@@ -18,8 +18,8 @@ static const char *TAG = "SpotifyTask";
 */
 bool Spotify_FindCode(char *Res, uint16_t SizeRes)
 {
-    char *codestring = {"code"};
-    uint16_t codeLength = strlen(codestring);
+    char *codeString = {"code"};
+    uint16_t codeLength = strlen(codeString);
 
     if (Res == NULL || SizeRes < codeLength) 
     {
@@ -32,7 +32,7 @@ bool Spotify_FindCode(char *Res, uint16_t SizeRes)
         bool found = true;
         for (uint16_t j = 0; j < codeLength; ++j)
         {
-            if (Res[i + j] != codestring[j])
+            if (Res[i + j] != codeString[j])
             {
                 found = false;
                 break;

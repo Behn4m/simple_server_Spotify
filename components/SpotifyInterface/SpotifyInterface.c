@@ -165,7 +165,7 @@ static const httpd_uri_t Spotify_Update_Info = {
  * this strcut is http URL handler if receive "/" Spotify_RequestDataAccess getting run
  */
 static const httpd_uri_t Spotify_Request_Access_URI = {
-    .uri = "/spotify/init",
+    .uri = "/",
     .method = HTTP_GET,
     .handler = Spotify_RequestDataAccess};
 

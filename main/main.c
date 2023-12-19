@@ -16,7 +16,7 @@ void app_main(void)
     nvsFlashInit();
     SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
-    WifiStationMode("BELL789","167271A164A9");
+    WifiStationMode("Hardware10","87654321");
 #else
     wifiConnectionModule();
 #endif

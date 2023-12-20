@@ -3,11 +3,13 @@
 #include "nvsFlash.h"
 #include "WiFiConfig.h"
 #include "SpotifyInterface.h"
-
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#define configTICK_RATE_HZ 10*1000
 // ****************************** GLobal Variables ****************************** //
 QueueHandle_t BufQueue1;
 SemaphoreHandle_t HttpsResponseReadySemaphore = NULL;
-SpotifyInterfaceHandler_t SpotifyInterfaceHandler;  
+SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 
 // ****************************** GLobal Functions ****************************** //
 void app_main(void)
@@ -16,7 +18,7 @@ void app_main(void)
     nvsFlashInit();
     SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
-    WifiStationMode("Hardware10","87654321");
+    WifiStationMode("Hardware10", "87654321");
 #else
     wifiConnectionModule();
 #endif
@@ -31,5 +33,9 @@ void app_main(void)
     SpotifyInterfaceHandler.CheckAddressInSpiffs = SpiffsExistenceCheck;
 
     Spotify_TaskInit(&SpotifyInterfaceHandler, SPOTIFY_TASK_STACK_SIZE);
+    vTaskDelay(10);
+    unsigned int numberOfTasks = uxTaskGetNumberOfTasks();
+    printf("Number of tasks: %u\n", numberOfTasks);
+    printf("\n CONFIG_FREERTOS_HZ =%d",CONFIG_FREERTOS_HZ);
 #endif
 }

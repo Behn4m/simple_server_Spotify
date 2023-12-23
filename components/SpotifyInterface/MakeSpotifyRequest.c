@@ -96,7 +96,7 @@ void Spotify_MakePlayerCommandAndSendIt(const char *Method_, const char *Command
                  "Content-Length: 0\r\n"
                  "Connection: close\r\n\r\n",
             Method, Command, PrivateHandler.token.access_token);
-    ESP_LOGI(TAG,"\n\nrequest is %s\nand size it =%d\n\n", Buf, strlen(Buf));
+    ESP_LOGI(TAG,"\n\n%s\nsize it =%d\n\n", Buf, strlen(Buf));
     char url[SMALLBUF] = "https://api.spotify.com";
     char server[SMALLBUF] = "api.spotify.com";
     HttpsHandler(Buf, SizeBuf, url, sizeof(url), server, sizeof(server));
@@ -155,7 +155,7 @@ void Spotify_GetUserStatus()
                  "Content-Length: 0\r\n"
                  "Connection: close\r\n\r\n",
             PrivateHandler.token.access_token);
-    ESP_LOGI(TAG,"\n\nrequest for getting now playing\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
+    ESP_LOGI(TAG,"\n\nrequest GetUserStatus\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
     char url[SMALLBUF] = "https://api.spotify.com";
     char server[SMALLBUF] = "api.spotify.com";
     HttpsHandler(Buf, sizeof(Buf), url, sizeof(url), server, sizeof(server));
@@ -174,7 +174,7 @@ void Spotify_GetUserTopItems()
                  "Content-Length: 0\r\n"
                  "Connection: close\r\n\r\n",
             PrivateHandler.token.access_token);
-    ESP_LOGI(TAG,"\n\nrequest for getting now playing\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
+    ESP_LOGI(TAG,"\n\nrequest for GetUserTopItems(\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
     char url[SMALLBUF] = "https://api.spotify.com";
     char server[SMALLBUF] = "api.spotify.com";
     HttpsHandler(Buf, sizeof(Buf), url, sizeof(url), server, sizeof(server));
@@ -197,7 +197,7 @@ void Spotify_GetUserProfile(char *UserId_)
                  "Connection: close\r\n\r\n",
             UserId, PrivateHandler.token.access_token);
 
-    ESP_LOGI(TAG,"\n\nrequest for getting now playing\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
+    ESP_LOGI(TAG,"\n\nrequest for GetUserProfile\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
     char url[SMALLBUF] = "https://api.spotify.com";
     char server[SMALLBUF] = "api.spotify.com";
     HttpsHandler(Buf, sizeof(Buf), url, sizeof(url), server, sizeof(server));
@@ -215,7 +215,7 @@ void Spotify_GetCurrentPlaying()
                  "Authorization: Bearer %s\r\n"
                  "Connection: close\r\n\r\n",
             PrivateHandler.token.access_token);
-    ESP_LOGI(TAG,"\n\nrequest for getting now playing\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
+    ESP_LOGI(TAG,"\n\nrequest for GetCurrentPlaying\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
     char url[SMALLBUF] = "https://api.spotify.com";
     char server[SMALLBUF] = "api.spotify.com";
     HttpsHandler(Buf, sizeof(Buf), url, sizeof(url), server, sizeof(server));

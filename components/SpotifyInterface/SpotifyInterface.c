@@ -311,7 +311,7 @@ static void Spotify_MainTask()
             }
             else
             {
-                PrivateHandler.command = PLAY;
+                PrivateHandler.command = GET_USER_INFO;
                 if (PrivateHandler.command != NO_COMMAND)
                 {
                     if (Spotify_SendCommand(&PrivateHandler.command) == true)
@@ -411,7 +411,10 @@ bool Spotify_IsTokenValid(void)
     // TO DO: check the time of last access_token update
     return true;
 }
-
+void func()
+{
+   ESP_LOGW("CallBackFunc","bibibibib");
+}
 /**
  * @brief Sends a command to control Spotify.
  * This function sends various commands to control the Spotify application based on the given command value.
@@ -471,7 +474,7 @@ bool Spotify_SendCommand(Command_t *command)
     }
     case GET_USER_INFO:
     {
-        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventGetUserStatus_, NULL, 0, portMAX_DELAY));
+        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventGetUserStatus_, sizeof(func), func, portMAX_DELAY));
         /* Send GET_USER_INFO command to Spotify */
         break;
     }

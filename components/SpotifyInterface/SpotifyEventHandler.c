@@ -6,9 +6,9 @@ const esp_event_base_t BASE_SPOTIFY_EVENTS = "BASE_SPOTIFY_EVENTS";
 ESP_EVENT_DECLARE_BASE(BASE_SPOTIFY_EVENTS);
 
 static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
-                               int32_t EventId, void *EventData)
+                                 int32_t EventId, void *EventData)
 {
-    ESP_LOGI(TAG,"we are in Spotify event handler");
+    ESP_LOGI(TAG, "we are in Spotify event handler");
     if (EventBase == BASE_SPOTIFY_EVENTS)
     {
         switch (EventId)
@@ -16,10 +16,10 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
         case SpotifyEventSendRequestForNext_:
         {
             Spotify_SendRequestForNext();
+            ESP_LOGI(TAG, "Spotify Event handler is working !");
             // if (xQueueReceive(BufQueue1, EventData, portMAX_DELAY) == pdTRUE)
-            // ESP_LOGI(TAG, "Spotify Event handler is working !");
             // {
-            // ESP_LOGI(TAG, "Received TOKEN by Queue: %s\n", (char *)EventData);
+            //     ESP_LOGI(TAG, "Received TOKEN by Queue: %s\n", (char *)EventData);
             // }
             break;
         }
@@ -65,7 +65,7 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
 
 /**
  * @brief This function register event handler for spotify , this event is task and need
- *        long stack ,because spotify functions need long stack 
+ *        long stack ,because spotify functions need long stack
  */
 void Spotify_RegisterEventHandler(void)
 {

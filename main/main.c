@@ -5,7 +5,6 @@
 #include "SpotifyInterface.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#define configTICK_RATE_HZ 10*1000
 // ****************************** GLobal Variables ****************************** //
 QueueHandle_t BufQueue1;
 SemaphoreHandle_t HttpsResponseReadySemaphore = NULL;
@@ -36,6 +35,5 @@ void app_main(void)
     vTaskDelay(10);
     unsigned int numberOfTasks = uxTaskGetNumberOfTasks();
     printf("Number of tasks: %u\n", numberOfTasks);
-    printf("\n CONFIG_FREERTOS_HZ =%d",CONFIG_FREERTOS_HZ);
 #endif
 }

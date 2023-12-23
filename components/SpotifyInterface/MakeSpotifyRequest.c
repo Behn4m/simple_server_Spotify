@@ -47,42 +47,6 @@ bool Spotify_FindCode(char *Res, uint16_t SizeRes)
 }
 
 /**
-* @brief This function searches for a token within a character array and extracts the corresponding JSON object.
-* @param[in] Res The character array to search within. and Res is response from first stage from spotify athurisiation
-* @param[in] SizeRes The size of the character array.
-* @return Returns true if the token is found and the corresponding JSON object is successfully extracted, otherwise returns false.
-*/
-bool Spotify_FindToken(char *Res, uint16_t SizeRes) {
-    const char *tokenString = "{\"access_token\"";
-    uint16_t tokenLength = strlen(tokenString);
-
-    if (Res == NULL || SizeRes < tokenLength)
-    {
-        // Invalid input, either null pointer or insufficient buffer size
-        return false;
-    }
-
-    for (uint16_t i = 0; i <= SizeRes - tokenLength; ++i) 
-    {
-        bool found = true;
-        for (uint16_t j = 0; j < tokenLength; ++j)
-        {
-            if (Res[i + j] != tokenString[j])
-            {
-                found = false;
-                break;
-            }
-        }
-        if (found)
-        {
-            return true; // Found the access token substring
-        }
-    }
-
-    return false; // Access token substring not found
-}
-
-/**
 * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.
 * @param[in,out] Buf The character buffer to store the request and receive the response.
 * @param[in] SizeBuf The size of the character buffer.
@@ -93,7 +57,7 @@ bool Spotify_FindToken(char *Res, uint16_t SizeRes) {
 void Spotify_SendTokenRequest(char *Buf, size_t SizeBuf, char *code, size_t SizeCode)
 {
     char grand[MEDIUMBUF] = {0};
-    ESP_LOGI(TAG,"\n%s\n", code);
+    ESP_LOGI(TAG,"\n\n\n\n%s\n\n\n", code);
     sprintf(grand, "grant_type=authorization_code&redirect_uri=%s&%s", ReDirectUri, code);
     memset(Buf, 0x0, SizeBuf);
     sprintf(Buf, "POST /api/token HTTP/1.1 \r\n"
@@ -118,7 +82,7 @@ void Spotify_SendTokenRequest(char *Buf, size_t SizeBuf, char *code, size_t Size
 * @param[in] SizeBuf The size of the character buffer.
 * @return This function does not return a value.
 */
-void MakePlayerCommandAndSendIt(const char *Method_, const char *Command_, char *Buf, size_t SizeBuf, char *access_token)
+void Spotify_MakePlayerCommandAndSendIt(const char *Method_, const char *Command_, char *Buf, size_t SizeBuf)
 {
     //   copy tow of them because ,we dont give size of Method and command
     char Method[50] = {0};
@@ -131,8 +95,8 @@ void MakePlayerCommandAndSendIt(const char *Method_, const char *Command_, char 
                  "Authorization: Bearer %s\r\n"
                  "Content-Length: 0\r\n"
                  "Connection: close\r\n\r\n",
-            Method, Command, access_token);
-    ESP_LOGI(TAG,"\n\nrequest for getting now playing\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
+            Method, Command, PrivateHandler.token.access_token);
+    ESP_LOGI(TAG,"\n\nrequest is %s\nand size it =%d\n\n", Buf, strlen(Buf));
     char url[SMALLBUF] = "https://api.spotify.com";
     char server[SMALLBUF] = "api.spotify.com";
     HttpsHandler(Buf, SizeBuf, url, sizeof(url), server, sizeof(server));
@@ -142,47 +106,47 @@ void MakePlayerCommandAndSendIt(const char *Method_, const char *Command_, char 
 * @brief This function sends a request to the Spotify API to skip to the next track in the player.
 * @return This function does not return a value.
 */
-void SendRequestForNext(Token_t *Token)
+void Spotify_SendRequestForNext()
 {
     char Buf[LONGBUF];
-    MakePlayerCommandAndSendIt("PUT", "pause", Buf, LONGBUF, Token->access_token);
+    Spotify_MakePlayerCommandAndSendIt("POST", "next", Buf, LONGBUF);
 }
 
 /**
 * @brief This function sends a request to the Spotify API to skip to the previous track in the player.
 * @return This function does not return a value.
 */
-void SendRequestForPrevious(Token_t *Token)
+void Spotify_SendRequestForPrevious()
 {
     char Buf[LONGBUF];
-    MakePlayerCommandAndSendIt("PUT", "pause", Buf, LONGBUF, Token->access_token);
+    Spotify_MakePlayerCommandAndSendIt("POST", "previous", Buf, LONGBUF);
 }
 
 /**
 * @brief This function sends a request to the Spotify API to play the current track in the player.
 * @return This function does not return a value.
 */
-void SendRequestForPlay(Token_t *Token)
+void Spotify_SendRequestForPlay()
 {
     char Buf[LONGBUF];
-    MakePlayerCommandAndSendIt("PUT", "pause", Buf, LONGBUF, Token->access_token);
+    Spotify_MakePlayerCommandAndSendIt("PUT", "play", Buf, LONGBUF);
 }
 
 /**
 * @brief This function sends a request to the Spotify API to pause the current track in the player.
 * @return This function does not return a value.
 */
-void SendRequestForPause(Token_t *Token)
+void Spotify_SendRequestForPause()
 {
     char Buf[LONGBUF];
-    MakePlayerCommandAndSendIt("PUT", "pause", Buf, LONGBUF, Token->access_token);
+    Spotify_MakePlayerCommandAndSendIt("PUT", "pause", Buf, LONGBUF);
 }
 
 /**
 * @brief This function sends a request to the Spotify API to retrieve the user's profile information.
 * @return This function does not return a value.
 */
-void GetUserStatus(char *access_token)
+void Spotify_GetUserStatus()
 {
     char Buf[LONGBUF];
     sprintf(Buf, "GET /v1/me/ HTTP/1.1\r\n"
@@ -190,7 +154,7 @@ void GetUserStatus(char *access_token)
                  "Authorization: Bearer %s\r\n"
                  "Content-Length: 0\r\n"
                  "Connection: close\r\n\r\n",
-            access_token);
+            PrivateHandler.token.access_token);
     ESP_LOGI(TAG,"\n\nrequest for getting now playing\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
     char url[SMALLBUF] = "https://api.spotify.com";
     char server[SMALLBUF] = "api.spotify.com";
@@ -201,7 +165,7 @@ void GetUserStatus(char *access_token)
 * @brief This function sends a request to the Spotify API to retrieve the user's top item.
 * @return This function does not return a value.
 */
-void GetUserTopItems(char *access_token)
+void Spotify_GetUserTopItems()
 {
     char Buf[LONGBUF];
     sprintf(Buf, "GET /v1/me/top/artists HTTP/1.1\r\n"
@@ -209,7 +173,7 @@ void GetUserTopItems(char *access_token)
                  "Authorization: Bearer %s\r\n"
                  "Content-Length: 0\r\n"
                  "Connection: close\r\n\r\n",
-            access_token);
+            PrivateHandler.token.access_token);
     ESP_LOGI(TAG,"\n\nrequest for getting now playing\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
     char url[SMALLBUF] = "https://api.spotify.com";
     char server[SMALLBUF] = "api.spotify.com";
@@ -221,7 +185,7 @@ void GetUserTopItems(char *access_token)
 * @param[in] UserId_ The ID of the user whose profile information is to be retrieved.
 * @return This function does not return a value.
 */
-void GetUserProfile(char *UserId_, char *Token)
+void Spotify_GetUserProfile(char *UserId_)
 {
     char Buf[LONGBUF];
     char UserId[50];
@@ -231,7 +195,7 @@ void GetUserProfile(char *UserId_, char *Token)
                  "Authorization: Bearer %s\r\n"
                  "Content-Length: 0\r\n"
                  "Connection: close\r\n\r\n",
-            UserId, Token);
+            UserId, PrivateHandler.token.access_token);
 
     ESP_LOGI(TAG,"\n\nrequest for getting now playing\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
     char url[SMALLBUF] = "https://api.spotify.com";
@@ -242,7 +206,7 @@ void GetUserProfile(char *UserId_, char *Token)
 /**
 * @brief This function sends a request to the Spotify API to give Curent playing information 
 */
-void GetCurrentPlaying(Token_t *Token)
+void Spotify_GetCurrentPlaying()
 {
     // return json is so long and we need longer buffer 
     char Buf[LONGBUF+1500]; 
@@ -250,7 +214,7 @@ void GetCurrentPlaying(Token_t *Token)
                  "Host: api.spotify.com\r\n"
                  "Authorization: Bearer %s\r\n"
                  "Connection: close\r\n\r\n",
-            Token->access_token);
+            PrivateHandler.token.access_token);
     ESP_LOGI(TAG,"\n\nrequest for getting now playing\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
     char url[SMALLBUF] = "https://api.spotify.com";
     char server[SMALLBUF] = "api.spotify.com";
@@ -264,7 +228,7 @@ void GetCurrentPlaying(Token_t *Token)
  * @param[in] code is parameter that we give it before .
  * @return This function does not return a value.
  */
-void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *RefreshToken_)
+void Spotify_SendRequestAndGiveTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *RefreshToken_)
 {
     char RefreshToken[SMALLBUF+150];
     strcpy(RefreshToken, RefreshToken_);
@@ -279,7 +243,7 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *
                  "\r\n"
                  "%s\r",
             strlen(grand), grand);
-    ESP_LOGI(TAG,"\n%s\n", Buf);
+    ESP_LOGI(TAG,"\n\n\n%s\n\n\n", Buf);
     char url[SMALLBUF] = "https://accounts.spotify.com/api/token";
     char server[SMALLBUF] = "accounts.spotify.com";
     HttpsHandler(Buf, SizeBuf, url, sizeof(url), server, sizeof(server));

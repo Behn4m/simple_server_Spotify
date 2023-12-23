@@ -34,19 +34,21 @@ bool ExtractJsonFromHttpResponse(char *HttpResponse, char *Json)
 /**
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a TokenParam structure.
  * @param[in] Json The input JSON string.
- * @param[in] SizeJson The size of the JSON string.
+ * @param[in] JsonBufSize The size of the JSON string.
  * @return false if fail, true if finish successful.
  */
-bool ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson,
+bool ExtractionJsonParamForFindAccessToken(char *Json, size_t JsonBufSize,
                                            char *access_token,
                                            char *token_type,
                                            char *refresh_token,
                                            char *granted_scope,
                                            int *expires_in_ms) 
     {
+    
     cJSON *J_Token = cJSON_Parse(Json);
     if (J_Token == NULL) 
     {
+        ESP_LOGE(TAG,"%s",Json);
         ESP_LOGE(TAG, "Failed to parse JSON\n");
         return false;
     }

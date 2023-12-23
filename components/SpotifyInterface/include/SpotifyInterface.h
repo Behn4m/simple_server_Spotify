@@ -17,6 +17,9 @@ extern "C" {
 #include "mdns.h"
 #include "MakeSpotifyRequest.h"
 #include "freertos/queue.h"
+#include"SpotifyEventHandler.h"
+#include "MakeSpotifyRequest.h"
+#include "JsonExtraction.h"
 
 // **************************************************************** URI links
 #define ReDirectUri "http%3A%2F%2Fdeskhub.local%2Fcallback%2f"
@@ -103,6 +106,9 @@ typedef void (*ReadTxtFileFromSpiffsPtr)(char *addressInSpiffs, char *key, char 
 typedef void (*WriteTxtFileToSpiffsPtr)(char *addressInSpiffs, char *data);
 typedef bool (*CheckAddressInSpiffsPtr)(char *addressInSpiffs);
 
+extern struct Token_t TokenParam;
+extern struct UserInfo_t UserInfo;
+
 typedef struct {
     char    *code;
     Token_t token;        // Nested struct for token information
@@ -119,6 +125,8 @@ typedef struct {
     WriteTxtFileToSpiffsPtr WriteTxtFileToSpiffs;
     CheckAddressInSpiffsPtr CheckAddressInSpiffs;
 } SpotifyInterfaceHandler_t;
+
+extern SpotifyPrivateHandler_t PrivateHandler;
 
 /**
  * @brief This function initiates the Spotify authorization process.

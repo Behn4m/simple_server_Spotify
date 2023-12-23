@@ -8,7 +8,7 @@ extern "C" {
 /**
 * @brief This function sends a request to the Spotify API to give Curent playing information 
 */
-void GetCurrentPlaying();
+void Spotify_GetCurrentPlaying();
 
 /**
  * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.
@@ -35,6 +35,7 @@ bool Spotify_FindToken(char *Res, uint16_t SizeRes);
 */
 bool Spotify_FindCode(char *Res, uint16_t SizeRes);
 
+
 /**
 * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.
 * @param[in,out] Buf The character buffer to store the request and receive the response.
@@ -53,51 +54,50 @@ void Spotify_SendTokenRequest(char *Buf, size_t SizeBuf, char *code, size_t Size
 * @param[in] SizeBuf The size of the character buffer.
 * @return This function does not return a value.
 */
-void MakePlayerCommandAndSendIt(const char *Method_, const char *Command_, char *Buf, size_t SizeBuf, char *access_token);
+void Spotify_MakePlayerCommandAndSendIt(const char *Method_, const char *Command_, char *Buf, size_t SizeBuf);
 
 /**
 * @brief This function sends a request to the Spotify API to pause the current track in the player.
 * @return This function does not return a value.
 */
-void SendRequestForPause();
+void Spotify_SendRequestForPause();
 
 /**
 * @brief This function sends a request to the Spotify API to play the current track in the player.
 * @return This function does not return a value.
 */
-void SendRequestForPlay();
+void Spotify_SendRequestForPlay();
 
 /**
 * @brief This function sends a request to the Spotify API to skip to the previous track in the player.
 * @return This function does not return a value.
 */
-void SendRequestForPrevious();
+void Spotify_SendRequestForPrevious();
 
 /**
 * @brief This function sends a request to the Spotify API to skip to the next track in the player.
 * @return This function does not return a value.
 */
-void SendRequestForNext();
+void Spotify_SendRequestForNext();
 
 /**
 * @brief This function sends a request to the Spotify API to retrieve the user's current status.
 * @return This function does not return a value.
 */
-void GetUserStatus(char *access_token);
+void Spotify_GetUserStatus();
 
 /**
 * @brief This function sends a request to the Spotify API to retrieve the user's top item.
 * @return This function does not return a value.
 */
-void GetUserTopItems(char *access_token);
+void Spotify_GetUserTopItems();
 
 /**
 * @brief This function sends a request to the Spotify API to retrieve the profile information of a specific user.
 * @param[in] UserId_ The ID of the user whose profile information is to be retrieved.
 * @return This function does not return a value.
 */
-void GetUserProfile(char *UserId_, char *Token);
-
+void Spotify_GetUserProfile(char *UserId_);
 
 #endif
 #ifdef __cplusplus

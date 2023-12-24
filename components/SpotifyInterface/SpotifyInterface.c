@@ -11,7 +11,7 @@ static const char *TAG = "SpotifyTask";
 static const char *TAG_APP = "SPOTIFY";
 SpotifyPrivateHandler_t PrivateHandler;
 static SpotifyInterfaceHandler_t InterfaceHandler;
-
+EventHandlerDataStruct_t EventHandlerData;
 // QueueHandle_t Spotify_BufQueue;
 
 // ****************************** Local Functions
@@ -32,12 +32,13 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler, uint16
     InterfaceHandler = *SpotifyInterfaceHandler;
     PrivateHandler.status = IDLE;
     PrivateHandler.command = NO_COMMAND;
-
+    
     if (InterfaceHandler.CheckAddressInSpiffs != NULL &&
         InterfaceHandler.ReadTxtFileFromSpiffs != NULL &&
         InterfaceHandler.WriteTxtFileToSpiffs != NULL &&
         InterfaceHandler.ConfigAddressInSpiffs != NULL &&
         InterfaceHandler.HttpsResponseReadySemaphore != NULL &&
+        InterfaceHandler.EventHandlerCallBackFunction != NULL &&
         InterfaceHandler.HttpsBufQueue != NULL)
     {
         xTaskCreate(&Spotify_MainTask, "Spotify_MainTask", SpotifyTaskStackSize, NULL, 9, NULL);
@@ -311,13 +312,19 @@ static void Spotify_MainTask()
             }
             else
             {
-                PrivateHandler.command = GET_USER_INFO;
+                PrivateHandler.command = PLAY_NEXT;
                 if (PrivateHandler.command != NO_COMMAND)
                 {
+                    vTaskDelay(pdMS_TO_TICKS(2000));
                     if (Spotify_SendCommand(&PrivateHandler.command) == true)
                     {
                         ESP_LOGI(TAG, "Command succssefully applied");
-                        vTaskDelay(5000);
+                        char buf[2500];
+                        if (xQueueReceive(BufQueue1, buf, portMAX_DELAY) == pdTRUE)
+                        {
+                            ESP_LOGI(TAG, "we receive https responce callback");
+                        }
+                        vTaskDelay(pdMS_TO_TICKS(300000));
                     }
                     else
                     {
@@ -347,7 +354,7 @@ static void Spotify_MainTask()
 void Spotify_GetToken(char *code)
 {
     ESP_LOGI(TAG, "Spotify_GetToken RUN");
-    char receivedData[LONGBUF], JSON[LONGBUF];
+    char receivedData[LONGBUF];
     memset(receivedData, 0x0, sizeof(receivedData));
     Spotify_SendTokenRequest(receivedData, sizeof(receivedData), PrivateHandler.code, sizeof(PrivateHandler.code));
     if (xSemaphoreTake(InterfaceHandler.HttpsResponseReadySemaphore, portMAX_DELAY) == pdTRUE)
@@ -360,6 +367,7 @@ void Spotify_GetToken(char *code)
     else
     {
         ESP_LOGE(TAG, "Timeout, Spotify dont respond");
+        return ;
         // TO DO: the handler should reset here
     }
     // extract keys from JSON
@@ -374,6 +382,8 @@ void Spotify_GetToken(char *code)
         {
             PrivateHandler.status = ACTIVE_USER;
             ESP_LOGI(TAG, "ACTIVE_USER");
+            EventHandlerData.EventHandlerCallBackFunction=InterfaceHandler.EventHandlerCallBackFunction;
+            EventHandlerData.token=PrivateHandler.token;
             Spotify_RegisterEventHandler();
         }
         else
@@ -415,6 +425,7 @@ void func()
 {
    ESP_LOGW("CallBackFunc","bibibibib");
 }
+
 /**
  * @brief Sends a command to control Spotify.
  * This function sends various commands to control the Spotify application based on the given command value.
@@ -444,8 +455,7 @@ bool Spotify_SendCommand(Command_t *command)
     case PLAY:
     {
         /* Send PLAY command to Spotify */
-        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForPlay_, NULL, 0, portMAX_DELAY));
-
+        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForPlay_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         break;
     }
     case PAUSE:
@@ -457,7 +467,8 @@ bool Spotify_SendCommand(Command_t *command)
     case PLAY_NEXT:
     {
         /* Send PLAY_NEXT command to Spotify */
-        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForNext_, NULL, 0, portMAX_DELAY));
+        ESP_LOGE(TAG,"SpotifyEventSendRequestForNext_");
+        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForNext_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         break;
     }
     case PLAY_PREV:
@@ -474,7 +485,7 @@ bool Spotify_SendCommand(Command_t *command)
     }
     case GET_USER_INFO:
     {
-        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventGetUserStatus_, sizeof(func), func, portMAX_DELAY));
+        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventGetUserStatus_, &func, sizeof(&func), portMAX_DELAY));
         /* Send GET_USER_INFO command to Spotify */
         break;
     }

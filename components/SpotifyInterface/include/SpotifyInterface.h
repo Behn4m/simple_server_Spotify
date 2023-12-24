@@ -103,8 +103,9 @@ typedef enum {
 } Command_t;
 
 typedef void (*ReadTxtFileFromSpiffsPtr)(char *addressInSpiffs, char *key, char *value, ...);
-typedef void (*WriteTxtFileToSpiffsPtr)(char *addressInSpiffs, char *data);
+typedef void (*WriteTxtFileToSpiffsPtr)(char *addressInSpiffs, char *key, char *value, ...);
 typedef bool (*CheckAddressInSpiffsPtr)(char *addressInSpiffs);
+typedef void (*EventHandlerCallBackPtr)(char *Buffer);
 
 extern struct Token_t TokenParam;
 extern struct UserInfo_t UserInfo;
@@ -124,8 +125,13 @@ typedef struct {
     ReadTxtFileFromSpiffsPtr ReadTxtFileFromSpiffs;
     WriteTxtFileToSpiffsPtr WriteTxtFileToSpiffs;
     CheckAddressInSpiffsPtr CheckAddressInSpiffs;
+    EventHandlerCallBackPtr EventHandlerCallBackFunction;
 } SpotifyInterfaceHandler_t;
 
+typedef struct {
+    EventHandlerCallBackPtr EventHandlerCallBackFunction;
+    Token_t token; 
+} EventHandlerDataStruct_t;
 extern SpotifyPrivateHandler_t PrivateHandler;
 
 /**

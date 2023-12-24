@@ -4,28 +4,38 @@ static const char *TAG = "Spotify_EventHandler";
 esp_event_loop_handle_t Spotify_EventLoopHandle;
 const esp_event_base_t BASE_SPOTIFY_EVENTS = "BASE_SPOTIFY_EVENTS";
 ESP_EVENT_DECLARE_BASE(BASE_SPOTIFY_EVENTS);
+extern QueueHandle_t BufQueue1;
 
 static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
                                  int32_t EventId, void *EventData)
 {
-    ESP_LOGI(TAG, "we are in Spotify event handler");
+    EventHandlerDataStruct_t *test_t;
+    test_t = (EventHandlerDataStruct_t *)EventData;
+    ESP_LOGW(TAG, "we are in Spotify event handler");
+    ESP_LOGE(TAG, "token.access_token =%s ", test_t->token.access_token);
+    char buf[2000] = "this message from event handler ";
+    test_t->EventHandlerCallBackFunction(buf);
+
     if (EventBase == BASE_SPOTIFY_EVENTS)
     {
         switch (EventId)
         {
         case SpotifyEventSendRequestForNext_:
         {
+
             Spotify_SendRequestForNext();
-            ESP_LOGI(TAG, "Spotify Event handler is working !");
-            // if (xQueueReceive(BufQueue1, EventData, portMAX_DELAY) == pdTRUE)
-            // {
-            //     ESP_LOGI(TAG, "Received TOKEN by Queue: %s\n", (char *)EventData);
-            // }
+            ESP_LOGW(TAG, "Spotify Event handler is working !");
+            char buf[2000];
+            if (xQueueReceive(BufQueue1, buf, portMAX_DELAY) == pdTRUE)
+            {
+                ESP_LOGI(TAG, "after handler  working ");
+            }
+            // test_t->token.access_token
+            // test_t->EventHandlerCallBackFunction(buf);
             break;
         }
         case SpotifyEventSendRequestForPrevious_:
         {
-
             Spotify_SendRequestForPrevious();
             break;
         }

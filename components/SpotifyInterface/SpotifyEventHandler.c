@@ -1,76 +1,124 @@
 #include "SpotifyEventHandler.h"
+// ****************************************************************
 static const char *TAG = "Spotify_EventHandler";
-
 esp_event_loop_handle_t Spotify_EventLoopHandle;
 const esp_event_base_t BASE_SPOTIFY_EVENTS = "BASE_SPOTIFY_EVENTS";
 ESP_EVENT_DECLARE_BASE(BASE_SPOTIFY_EVENTS);
-extern QueueHandle_t BufQueue1;
-
+// ****************************************************************
+/**
+ * @brief when this function call that somebody post event with Spotify event base
+ * @param[in]  EventData is struct that has all things you need include pointer of callback function 
+ *             queue for receive data and user info and token info 
+ */
 static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
                                  int32_t EventId, void *EventData)
 {
-    EventHandlerDataStruct_t *test_t;
-    test_t = (EventHandlerDataStruct_t *)EventData;
-    ESP_LOGW(TAG, "we are in Spotify event handler");
-    ESP_LOGE(TAG, "token.access_token =%s ", test_t->token.access_token);
-    char buf[2000] = "this message from event handler ";
-    test_t->EventHandlerCallBackFunction(buf);
-
+    EventHandlerDataStruct_t *EventData_t;
+    EventData_t = (EventHandlerDataStruct_t *)EventData;
+    char *TempBuffer;
+    TempBuffer = (char *)malloc(LONGBUF * sizeof(char));
+    if (TempBuffer == NULL)
+    {
+        ESP_LOGE(TAG, "Failed to allocate memory for the array.");
+        return;
+    }
+    memset(TempBuffer, 0x0, LONGBUF);
     if (EventBase == BASE_SPOTIFY_EVENTS)
     {
         switch (EventId)
         {
         case SpotifyEventSendRequestForNext_:
         {
-
-            Spotify_SendRequestForNext();
+            Spotify_SendRequestForNext(EventData_t->token);
             ESP_LOGW(TAG, "Spotify Event handler is working !");
-            char buf[2000];
-            if (xQueueReceive(BufQueue1, buf, portMAX_DELAY) == pdTRUE)
+            if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
             {
-                ESP_LOGI(TAG, "after handler  working ");
+                ESP_LOGI(TAG, "Receive data in Event handler by queue ");
             }
-            // test_t->token.access_token
-            // test_t->EventHandlerCallBackFunction(buf);
+            EventData_t->EventHandlerCallBackFunction(TempBuffer);
+
             break;
         }
         case SpotifyEventSendRequestForPrevious_:
         {
-            Spotify_SendRequestForPrevious();
+            Spotify_SendRequestForPrevious(EventData_t->token);
+            if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
+            {
+                ESP_LOGI(TAG, "Receive data in Event handler by queue ");
+            }
+            EventData_t->token.access_token;
+            EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
         }
         case SpotifyEventSendRequestForPlay_:
         {
-            Spotify_SendRequestForPlay();
+            Spotify_SendRequestForPlay(EventData_t->token);
+            if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
+            {
+                ESP_LOGI(TAG, "Receive data in Event handler by queue ");
+            }
+            EventData_t->token.access_token;
+            EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
         }
         case SpotifyEventSendRequestForPause_:
         {
-            Spotify_SendRequestForPause();
+            Spotify_SendRequestForPause(EventData_t->token);
+            if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
+            {
+                ESP_LOGI(TAG, "Receive data in Event handler by queue ");
+            }
+            EventData_t->token.access_token;
+            EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
         }
         case SpotifyEventGetUserStatus_:
         {
-            Spotify_GetUserStatus();
+            Spotify_GetUserStatus(EventData_t->token);
+            if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
+            {
+                ESP_LOGI(TAG, "Receive data in Event handler by queue ");
+            }
+            EventData_t->token.access_token;
+            EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
         }
         case SpotifyEventGetUserTopItems_:
         {
-            Spotify_GetUserTopItems();
+            Spotify_GetUserTopItems(EventData_t->token);
+            if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
+            {
+                ESP_LOGI(TAG, "Receive data in Event handler by queue ");
+            }
+            EventData_t->token.access_token;
+            EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
         }
         case SpotifyEventGetUserProfile_:
         {
-            // Spotify_GetUserProfile(UserInfo.UserID);
+            Spotify_GetUserProfile(EventData_t->UserInfo.UserID,EventData_t->token);
+            if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
+            {
+                ESP_LOGI(TAG, "Receive data in Event handler by queue ");
+            }
+            EventData_t->token.access_token;
+            EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
         }
         case SpotifyEventGetCurrentPlaying_:
         {
             Spotify_GetCurrentPlaying();
+            if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
+            {
+                ESP_LOGI(TAG, "Receive data in Event handler by queue ");
+            }
+            EventData_t->token.access_token;
+            EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
         }
         }
     }
+    free(TempBuffer);
 }
 
 /**

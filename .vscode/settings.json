@@ -30,7 +30,10 @@
         "spotifyinterface.h": "c",
         "jsonextraction.h": "c",
         "stdlib.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "spotifyeventhandler.h": "c",
+        "esp_event.h": "c",
+        "spotifytypedef.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

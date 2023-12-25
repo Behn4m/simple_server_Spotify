@@ -2,8 +2,8 @@
 #include "SpotifyInterface.h"
 
 // ****************************** Extern Variables
-struct Token_t TokenParam;
-struct UserInfo_t UserInfo;
+//  struct Token_t TokenParam;
+//  struct UserInfo_t UserInfo;
 extern QueueHandle_t BufQueue1;
 
 // ****************************** Local Variables
@@ -32,7 +32,7 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler, uint16
     InterfaceHandler = *SpotifyInterfaceHandler;
     PrivateHandler.status = IDLE;
     PrivateHandler.command = NO_COMMAND;
-    
+
     if (InterfaceHandler.CheckAddressInSpiffs != NULL &&
         InterfaceHandler.ReadTxtFileFromSpiffs != NULL &&
         InterfaceHandler.WriteTxtFileToSpiffs != NULL &&
@@ -319,11 +319,10 @@ static void Spotify_MainTask()
                     if (Spotify_SendCommand(&PrivateHandler.command) == true)
                     {
                         ESP_LOGI(TAG, "Command succssefully applied");
-                        char buf[2500];
-                        if (xQueueReceive(BufQueue1, buf, portMAX_DELAY) == pdTRUE)
-                        {
-                            ESP_LOGI(TAG, "we receive https responce callback");
-                        }
+                        // if (xQueueReceive(BufQueue1, buf, portMAX_DELAY) == pdTRUE)
+                        // {
+                        //     ESP_LOGI(TAG, "we receive https responce callback");
+                        // }
                         vTaskDelay(pdMS_TO_TICKS(300000));
                     }
                     else
@@ -367,37 +366,38 @@ void Spotify_GetToken(char *code)
     else
     {
         ESP_LOGE(TAG, "Timeout, Spotify dont respond");
-        return ;
+        return;
         // TO DO: the handler should reset here
     }
     // extract keys from JSON
-    if (ExtractJsonFromHttpResponse(receivedData, receivedData) == true)
+    // if (ExtractJsonFromHttpResponse(receivedData, receivedData) == true)
+    // {
+    if (ExtractionJsonParamForFindAccessToken(receivedData, LONGBUF,
+                                              PrivateHandler.token.access_token,
+                                              PrivateHandler.token.token_type,
+                                              PrivateHandler.token.refresh_token,
+                                              PrivateHandler.token.granted_scope,
+                                              PrivateHandler.token.expires_in_ms) == true)
     {
-        if (ExtractionJsonParamForFindAccessToken(receivedData, LONGBUF,
-                                                  PrivateHandler.token.access_token,
-                                                  PrivateHandler.token.token_type,
-                                                  PrivateHandler.token.refresh_token,
-                                                  PrivateHandler.token.granted_scope,
-                                                  PrivateHandler.token.expires_in_ms) == true)
-        {
-            PrivateHandler.status = ACTIVE_USER;
-            ESP_LOGI(TAG, "ACTIVE_USER");
-            EventHandlerData.EventHandlerCallBackFunction=InterfaceHandler.EventHandlerCallBackFunction;
-            EventHandlerData.token=PrivateHandler.token;
-            Spotify_RegisterEventHandler();
-        }
-        else
-        {
-            PrivateHandler.status = IDLE;
-            ESP_LOGE(TAG, "TOKEN extraction failed, back to IDLE state");
-            // TO DO: the handler should reset here
-        }
+        PrivateHandler.status = ACTIVE_USER;
+        ESP_LOGI(TAG, "ACTIVE_USER");
+        EventHandlerData.EventHandlerCallBackFunction = InterfaceHandler.EventHandlerCallBackFunction;
+        EventHandlerData.token = PrivateHandler.token;
+        EventHandlerData.HttpsBufQueue = InterfaceHandler.HttpsBufQueue;
+        Spotify_RegisterEventHandler();
     }
     else
     {
-        ESP_LOGE(TAG, "Something went wrong, response doesn't include JSON file");
+        PrivateHandler.status = IDLE;
+        ESP_LOGE(TAG, "TOKEN extraction failed, back to IDLE state");
         // TO DO: the handler should reset here
     }
+    // }
+    // else
+    // {
+    //     ESP_LOGE(TAG, "Something went wrong, response doesn't include JSON file");
+    //     // TO DO: the handler should reset here
+    // }
 }
 
 /**
@@ -423,7 +423,7 @@ bool Spotify_IsTokenValid(void)
 }
 void func()
 {
-   ESP_LOGW("CallBackFunc","bibibibib");
+    ESP_LOGW("CallBackFunc", "bibibibib");
 }
 
 /**
@@ -436,8 +436,6 @@ void func()
  * - NO_COMMAND: Waits for a command.
  * - PLAY: Sends the PLAY command to Spotify.
  * - PAUSE: Sends the PAUSE command to Spotify.
- * - STOP: Sends the STOP command to Spotify.
- * - PLAY_PAUSE: Sends the PLAY_PAUSE command to Spotify.
  * - PLAY_NEXT: Sends the PLAY_NEXT command to Spotify.
  * - PLAY_PREV: Sends the PLAY_PREV command to Spotify.
  * - GET_NOW_PLAYING: Sends the GET_NOW_PLAYING command to Spotify.
@@ -467,7 +465,6 @@ bool Spotify_SendCommand(Command_t *command)
     case PLAY_NEXT:
     {
         /* Send PLAY_NEXT command to Spotify */
-        ESP_LOGE(TAG,"SpotifyEventSendRequestForNext_");
         ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForNext_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         break;
     }

@@ -22,6 +22,8 @@ extern "C"
 #define ClientId "55bb974a0667481ab0b2a49fd0abea6d"
 
 // ****************************************************************
+#define SpotifyEventStack (uint32_t)20*1000
+
 #define Sec 1000
 #define Hour 3600
 #define LONGBUF 2500
@@ -107,9 +109,6 @@ extern "C"
     typedef bool (*CheckAddressInSpiffsPtr)(char *addressInSpiffs);
     typedef void (*EventHandlerCallBackPtr)(char *Buffer);
 
-    // extern struct Token_t TokenParam;
-    // extern struct UserInfo_t UserInfo;
-
     typedef struct
     {
         char *code;
@@ -125,7 +124,13 @@ extern "C"
         QueueHandle_t *HttpsBufQueue;
         UserInfo_t UserInfo;
     } EventHandlerDataStruct_t;
-    extern SpotifyPrivateHandler_t PrivateHandler;
+    typedef struct 
+    {
+        Status_t status;
+        QueueHandle_t *HttpsBufQueue;
+    }HttpLocalServerParam_t;
+
+
 #endif
 #ifdef __cplusplus
 }

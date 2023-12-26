@@ -42,7 +42,7 @@ bool ExtractionJsonParamForFindAccessToken(char *Json, size_t JsonBufSize,
                                            char *token_type,
                                            char *refresh_token,
                                            char *granted_scope,
-                                           int *expires_in_ms) 
+                                           int expires_in_ms) 
     {
     
     cJSON *J_Token = cJSON_Parse(Json);
@@ -77,7 +77,7 @@ bool ExtractionJsonParamForFindAccessToken(char *Json, size_t JsonBufSize,
     }
     if (expiresInObj != NULL && expiresInObj->type == cJSON_Number) 
     {
-        // *expires_in_ms = expiresInObj->valueint;
+        expires_in_ms = expiresInObj->valueint;
     }
     if (refreshTokenObj != NULL && refreshTokenObj->type == cJSON_String) 
     {
@@ -98,7 +98,7 @@ bool ExtractionJsonParamForFindAccessToken(char *Json, size_t JsonBufSize,
 
     ESP_LOGI(TAG, "Access Token: %s", access_token);
     ESP_LOGI(TAG, "Token Type: %s", token_type);
-    // ESP_LOGI(TAG, "Expires In: %d seconds\n", *expires_in_ms);
+    ESP_LOGI(TAG, "Expires In: %d seconds\n", expires_in_ms);
     ESP_LOGI(TAG, "Refresh Token: %s", refresh_token);
     ESP_LOGI(TAG, "Scope: %s", granted_scope);
 

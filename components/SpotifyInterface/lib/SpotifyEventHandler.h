@@ -7,13 +7,10 @@ extern "C" {
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_event_base.h"
-#include "MakeSpotifyRequest.h"
+#include "SpotifyMakeRequest.h"
 #include"SpotifyTypedef.h"
 // ****************************************************************
  extern esp_event_loop_handle_t Spotify_EventLoopHandle;
-// ****************************************************************
-#define SpotifyEventStack (uint32_t)20*1000
-#define LONGBUF 2500
 // ****************************************************************
 enum
 {

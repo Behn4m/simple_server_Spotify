@@ -5,16 +5,18 @@ extern "C"
 #ifndef HTTPS_SPOTIFY_H
 #define HTTPS_SPOTIFY_H
 
-#include "MakeSpotifyRequest.h"
+#include "SpotifyMakeRequest.h"
 #include "SpotifyEventHandler.h"
-#include "MakeSpotifyRequest.h"
+#include "SpotifyMakeRequest.h"
 #include "JsonExtraction.h"
 #include "SpotifyTypedef.h"
+#include"SpotifyHttpLocalServer.h"
 
     typedef struct
     {
         QueueHandle_t *HttpsBufQueue;
         SemaphoreHandle_t *HttpsResponseReadySemaphore;
+        SemaphoreHandle_t *CheckSaveSemaphore;
         char *ConfigAddressInSpiffs;
         ReadTxtFileFromSpiffsPtr ReadTxtFileFromSpiffs;
         WriteTxtFileToSpiffsPtr WriteTxtFileToSpiffs;

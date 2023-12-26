@@ -1,6 +1,6 @@
 
 // #include "GlobalInit.h"
-#include "MakeSpotifyRequest.h"
+#include "SpotifyMakeRequest.h"
 // extern struct Token_t TokenParam;
 // extern struct UserInfo_t UserInfo;
 static const char *TAG = "SpotifyTask";

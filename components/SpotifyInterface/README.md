@@ -18,10 +18,10 @@ The Spotify Interface Module is designed to handle authorization and communicati
 ## File Structure
 
 - `SpotifyInterface.c`: Implementation file containing the implementation of functions defined in the header and private functions used to handle tasks.
-- `MakeSpotifyRequest.c`: Implementation of the functions which make web requests needed to communicate with the Spotify Web Service.
+- `SpotifyMakeRequest.c`: Implementation of the functions which make web requests needed to communicate with the Spotify Web Service.
 - `JsonExtraction.c`: Implementation of functions to extract keys from Spotify responses.
 - `SpotifyInterface.h`: Header file containing function prototypes and structure definitions.
-- `MakeSpotifyRequest.h`: Header file containing function prototypes.
+- `SpotifyMakeRequest.h`: Header file containing function prototypes.
 - `JsonExtraction.h`: Header file containing function prototypes.
 - `CMakeLists.txt`: Includes the dependencies, directories, and other CMake configurations.
 

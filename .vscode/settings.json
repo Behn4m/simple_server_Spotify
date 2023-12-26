@@ -33,7 +33,12 @@
         "stdio.h": "c",
         "spotifyeventhandler.h": "c",
         "esp_event.h": "c",
-        "spotifytypedef.h": "c"
+        "spotifytypedef.h": "c",
+        "future": "c",
+        "system_error": "c",
+        "regex": "c",
+        "spotifyhttplocalserver.h": "c",
+        "spotifymakerequest.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

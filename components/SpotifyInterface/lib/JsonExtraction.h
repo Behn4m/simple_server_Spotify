@@ -19,7 +19,7 @@ bool ExtractJsonFromHttpResponse(char *HttpResponse, char *Json);
  * @param[in] SizeJson The size of the JSON string.
  * @return fasle if fail, true if finish successfull.
  */
-bool ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson, char *Token, char *token_type, char *refresh_token, char *granted_scope, int *expires_in_ms);
+bool ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson, char *Token, char *token_type, char *refresh_token, char *granted_scope, int expires_in_ms);
 
 /**
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a UserInfo structure.

@@ -11,10 +11,10 @@ SemaphoreHandle_t HttpsResponseReadySemaphore = NULL;
 SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 
 // ****************************** GLobal Functions ****************************** //
-void CallbackTest(char * buffer)
+void CallbackTest(char *buffer)
 {
 
-    ESP_LOGW("test callback ","%s",buffer);
+    ESP_LOGW("Spotify_callback_test ", "%s", buffer);
 }
 void app_main(void)
 {
@@ -30,16 +30,13 @@ void app_main(void)
 
 #ifdef SpotifyEnable
     SpotifyInterfaceHandler.HttpsBufQueue = &BufQueue1;
-    SpotifyInterfaceHandler.HttpsResponseReadySemaphore = HttpsResponseReadySemaphore;
+    SpotifyInterfaceHandler.HttpsResponseReadySemaphore = &HttpsResponseReadySemaphore;
+    SpotifyInterfaceHandler.CheckSaveSemaphore = &IsSpotifyAuthorizedSemaphore;
     SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
     SpotifyInterfaceHandler.ReadTxtFileFromSpiffs = ReadTxtFileFromSpiffs;
     SpotifyInterfaceHandler.WriteTxtFileToSpiffs = SaveFileInSpiffsWithTxtFormat;
     SpotifyInterfaceHandler.CheckAddressInSpiffs = SpiffsExistenceCheck;
-    SpotifyInterfaceHandler.EventHandlerCallBackFunction=CallbackTest;
-
+    SpotifyInterfaceHandler.EventHandlerCallBackFunction = CallbackTest;
     Spotify_TaskInit(&SpotifyInterfaceHandler, SPOTIFY_TASK_STACK_SIZE);
-    vTaskDelay(10);
-    unsigned int numberOfTasks = uxTaskGetNumberOfTasks();
-    printf("Number of tasks: %u\n", numberOfTasks);
 #endif
 }

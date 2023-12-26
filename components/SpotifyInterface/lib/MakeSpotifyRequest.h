@@ -9,6 +9,8 @@ extern "C" {
 #include "HttpsRequests.h"
 #include "cJSON.h"
 #include "SpotifyInterface.h"
+#include"SpotifyTypedef.h"
+
 /**
 * @brief This function sends a request to the Spotify API to give Curent playing information 
 * @param[in]  Token_t *Token 

@@ -46,7 +46,6 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
             {
                 ESP_LOGI(TAG, "Receive data in Event handler by queue ");
             }
-            EventData_t->token.access_token;
             EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
         }
@@ -57,7 +56,6 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
             {
                 ESP_LOGI(TAG, "Receive data in Event handler by queue ");
             }
-            EventData_t->token.access_token;
             EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
         }
@@ -68,7 +66,6 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
             {
                 ESP_LOGI(TAG, "Receive data in Event handler by queue ");
             }
-            EventData_t->token.access_token;
             EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
         }
@@ -79,7 +76,6 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
             {
                 ESP_LOGI(TAG, "Receive data in Event handler by queue ");
             }
-            EventData_t->token.access_token;
             EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
         }
@@ -90,7 +86,6 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
             {
                 ESP_LOGI(TAG, "Receive data in Event handler by queue ");
             }
-            EventData_t->token.access_token;
             EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
         }
@@ -101,18 +96,16 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
             {
                 ESP_LOGI(TAG, "Receive data in Event handler by queue ");
             }
-            EventData_t->token.access_token;
             EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
         }
         case SpotifyEventGetCurrentPlaying_:
         {
-            Spotify_GetCurrentPlaying();
+            Spotify_GetCurrentPlaying(EventData_t->token);
             if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
             {
                 ESP_LOGI(TAG, "Receive data in Event handler by queue ");
             }
-            EventData_t->token.access_token;
             EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
         }

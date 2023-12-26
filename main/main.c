@@ -14,7 +14,7 @@ SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 void CallbackTest(char * buffer)
 {
 
-    ESP_LOGW("test","%s",buffer);
+    ESP_LOGW("test callback ","%s",buffer);
 }
 void app_main(void)
 {
@@ -37,7 +37,7 @@ void app_main(void)
     SpotifyInterfaceHandler.CheckAddressInSpiffs = SpiffsExistenceCheck;
     SpotifyInterfaceHandler.EventHandlerCallBackFunction=CallbackTest;
 
-    Spotify_TaskInit(&SpotifyInterfaceHandler, SPOTIFY_TASK_STACK_SIZE+10000);
+    Spotify_TaskInit(&SpotifyInterfaceHandler, SPOTIFY_TASK_STACK_SIZE);
     vTaskDelay(10);
     unsigned int numberOfTasks = uxTaskGetNumberOfTasks();
     printf("Number of tasks: %u\n", numberOfTasks);

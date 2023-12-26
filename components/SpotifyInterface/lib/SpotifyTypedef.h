@@ -121,7 +121,7 @@ extern "C"
     typedef struct
     {
         EventHandlerCallBackPtr EventHandlerCallBackFunction;
-        Token_t token;
+        Token_t *token;
         QueueHandle_t *HttpsBufQueue;
         UserInfo_t UserInfo;
     } EventHandlerDataStruct_t;

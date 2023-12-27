@@ -1,28 +1,7 @@
 #include "SpotifyHttpLocalServer.h"
 static const char *TAG = "SpotifyTask";
+// ******************************
 HttpLocalServerParam_t HttpLocalServerLocalParam;
-
-/**
- * @brief This checks if the application is initiated and connected to Spotify web service
- * @param SpotifyInterfaceHandler as the handler
- * @return true if everything is OK, false for ERROR
- */
-// bool Spotify_IsConnected(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
-// {
-//     // TO DO: implement the function
-//     return true;
-// }
-
-/**
- * @brief This function get and apply the command to Spotify service.
- * @param command could be play, pause, stop, next, previous, user_info, song_img, artist_img, etc.
- * @return true if function successfully sent the command to Spotify
- */
-bool Spotify_PlaybackCommand(char *command)
-{
-    // TO DO: implement the function
-    return true;
-}
 
 /**
  * @brief This function handles the first HTTPS request to Spotify and redirects the user to the authorization page.
@@ -32,13 +11,13 @@ bool Spotify_PlaybackCommand(char *command)
 static esp_err_t Spotify_RequestDataAccess(httpd_req_t *req)
 {
     char *loc_url;
-    loc_url = (char *)malloc((100+SMALLBUF) * sizeof(char));
+    loc_url = (char *)malloc((2 * SMALLBUF) * sizeof(char));
     if (loc_url == NULL)
     {
-        printf("Failed to allocate memory for the array.\n\n");
+        ESP_LOGI(TAG, "Failed to allocate memory for the array.\n\n");
     }
-    memset(loc_url, 0x0, SMALLBUF);
-    if ((HttpLocalServerLocalParam.status == IDLE))
+    memset(loc_url, 0x0, SMALLBUF * 2);
+    if (((*HttpLocalServerLocalParam.status) == IDLE))
     {
 
         ESP_LOGI(TAG, "Starting authorization, sending request for TOKEN");
@@ -52,6 +31,7 @@ static esp_err_t Spotify_RequestDataAccess(httpd_req_t *req)
     {
         ESP_LOGW(TAG, "Spotify is already initiated");
     }
+    free(loc_url);
     return ESP_OK;
 }
 
@@ -62,30 +42,25 @@ static esp_err_t Spotify_RequestDataAccess(httpd_req_t *req)
  */
 static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *req)
 {
-    char *Buf;
-    Buf = (char *)malloc(MEDIUMBUF * sizeof(char));
-    if (Buf == NULL)
-    {
-        printf("Failed to allocate memory for the array.\n\n");
-    }
-    memset(Buf, 0x0, MEDIUMBUF);
+    char Buf[500];
     if (httpd_req_get_url_query_str(req, Buf, sizeof(Buf)) == ESP_OK)
     {
-        httpd_resp_set_type(req, "text/plain");
-        httpd_resp_set_status(req, HTTPD_200);
-        httpd_resp_send(req, Buf, HTTPD_RESP_USE_STRLEN);
         if (Spotify_FindCode(Buf, sizeof(Buf)) == true)
         {
-            vTaskDelay(Sec / portTICK_PERIOD_MS);
             if (xQueueSend(*(HttpLocalServerLocalParam.HttpsBufQueue), Buf, 0) == pdTRUE)
             {
-                printf("Sent data with queue \n");
+                ESP_LOGI(TAG, "Sent data with queue");
             }
             ESP_LOGI(TAG, "we find CODE");
+            httpd_resp_set_type(req, "text/plain");
+            httpd_resp_set_status(req, HTTPD_200);
+            httpd_resp_send(req, Buf, HTTPD_RESP_USE_STRLEN);
+            (*HttpLocalServerLocalParam.status) = AUTHORIZED;
         }
         else
         {
             ESP_LOGE(TAG, "response does not include code at the beginning ");
+            (*HttpLocalServerLocalParam.status) = IDLE;
             return ESP_FAIL;
         }
     }
@@ -95,18 +70,10 @@ static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *req)
         httpd_resp_set_status(req, HTTPD_500);
         httpd_resp_send(req, Buf, HTTPD_RESP_USE_STRLEN);
         ESP_LOGW(TAG, "bad arguments - the response does not include correct structure");
+        (*HttpLocalServerLocalParam.status) = IDLE;
     }
-    free(Buf);
     return ESP_OK;
 }
-
-/**
- * this strcut is http URL handler if receive "/" Spotify_Update_Info getting run
- */
-// static const httpd_uri_t Spotify_Update_Info = {
-//     .uri = "/spotify/IsConnected",
-//     .method = HTTP_GET,
-//     .handler = Spotify_IsConnected};
 
 /**
  * this strcut is http URL handler if receive "/" Spotify_RequestDataAccess getting run
@@ -115,15 +82,13 @@ static const httpd_uri_t Spotify_Request_Access_URI = {
     .uri = "/",
     .method = HTTP_GET,
     .handler = Spotify_RequestDataAccess};
-
 /**
- * this strcut is http URL handler if receive "/callback" Spotify_HttpsCallbackHandler getting run
+ * this strcut is http URL handler if receive "/callback" HttpsUserCallBackFunc getting run
  */
-static const httpd_uri_t Spotify_Get_Access_Response_URI = {
+static const httpd_uri_t Spotify_Response_Access_URI = {
     .uri = "/callback/",
     .method = HTTP_GET,
     .handler = Spotify_HttpsCallbackHandler};
-
 /**
  * @brief Setup parameter for starting Http Local server
  * @param[in] HttpLocalServerParam_t HttpLocalServerParam_)
@@ -148,8 +113,7 @@ httpd_handle_t StartWebServer()
     {
         ESP_LOGI(TAG, "Registering URI handlers");
         httpd_register_uri_handler(localServer, &Spotify_Request_Access_URI);
-        httpd_register_uri_handler(localServer, &Spotify_Get_Access_Response_URI);
-        // httpd_register_uri_handler(localServer, &Spotify_Update_Info);
+        httpd_register_uri_handler(localServer, &Spotify_Response_Access_URI);
         return localServer;
     }
     else

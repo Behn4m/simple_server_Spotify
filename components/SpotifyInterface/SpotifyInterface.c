@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "SpotifyInterface.h"
 
-
 // ****************************** Local Variables
 static const char *TAG = "SpotifyTask";
 
@@ -52,19 +51,16 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler, uint16
     }
     return true;
 }
-
 /**
- * @brief This function is the entry point for handling HTTPS requests for Spotify authorization.
- * @param[in] parameters because it is a Task!
- * @return none
+ * @brief Run Http local service
  */
-static void Spotify_MainTask(void *pvparameters)
+void HttpServerService()
 {
+    HttpLocalServerParam.HttpsBufQueue = InterfaceHandler.HttpsBufQueue;
+    HttpLocalServerParam.status = &(PrivateHandler.status);
+    SetupHttpLocalServer(HttpLocalServerParam);
     static httpd_handle_t SpotifyLocalServer = NULL;
     StartMDNSService();
-    HttpLocalServerParam.HttpsBufQueue = InterfaceHandler.HttpsBufQueue;
-    HttpLocalServerParam.status = PrivateHandler.status;
-    SetupHttpLocalServer(HttpLocalServerParam);
     SpotifyLocalServer = StartWebServer();
     if (SpotifyLocalServer != NULL)
     {
@@ -74,7 +70,14 @@ static void Spotify_MainTask(void *pvparameters)
     {
         ESP_LOGW(TAG, "Creating Spotify local server failed!");
     }
-
+}
+/**
+ * @brief This function is the entry point for handling HTTPS requests for Spotify authorization.
+ * @param[in] parameters because it is a Task!
+ */
+static void Spotify_MainTask(void *pvparameters)
+{
+    HttpServerService();
     while (1)
     {
         switch (PrivateHandler.status)
@@ -266,7 +269,7 @@ bool Spotify_SendCommand(Command_t *command)
     }
     case GET_USER_INFO:
     {
-        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventGetUserStatus_,  &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
+        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventGetUserStatus_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         /* Send GET_USER_INFO command to Spotify */
         break;
     }

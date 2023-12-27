@@ -7,8 +7,8 @@ ESP_EVENT_DECLARE_BASE(BASE_SPOTIFY_EVENTS);
 // ****************************************************************
 /**
  * @brief when this function call that somebody post event with Spotify event base
- * @param[in]  EventData is struct that has all things you need include pointer of callback function 
- *             queue for receive data and user info and token info 
+ * @param[in]  EventData is struct that has all things you need include pointer of callback function
+ *             queue for receive data and user info and token info
  */
 static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
                                  int32_t EventId, void *EventData)
@@ -91,7 +91,13 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
         }
         case SpotifyEventGetUserProfile_:
         {
-            Spotify_GetUserProfile(EventData_t->UserInfo.UserID,EventData_t->token);
+            if ((EventData_t->UserInfo.UserID[0]) == 0)
+            {
+                ESP_LOGE(TAG, "you should run 'GetUserInfo' before this !");
+                free(TempBuffer);
+                return;
+            }
+            Spotify_GetUserProfile(EventData_t->UserInfo.UserID, EventData_t->token);
             if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
             {
                 ESP_LOGI(TAG, "Receive data in Event handler by queue ");

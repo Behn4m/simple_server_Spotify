@@ -7,7 +7,6 @@ static const char *TAG = "SpotifyTask";
 // ****************************** Local Functions
 static void Spotify_GetToken(char *code, size_t SizeOfCode);
 static bool Spotify_IsTokenValid(void);
-static bool Spotify_SendCommand(Command_t *command);
 static void Spotify_RenewAccessToken(Token_t *token);
 static void Spotify_MainTask(void *pvparameters);
 
@@ -30,14 +29,12 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler, uint16
 {
     InterfaceHandler = *SpotifyInterfaceHandler;
     PrivateHandler.status = IDLE;
-    PrivateHandler.command = NO_COMMAND;
-
     if (InterfaceHandler.CheckAddressInSpiffs != NULL &&
         InterfaceHandler.ReadTxtFileFromSpiffs != NULL &&
         InterfaceHandler.WriteTxtFileToSpiffs != NULL &&
         InterfaceHandler.ConfigAddressInSpiffs != NULL &&
         InterfaceHandler.HttpsResponseReadySemaphore != NULL &&
-        InterfaceHandler.CheckSaveSemaphore != NULL &&
+        InterfaceHandler.IsSpotifyAuthorizedSemaphore != NULL &&
         InterfaceHandler.EventHandlerCallBackFunction != NULL &&
         InterfaceHandler.HttpsBufQueue != NULL)
     {
@@ -51,6 +48,7 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler, uint16
     }
     return true;
 }
+
 /**
  * @brief Run Http local service
  */
@@ -101,33 +99,18 @@ static void Spotify_MainTask(void *pvparameters)
         }
         case ACTIVE_USER:
         {
+            xSemaphoreGive((*InterfaceHandler.IsSpotifyAuthorizedSemaphore));
+            vTaskDelay(pdMS_TO_TICKS(100000));
             if (Spotify_IsTokenValid() != true)
             {
                 PrivateHandler.status = EXPIRED_USER;
-            }
-            else
-            {
-                PrivateHandler.command = PLAY_NEXT;
-                if (PrivateHandler.command != NO_COMMAND)
-                {
-                    vTaskDelay(pdMS_TO_TICKS(2000));
-                    if (Spotify_SendCommand(&PrivateHandler.command) == true)
-                    {
-                        ESP_LOGI(TAG, "Command succssefully applied");
-                        vTaskDelay(pdMS_TO_TICKS(300000));
-                    }
-                    else
-                    {
-                        ESP_LOGE(TAG, "Command not applied");
-                    }
-                    PrivateHandler.command = NO_COMMAND;
-                }
             }
             break;
         }
         case EXPIRED_USER:
         {
             void Spotify_RenewAccessToken(Token_t * token);
+            break;
         }
         }
         vTaskDelay(pdMS_TO_TICKS(100));
@@ -149,6 +132,7 @@ static void Spotify_GetToken(char *code, size_t SizeOfCode)
     Spotify_SendTokenRequest(receivedData, sizeof(receivedData), code, SizeOfCode);
     if (xSemaphoreTake(*(InterfaceHandler.HttpsResponseReadySemaphore), portMAX_DELAY) == pdTRUE)
     {
+         vTaskDelay(pdMS_TO_TICKS(100));
         if (xQueueReceive(*(InterfaceHandler.HttpsBufQueue), receivedData, portMAX_DELAY) == pdTRUE)
         {
             ESP_LOGI(TAG, "Received TOKEN by Queue: %s\n", receivedData);
@@ -161,6 +145,7 @@ static void Spotify_GetToken(char *code, size_t SizeOfCode)
         // TO DO: the handler should reset here
     }
     // extract keys from JSON
+    
     if (ExtractJsonFromHttpResponse(receivedData, receivedData) == true)
     {
         if (ExtractionJsonParamForFindAccessToken(receivedData, LONGBUF,
@@ -230,12 +215,16 @@ bool Spotify_IsTokenValid(void)
  * - GET_SONG_IMAGE_URL: Sends the GET_SONG_IMAGE_URL command to Spotify.
  * - GET_ARTIST_IMAGE_URL: Sends the GET_ARTIST_IMAGE_URL command to Spotify.
  */
-bool Spotify_SendCommand(Command_t *command)
+bool Spotify_SendCommand(int  command)
 {
     bool retValue = true;
-    int userCommand = *command;
-    ESP_LOGI(TAG, "user Command is %d", userCommand);
-    switch (userCommand)
+    ESP_LOGI(TAG, "user Command is %d", command);
+    if (PrivateHandler.status != ACTIVE_USER)
+    {
+        ESP_LOGE(TAG, "You are not authorized !");
+        return false;
+    }
+    switch (command)
     {
     case PLAY:
     {
@@ -287,5 +276,5 @@ bool Spotify_SendCommand(Command_t *command)
     }
     }
 
-    return retValue;
+    return true;
 }

@@ -13,14 +13,13 @@ SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 // ****************************** GLobal Functions ****************************** //
 void CallbackTest(char *buffer)
 {
-
     ESP_LOGW("Spotify_callback_test ", "%s", buffer);
 }
 void app_main(void)
 {
     GlobalInit();
     nvsFlashInit();
-    SpiffsGlobalConfig();
+    // SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
     WifiStationMode("Hardware10", "87654321");
 #else
@@ -31,12 +30,16 @@ void app_main(void)
 #ifdef SpotifyEnable
     SpotifyInterfaceHandler.HttpsBufQueue = &BufQueue1;
     SpotifyInterfaceHandler.HttpsResponseReadySemaphore = &HttpsResponseReadySemaphore;
-    SpotifyInterfaceHandler.CheckSaveSemaphore = &IsSpotifyAuthorizedSemaphore;
+    SpotifyInterfaceHandler.IsSpotifyAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;
     SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
     SpotifyInterfaceHandler.ReadTxtFileFromSpiffs = ReadTxtFileFromSpiffs;
     SpotifyInterfaceHandler.WriteTxtFileToSpiffs = SaveFileInSpiffsWithTxtFormat;
     SpotifyInterfaceHandler.CheckAddressInSpiffs = SpiffsExistenceCheck;
     SpotifyInterfaceHandler.EventHandlerCallBackFunction = CallbackTest;
     Spotify_TaskInit(&SpotifyInterfaceHandler, SPOTIFY_TASK_STACK_SIZE);
+    // after this semaphore you can use playback command function in every where !
+    if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
+    Spotify_SendCommand(GetNowPlaying);
+
 #endif
 }

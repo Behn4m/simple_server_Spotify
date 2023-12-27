@@ -48,18 +48,6 @@ extern "C"
 #define ACTIVE_USER 2
 #define EXPIRED_USER 3
 
-#define NO_COMMAND 0
-#define PLAY_PAUSE 1
-#define PLAY_NEXT 2
-#define PLAY_PREV 3
-#define STOP 4
-#define PLAY 5
-#define PAUSE 6
-#define GET_NOW_PLAYING 7
-#define GET_USER_INFO 8
-#define GET_SONG_IMAGE_URL 9
-#define GET_ARTIST_IMAGE_URL 10
-
     typedef struct Token_t
     {
         char access_token[access_token_str_size];
@@ -89,20 +77,6 @@ extern "C"
         expired_user = 3
     } Status_t;
 
-    typedef enum
-    {
-        NoCommand = 0,
-        PlayPause = 1,
-        PlayNext = 2,
-        PlayPrev = 3,
-        Stop = 4,
-        Play = 5,
-        Pause = 6,
-        GetNowPlaying = 7,
-        GetUserInfo = 8,
-        GetSongImageUrl = 9,
-        GetArtisImageUrl = 10,
-    } Command_t;
 
     typedef void (*ReadTxtFileFromSpiffsPtr)(char *addressInSpiffs, char *key, char *value, ...);
     typedef void (*WriteTxtFileToSpiffsPtr)(char *addressInSpiffs, char *key, char *value, ...);
@@ -115,7 +89,6 @@ extern "C"
         Token_t token;       // Nested struct for token information
         UserInfo_t userInfo; // Nested struct for user information
         Status_t status;
-        Command_t command;
     } SpotifyPrivateHandler_t;
     typedef struct
     {

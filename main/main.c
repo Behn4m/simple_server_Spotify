@@ -21,7 +21,7 @@ void app_main(void)
     nvsFlashInit();
     // SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
-    WifiStationMode("Hardware10", "87654321");
+    WifiStationMode("H11", "87654321");
 #else
     wifiConnectionModule();
 #endif
@@ -39,7 +39,13 @@ void app_main(void)
     Spotify_TaskInit(&SpotifyInterfaceHandler, SPOTIFY_TASK_STACK_SIZE);
     // after this semaphore you can use playback command function in every where !
     if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
+    Spotify_SendCommand(Pause);
+    vTaskDelay((pdMS_TO_TICKS(SEC*10)));
+    Spotify_SendCommand(Play);
+    vTaskDelay((pdMS_TO_TICKS(SEC*10)));
     Spotify_SendCommand(GetNowPlaying);
+    vTaskDelay((pdMS_TO_TICKS(SEC*10)));
+    Spotify_SendCommand(GetUserInfo);
 
 #endif
 }

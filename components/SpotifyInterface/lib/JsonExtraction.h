@@ -11,15 +11,14 @@ extern "C" {
  * @param[out] Json The output buffer to store the extracted JSON content.
  * @return Returns true if the JSON content is successfully extracted, otherwise false.
  */
-bool ExtractJsonFromHttpResponse(char *HttpResponse, char *Json); 
-
+bool ExtractJsonFromHttpResponse(char *HttpResponse, size_t SizeRes) ;
 /**
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a TokenParam structure.
  * @param[in] Json The input JSON string.
  * @param[in] SizeJson The size of the JSON string.
  * @return fasle if fail, true if finish successfull.
  */
-bool ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson, char *Token, char *token_type, char *refresh_token, char *granted_scope, int expires_in_ms);
+bool ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson, char *Token, char *TokenType, char *RefreshToken, char *GrantedScope, int ExpiresInMS);
 
 /**
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a UserInfo structure.

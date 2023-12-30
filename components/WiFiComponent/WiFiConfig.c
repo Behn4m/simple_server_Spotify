@@ -256,10 +256,10 @@ void WifiConnectionTask()
         ReadTxtFileFromSpiffs(WifiConfigDirectoryAddressInSpiffs, "SSID", UserWifi.SSID, "PASS", UserWifi.PassWord, NULL, NULL);
         IsThereSaveFlag = 1;
         WifiStationMode(UserWifi.SSID, UserWifi.PassWord);
-        if (xSemaphoreTake(ExitFromApModeSemaphore, 30 * Sec / portTICK_PERIOD_MS) == pdTRUE)
+        if (xSemaphoreTake(ExitFromApModeSemaphore, 30 * SEC / portTICK_PERIOD_MS) == pdTRUE)
         {
             ESP_LOGI(TAG, "FinishWifiConfig semaphore ");
-            vTaskDelay(3 * Sec / portTICK_PERIOD_MS);
+            vTaskDelay(3 * SEC / portTICK_PERIOD_MS);
             xSemaphoreGive(FinishWifiConfig);
             vTaskDelete(NULL);
         }
@@ -285,9 +285,9 @@ void WifiConnectionTask()
         if (xSemaphoreTake(WaitSemaphore, portMAX_DELAY) == pdTRUE)
         {
             ESP_LOGI(TAG, "give ssid and password but , we do'nt test them");
-            vTaskDelay(3*Sec / portTICK_PERIOD_MS);
+            vTaskDelay(3*SEC / portTICK_PERIOD_MS);
             WifiStationMode(UserWifi.SSID, UserWifi.PassWord);
-            vTaskDelay(10 * Sec / portTICK_PERIOD_MS);
+            vTaskDelay(10 * SEC / portTICK_PERIOD_MS);
             while (1)
             {
                 if (xSemaphoreTake(ExitFromApModeSemaphore, 10 / portTICK_PERIOD_MS) == pdTRUE)

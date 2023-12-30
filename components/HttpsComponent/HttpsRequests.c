@@ -43,7 +43,7 @@
 #include "esp_crt_bundle.h"
 #endif
 #include "time_sync.h"
-#include"GlobalInit.h"
+#include "GlobalInit.h"
 extern SemaphoreHandle_t HttpsResponseReadySemaphore;
 extern QueueHandle_t BufQueue1;
 TaskHandle_t xTaskHandlerHTTPS;
@@ -65,11 +65,11 @@ static bool save_client_session = false;
 #endif
 
 /**
-* @brief This function performs an HTTPS GET request to a specified server URL with the provided configuration.
-* @param[in] cfg The TLS configuration for the request.
-* @param[in] WEB_SERVER_URL The URL to which the request should be sent.
-* @param[in] REQUEST The HTTP request to be sent.
-*/
+ * @brief This function performs an HTTPS GET request to a specified server URL with the provided configuration.
+ * @param[in] cfg The TLS configuration for the request.
+ * @param[in] WEB_SERVER_URL The URL to which the request should be sent.
+ * @param[in] REQUEST The HTTP request to be sent.
+ */
 static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, const char *REQUEST)
 {
     char buf[LONGBUF];
@@ -122,6 +122,7 @@ static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, con
     {
         len = sizeof(buf) - 1;
         memset(buf, 0x00, sizeof(buf));
+        vTaskDelay(SEC / portTICK_PERIOD_MS);
         ret = esp_tls_conn_read(tls, (char *)buf, len);
 
         if (ret == ESP_TLS_ERR_SSL_WANT_WRITE || ret == ESP_TLS_ERR_SSL_WANT_READ)
@@ -155,7 +156,7 @@ exit:
     for (int countdown = 10; countdown >= 0; countdown--)
     {
         ESP_LOGI(TAG, "%d...", countdown);
-        vTaskDelay(Sec / portTICK_PERIOD_MS);
+        vTaskDelay(SEC / portTICK_PERIOD_MS);
     }
 }
 
@@ -266,14 +267,14 @@ static void https_request_task(void *pvparameters)
 }
 
 /**
-* @brief This function performs an HTTPS GET request to a specified server URL with the provided header request.
-* @param[in] HeaderOfRequest The header of the HTTPS request.
-* @param[in] SizeHeaderOfRequest The size of the header of the HTTPS request.
-* @param[in] Url The URL to which the request should be sent.
-* @param[in] SizeUrl The size of the URL.
-* @param[in] Server The server address.
-* @param[in] SizeServer The size of the server address.
-*/
+ * @brief This function performs an HTTPS GET request to a specified server URL with the provided header request.
+ * @param[in] HeaderOfRequest The header of the HTTPS request.
+ * @param[in] SizeHeaderOfRequest The size of the header of the HTTPS request.
+ * @param[in] Url The URL to which the request should be sent.
+ * @param[in] SizeUrl The size of the URL.
+ * @param[in] Server The server address.
+ * @param[in] SizeServer The size of the server address.
+ */
 void HttpsHandler(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *Url, size_t SizeUrl, char *Server, size_t SizeServer)
 {
     HttpsBuf = (char *)malloc(SizeHeaderOfRequest * sizeof(char));

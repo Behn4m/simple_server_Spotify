@@ -146,17 +146,22 @@ static void Spotify_GetToken(char *code, size_t SizeOfCode)
     }
     // extract keys from JSON
     
-    if (ExtractJsonFromHttpResponse(receivedData, receivedData) == true)
+    if (ExtractJsonFromHttpResponse(receivedData, sizeof(receivedData)) == true)
     {
+        ESP_LOGW(TAG, "receivedData =%s",receivedData);
         if (ExtractionJsonParamForFindAccessToken(receivedData, LONGBUF,
-                                                  PrivateHandler.token.access_token,
-                                                  PrivateHandler.token.token_type,
-                                                  PrivateHandler.token.refresh_token,
-                                                  PrivateHandler.token.granted_scope,
-                                                  PrivateHandler.token.expires_in_ms) == true)
+                                                  PrivateHandler.token.AccessToken,
+                                                  PrivateHandler.token.TokenType,
+                                                  PrivateHandler.token.RefreshToken,
+                                                  PrivateHandler.token.GrantedScope,
+                                                  PrivateHandler.token.ExpiresInMS) == true)
         {
             PrivateHandler.status = ACTIVE_USER;
             ESP_LOGI(TAG, "ACTIVE_USER");
+            ESP_LOGW(TAG, "PrivateHandler.token.TokenType=%s",PrivateHandler.token.TokenType);
+            ESP_LOGW(TAG, "PrivateHandler.token.RefreshToken =%s",PrivateHandler.token.RefreshToken);
+            ESP_LOGW(TAG, "PrivateHandler.token.GrantedScope =%s",PrivateHandler.token.GrantedScope);
+            ESP_LOGW(TAG, "PrivateHandler.token.AccessToken,=%s",PrivateHandler.token.AccessToken);
             EventHandlerData.EventHandlerCallBackFunction = InterfaceHandler.EventHandlerCallBackFunction;
             EventHandlerData.token = &(PrivateHandler.token);
             EventHandlerData.HttpsBufQueue = InterfaceHandler.HttpsBufQueue;
@@ -194,7 +199,7 @@ void Spotify_RenewAccessToken(Token_t *token)
  * */
 bool Spotify_IsTokenValid(void)
 {
-    // TO DO: check the time of last access_token update
+    // TO DO: check the time of last AccessToken update
     return true;
 }
 
@@ -226,49 +231,49 @@ bool Spotify_SendCommand(int  command)
     }
     switch (command)
     {
-    case PLAY:
+    case Play:
     {
         /* Send PLAY command to Spotify */
         ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForPlay_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         break;
     }
-    case PAUSE:
+    case Pause:
     {
         /* Send PAUSE command to Spotify */
         ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForPause_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         break;
     }
-    case PLAY_NEXT:
+    case PlayNext:
     {
         /* Send PLAY_NEXT command to Spotify */
         ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForNext_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         break;
     }
-    case PLAY_PREV:
+    case PlayPrev:
     {
         ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForPrevious_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         /* Send PLAY_PREV command to Spotify */
         break;
     }
-    case GET_NOW_PLAYING:
+    case GetNowPlaying:
     {
         ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventGetCurrentPlaying_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         /* Send GET_NOW_PLAYING command to Spotify */
         break;
     }
-    case GET_USER_INFO:
+    case GetUserInfo:
     {
         ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventGetUserStatus_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         /* Send GET_USER_INFO command to Spotify */
         break;
     }
-    case GET_SONG_IMAGE_URL:
+    case GetSongImageUrl:
     {
         // ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForNext_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         /* Send GET_SONG_IMAGE_URL command to Spotify */
         break;
     }
-    case GET_ARTIST_IMAGE_URL:
+    case GetArtisImageUrl:
     {
         // ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForNext_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         /* Send GET_ARTIST_IMAGE_URL command to Spotify */

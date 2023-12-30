@@ -24,24 +24,24 @@ extern "C"
 // ****************************************************************
 #define SpotifyEventStack (uint32_t)20 * 1000
 
-#define Sec 1000
-#define Hour 3600
+#define SEC 1000
+#define HOUR 3600
 #define LONGBUF 2500
 #define MEDIUMBUF 1000
 #define SMALLBUF 250
 
-#define access_token_str_size 512
-#define token_type_str_size 20
-#define refresh_token_str_size 512
-#define granted_scope_str_size 512
+#define AccessTokenStrSize 512
+#define TokenTypeStrSize 20
+#define RefreshTokenStrSize 512
+#define GrantedScopeStrSize 512
 
-#define DisplayName_str_size 128
-#define ProfileURL_str_size 256
-#define UserID_str_size 128
-#define Image1_str_size 256
-#define Image2_str_size 256
-#define Country_str_size 30
-#define Product_str_size 30
+#define DisplayNameStrSize 128
+#define ProfileURLStrSize 256
+#define UserIDStrSize 128
+#define Image1StrSize 256
+#define Image2StrSize 25
+#define CountryStrSize 30
+#define ProductStrSize 30
 
 #define IDLE 0
 #define AUTHORIZED 1
@@ -50,23 +50,23 @@ extern "C"
 
     typedef struct Token_t
     {
-        char access_token[access_token_str_size];
-        char token_type[token_type_str_size];
-        int expires_in_ms;
-        char refresh_token[refresh_token_str_size];
-        char granted_scope[granted_scope_str_size];
+        char AccessToken[AccessTokenStrSize];
+        char TokenType[TokenTypeStrSize];
+        int ExpiresInMS;
+        char RefreshToken[RefreshTokenStrSize];
+        char GrantedScope[GrantedScopeStrSize];
     } Token_t;
 
     typedef struct UserInfo_t
     {
-        char DisplayName[DisplayName_str_size];
-        char ProfileURL[ProfileURL_str_size];
-        char UserID[UserID_str_size];
-        char Image1[Image1_str_size];
-        char Image2[Image2_str_size];
+        char DisplayName[DisplayNameStrSize];
+        char ProfileURL[ProfileURLStrSize];
+        char UserID[UserIDStrSize];
+        char Image1[Image1StrSize];
+        char Image2[Image2StrSize];
         int Follower;
-        char Country[Country_str_size];
-        char Product[Product_str_size];
+        char Country[CountryStrSize];
+        char Product[ProductStrSize];
     } UserInfo_t;
 
     typedef enum

@@ -25,8 +25,8 @@ extern "C" {
 #define SpotifyConfigAddressInSpiffs "/spiffs/SpotifyConfig.txt"
 
 // **************************************************************** constant macros
-#define Sec 1000
-#define Hour 3600
+#define SEC 1000
+#define HOUR 3600
 #define LONGBUF 2500
 #define MEDIUMBUF 1000
 #define SMALLBUF   250

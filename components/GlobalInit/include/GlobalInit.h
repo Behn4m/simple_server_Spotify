@@ -27,9 +27,9 @@ extern "C" {
 // **************************************************************** constant macros
 #define SEC 1000
 #define HOUR 3600
-#define LONGBUF 2500
-#define MEDIUMBUF 1000
-#define SMALLBUF   250
+#define LONG_BUF 2500
+#define MEDIUM_BUF 1000
+#define SMALL_BUF   250
 #define SPOTIFY_TASK_STACK_SIZE (uint16_t)(10*1000U)
 #define HttpsTaskStackSize   (uint16_t)(9*1000U)
 #define WifiModuleTaskStackSize   (uint16_t)(10*1000U)

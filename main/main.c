@@ -9,7 +9,6 @@
 QueueHandle_t BufQueue1;
 SemaphoreHandle_t HttpsResponseReadySemaphore = NULL;
 SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
-
 // ****************************** GLobal Functions ****************************** //
 void CallbackTest(char *buffer)
 {
@@ -21,12 +20,11 @@ void app_main(void)
     nvsFlashInit();
     // SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
-    WifiStationMode("H11", "87654321");
+    WifiStationMode("Hardware10", "87654321");
 #else
     wifiConnectionModule();
 #endif
     // lvglGui();
-
 #ifdef SpotifyEnable
     SpotifyInterfaceHandler.HttpsBufQueue = &BufQueue1;
     SpotifyInterfaceHandler.HttpsResponseReadySemaphore = &HttpsResponseReadySemaphore;
@@ -39,13 +37,14 @@ void app_main(void)
     Spotify_TaskInit(&SpotifyInterfaceHandler, SPOTIFY_TASK_STACK_SIZE);
     // after this semaphore you can use playback command function in every where !
     if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
-    Spotify_SendCommand(Pause);
-    vTaskDelay((pdMS_TO_TICKS(SEC*10)));
+        Spotify_SendCommand(GetNowPlaying);
+    vTaskDelay((pdMS_TO_TICKS(SEC * 10)));
     Spotify_SendCommand(Play);
-    vTaskDelay((pdMS_TO_TICKS(SEC*10)));
+    vTaskDelay((pdMS_TO_TICKS(SEC * 15)));
     Spotify_SendCommand(GetNowPlaying);
-    vTaskDelay((pdMS_TO_TICKS(SEC*10)));
+    vTaskDelay((pdMS_TO_TICKS(SEC * 15)));
     Spotify_SendCommand(GetUserInfo);
-
+    vTaskDelay((pdMS_TO_TICKS(SEC * 15)));
+    Spotify_SendCommand(Pause);
 #endif
 }

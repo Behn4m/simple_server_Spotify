@@ -72,7 +72,7 @@ static bool save_client_session = false;
  */
 static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, const char *REQUEST)
 {
-    char buf[LONGBUF];
+    char buf[LONG_BUF];
     int ret, len;
 
     esp_tls_t *tls = esp_tls_init();

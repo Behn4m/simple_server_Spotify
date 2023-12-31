@@ -26,22 +26,22 @@ extern "C"
 
 #define SEC 1000
 #define HOUR 3600
-#define LONGBUF 2500
-#define MEDIUMBUF 1000
-#define SMALLBUF 250
+#define LONG_BUF 2500
+#define MEDIUM_BUF 1000
+#define SMALL_BUF 250
 
-#define AccessTokenStrSize 512
-#define TokenTypeStrSize 20
-#define RefreshTokenStrSize 512
-#define GrantedScopeStrSize 512
+#define ACCESS_TOKEN_STR_SIZE 512
+#define TOKEN_TYPE_STR_SIZE  20
+#define REFRESH_TOKEN_STP_SIZE 512
+#define GRANTED_SCOP_STR_SIZE 512
 
-#define DisplayNameStrSize 128
-#define ProfileURLStrSize 256
-#define UserIDStrSize 128
-#define Image1StrSize 256
-#define Image2StrSize 25
-#define CountryStrSize 30
-#define ProductStrSize 30
+#define DISPLAY_NAME_STR_SIZE 128
+#define PROFILE_STR_SIZE 256
+#define USER_ID_SIZE 128
+#define IMAGE1_STR_SIZE 256
+#define IMAGE2_STR_SIZE 25
+#define COUNTERY_STR_SIZE 30
+#define PRODUCT_STR_SIZE 30
 
 #define IDLE 0
 #define AUTHORIZED 1
@@ -50,23 +50,23 @@ extern "C"
 
     typedef struct Token_t
     {
-        char AccessToken[AccessTokenStrSize];
-        char TokenType[TokenTypeStrSize];
+        char AccessToken[ACCESS_TOKEN_STR_SIZE];
+        char TokenType[TOKEN_TYPE_STR_SIZE ];
         int ExpiresInMS;
-        char RefreshToken[RefreshTokenStrSize];
-        char GrantedScope[GrantedScopeStrSize];
+        char RefreshToken[REFRESH_TOKEN_STP_SIZE];
+        char GrantedScope[GRANTED_SCOP_STR_SIZE];
     } Token_t;
 
     typedef struct UserInfo_t
     {
-        char DisplayName[DisplayNameStrSize];
-        char ProfileURL[ProfileURLStrSize];
-        char UserID[UserIDStrSize];
-        char Image1[Image1StrSize];
-        char Image2[Image2StrSize];
+        char DisplayName[DISPLAY_NAME_STR_SIZE];
+        char ProfileURL[PROFILE_STR_SIZE];
+        char UserID[USER_ID_SIZE];
+        char Image1[IMAGE1_STR_SIZE];
+        char Image2[IMAGE2_STR_SIZE];
         int Follower;
-        char Country[CountryStrSize];
-        char Product[ProductStrSize];
+        char Country[COUNTERY_STR_SIZE];
+        char Product[PRODUCT_STR_SIZE];
     } UserInfo_t;
 
     typedef enum

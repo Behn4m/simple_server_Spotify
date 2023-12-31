@@ -15,6 +15,7 @@ SpotifyPrivateHandler_t PrivateHandler;
 SpotifyInterfaceHandler_t InterfaceHandler;
 EventHandlerDataStruct_t EventHandlerData;
 HttpLocalServerParam_t HttpLocalServerParam;
+static httpd_handle_t SpotifyLocalServer = NULL;
 
 // ******************************
 
@@ -57,7 +58,6 @@ void HttpServerService()
     HttpLocalServerParam.HttpsBufQueue = InterfaceHandler.HttpsBufQueue;
     HttpLocalServerParam.status = &(PrivateHandler.status);
     SetupHttpLocalServer(HttpLocalServerParam);
-    static httpd_handle_t SpotifyLocalServer = NULL;
     StartMDNSService();
     SpotifyLocalServer = StartWebServer();
     if (SpotifyLocalServer != NULL)
@@ -88,7 +88,7 @@ static void Spotify_MainTask(void *pvparameters)
         case AUTHORIZED:
         {
             {
-                char receiveData[LONGBUF];
+                char receiveData[LONG_BUF];
                 if (xQueueReceive(*(InterfaceHandler.HttpsBufQueue), receiveData, portMAX_DELAY) == pdTRUE)
                 {
                     ESP_LOGI(TAG, "Received TOKEN by Queue: %s\n", receiveData);
@@ -100,11 +100,9 @@ static void Spotify_MainTask(void *pvparameters)
         case ACTIVE_USER:
         {
             xSemaphoreGive((*InterfaceHandler.IsSpotifyAuthorizedSemaphore));
-            vTaskDelay(pdMS_TO_TICKS(100000));
-            if (Spotify_IsTokenValid() != true)
-            {
-                PrivateHandler.status = EXPIRED_USER;
-            }
+            StopSpotifyWebServer(SpotifyLocalServer);
+            SpotifyLocalServer = NULL;
+            vTaskDelete(NULL);
             break;
         }
         case EXPIRED_USER:
@@ -127,12 +125,12 @@ static void Spotify_MainTask(void *pvparameters)
 static void Spotify_GetToken(char *code, size_t SizeOfCode)
 {
     ESP_LOGI(TAG, "Spotify_GetToken RUN");
-    char receivedData[LONGBUF];
+    char receivedData[LONG_BUF];
     memset(receivedData, 0x0, sizeof(receivedData));
     Spotify_SendTokenRequest(receivedData, sizeof(receivedData), code, SizeOfCode);
     if (xSemaphoreTake(*(InterfaceHandler.HttpsResponseReadySemaphore), portMAX_DELAY) == pdTRUE)
     {
-         vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(SEC));
         if (xQueueReceive(*(InterfaceHandler.HttpsBufQueue), receivedData, portMAX_DELAY) == pdTRUE)
         {
             ESP_LOGI(TAG, "Received TOKEN by Queue: %s\n", receivedData);
@@ -145,11 +143,9 @@ static void Spotify_GetToken(char *code, size_t SizeOfCode)
         // TO DO: the handler should reset here
     }
     // extract keys from JSON
-    
     if (ExtractJsonFromHttpResponse(receivedData, sizeof(receivedData)) == true)
     {
-        ESP_LOGW(TAG, "receivedData =%s",receivedData);
-        if (ExtractionJsonParamForFindAccessToken(receivedData, LONGBUF,
+        if (ExtractionJsonParamForFindAccessToken(receivedData, LONG_BUF,
                                                   PrivateHandler.token.AccessToken,
                                                   PrivateHandler.token.TokenType,
                                                   PrivateHandler.token.RefreshToken,
@@ -158,10 +154,6 @@ static void Spotify_GetToken(char *code, size_t SizeOfCode)
         {
             PrivateHandler.status = ACTIVE_USER;
             ESP_LOGI(TAG, "ACTIVE_USER");
-            ESP_LOGW(TAG, "PrivateHandler.token.TokenType=%s",PrivateHandler.token.TokenType);
-            ESP_LOGW(TAG, "PrivateHandler.token.RefreshToken =%s",PrivateHandler.token.RefreshToken);
-            ESP_LOGW(TAG, "PrivateHandler.token.GrantedScope =%s",PrivateHandler.token.GrantedScope);
-            ESP_LOGW(TAG, "PrivateHandler.token.AccessToken,=%s",PrivateHandler.token.AccessToken);
             EventHandlerData.EventHandlerCallBackFunction = InterfaceHandler.EventHandlerCallBackFunction;
             EventHandlerData.token = &(PrivateHandler.token);
             EventHandlerData.HttpsBufQueue = InterfaceHandler.HttpsBufQueue;
@@ -220,7 +212,7 @@ bool Spotify_IsTokenValid(void)
  * - GET_SONG_IMAGE_URL: Sends the GET_SONG_IMAGE_URL command to Spotify.
  * - GET_ARTIST_IMAGE_URL: Sends the GET_ARTIST_IMAGE_URL command to Spotify.
  */
-bool Spotify_SendCommand(int  command)
+bool Spotify_SendCommand(int command)
 {
     bool retValue = true;
     ESP_LOGI(TAG, "user Command is %d", command);

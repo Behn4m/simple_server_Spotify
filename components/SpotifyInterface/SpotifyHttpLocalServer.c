@@ -11,12 +11,12 @@ HttpLocalServerParam_t HttpLocalServerLocalParam;
 static esp_err_t Spotify_RequestDataAccess(httpd_req_t *req)
 {
     char *loc_url;
-    loc_url = (char *)malloc((2 * SMALLBUF) * sizeof(char));
+    loc_url = (char *)malloc((2 * SMALL_BUF) * sizeof(char));
     if (loc_url == NULL)
     {
         ESP_LOGI(TAG, "Failed to allocate memory for the array.\n\n");
     }
-    memset(loc_url, 0x0, SMALLBUF * 2);
+    memset(loc_url, 0x0, SMALL_BUF * 2);
     if (((*HttpLocalServerLocalParam.status) == IDLE))
     {
 
@@ -126,7 +126,7 @@ httpd_handle_t StartWebServer()
  * @brief This function stops the web server for handling HTTPS requests.
  * @return Returns the HTTP server handle if it is started successfully, or NULL otherwise.
  */
-static esp_err_t StopWebServer(httpd_handle_t server)
+ esp_err_t StopSpotifyWebServer(httpd_handle_t server)
 {
     return httpd_stop(server);
 }
@@ -144,7 +144,7 @@ static void HttpLocalServerDisconnectHandler(void *arg, esp_event_base_t event_b
     httpd_handle_t *server = (httpd_handle_t *)arg;
     if (*server)
     {
-        if (StopWebServer(*server) == ESP_OK)
+        if (StopSpotifyWebServer(*server) == ESP_OK)
         {
             *server = NULL;
         }

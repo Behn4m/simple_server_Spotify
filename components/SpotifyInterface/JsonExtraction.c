@@ -19,7 +19,7 @@ bool ExtractJsonFromHttpResponse(char *HttpResponse, size_t SizeRes)
 {
  uint8_t FlgFindToken = 0;
     uint32_t SizeOfJson = 0;
-    char json[MEDIUMBUF] = {0};
+    char json[MEDIUM_BUF] = {0};
     for (uint16_t i = 0; i < SizeRes; i++)
     {
         if (HttpResponse[i] == '{')
@@ -76,18 +76,18 @@ bool ExtractionJsonParamForFindAccessToken(char *Json, size_t JsonBufSize,
 
     if (accessTokenObj != NULL && accessTokenObj->type == cJSON_String) 
     {
-        if (AccessToken != NULL && AccessTokenStrSize > 0) 
+        if (AccessToken != NULL && ACCESS_TOKEN_STR_SIZE > 0) 
         {
-            strncpy(AccessToken, accessTokenObj->valuestring, AccessTokenStrSize - 1);
-            AccessToken[AccessTokenStrSize - 1] = '\0';
+            strncpy(AccessToken, accessTokenObj->valuestring, ACCESS_TOKEN_STR_SIZE - 1);
+            AccessToken[ACCESS_TOKEN_STR_SIZE - 1] = '\0';
         }
     }
     if (tokenTypeObj != NULL && tokenTypeObj->type == cJSON_String) 
     {
-        if (TokenType != NULL && TokenTypeStrSize > 0) 
+        if (TokenType != NULL && TOKEN_TYPE_STR_SIZE > 0) 
         {
-            strncpy(TokenType, tokenTypeObj->valuestring, TokenTypeStrSize - 1);
-            TokenType[TokenTypeStrSize - 1] = '\0';
+            strncpy(TokenType, tokenTypeObj->valuestring, TOKEN_TYPE_STR_SIZE - 1);
+            TokenType[TOKEN_TYPE_STR_SIZE - 1] = '\0';
         }
     }
     if (expiresInObj != NULL && expiresInObj->type == cJSON_Number) 
@@ -96,18 +96,18 @@ bool ExtractionJsonParamForFindAccessToken(char *Json, size_t JsonBufSize,
     }
     if (refreshTokenObj != NULL && refreshTokenObj->type == cJSON_String) 
     {
-        if (RefreshToken != NULL && RefreshTokenStrSize > 0) 
+        if (RefreshToken != NULL && REFRESH_TOKEN_STP_SIZE > 0) 
         {
-            strncpy(RefreshToken, refreshTokenObj->valuestring, RefreshTokenStrSize - 1);
-            RefreshToken[RefreshTokenStrSize - 1] = '\0';
+            strncpy(RefreshToken, refreshTokenObj->valuestring, REFRESH_TOKEN_STP_SIZE - 1);
+            RefreshToken[REFRESH_TOKEN_STP_SIZE - 1] = '\0';
         }
     }
     if (scopeObj != NULL && scopeObj->type == cJSON_String) 
     {
-        if (GrantedScope != NULL && GrantedScopeStrSize > 0) 
+        if (GrantedScope != NULL && GRANTED_SCOP_STR_SIZE > 0) 
         {
-            strncpy(GrantedScope, scopeObj->valuestring, GrantedScopeStrSize - 1);
-            GrantedScope[GrantedScopeStrSize - 1] = '\0';
+            strncpy(GrantedScope, scopeObj->valuestring, GRANTED_SCOP_STR_SIZE - 1);
+            GrantedScope[GRANTED_SCOP_STR_SIZE - 1] = '\0';
         }
     }
 
@@ -137,32 +137,32 @@ int ExtractionJsonParamForFindUserInfo(char *JsonUSerInfo, char *DisplayName, ch
     cJSON *displayNameItem = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "DisplayName");
     if (cJSON_IsString(displayNameItem) && (displayNameItem->valuestring != NULL))
     {
-        strncpy(DisplayName, displayNameItem->valuestring, DisplayNameStrSize - 1);
-        DisplayName[DisplayNameStrSize - 1] = '\0';
+        strncpy(DisplayName, displayNameItem->valuestring, DISPLAY_NAME_STR_SIZE - 1);
+        DisplayName[DISPLAY_NAME_STR_SIZE - 1] = '\0';
     }
     cJSON *spotifyProfileURLItem = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "ProfileURL");
     if (cJSON_IsString(spotifyProfileURLItem) && (spotifyProfileURLItem->valuestring != NULL))
     {
-        strncpy(ProfileURL, spotifyProfileURLItem->valuestring, ProfileURLStrSize - 1);
-        ProfileURL[ProfileURLStrSize - 1] = '\0';
+        strncpy(ProfileURL, spotifyProfileURLItem->valuestring, PROFILE_STR_SIZE - 1);
+        ProfileURL[PROFILE_STR_SIZE - 1] = '\0';
     }
     cJSON *UserInfoIDItem = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "UserID");
     if (cJSON_IsString(UserInfoIDItem) && (UserInfoIDItem->valuestring != NULL))
     {
-        strncpy(UserID, UserInfoIDItem->valuestring, UserIDStrSize - 1);
-        UserID[UserIDStrSize - 1] = '\0';
+        strncpy(UserID, UserInfoIDItem->valuestring, USER_ID_SIZE - 1);
+        UserID[USER_ID_SIZE - 1] = '\0';
     }
     cJSON *image1Item = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "Image1");
     if (cJSON_IsString(image1Item) && (image1Item->valuestring != NULL))
     {
-        strncpy(Image1, image1Item->valuestring, Image1StrSize - 1);
-        Image1[Image1StrSize - 1] = '\0';
+        strncpy(Image1, image1Item->valuestring, IMAGE1_STR_SIZE - 1);
+        Image1[IMAGE1_STR_SIZE - 1] = '\0';
     }
     cJSON *image2Item = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "Image2");
     if (cJSON_IsString(image2Item) && (image2Item->valuestring != NULL))
     {
-        strncpy(Image2, image2Item->valuestring, Image2StrSize - 1);
-        Image2[Image2StrSize - 1] = '\0';
+        strncpy(Image2, image2Item->valuestring, IMAGE2_STR_SIZE - 1);
+        Image2[IMAGE2_STR_SIZE - 1] = '\0';
     }
     cJSON *followerItem = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "Follower");
     if (cJSON_IsNumber(followerItem))
@@ -172,14 +172,14 @@ int ExtractionJsonParamForFindUserInfo(char *JsonUSerInfo, char *DisplayName, ch
     cJSON *countryItem = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "Country");
     if (cJSON_IsString(countryItem) && (countryItem->valuestring != NULL))
     {
-        strncpy(Country, countryItem->valuestring, CountryStrSize - 1);
-        Country[CountryStrSize - 1] = '\0';
+        strncpy(Country, countryItem->valuestring, COUNTERY_STR_SIZE - 1);
+        Country[COUNTERY_STR_SIZE - 1] = '\0';
     }
     cJSON *productItem = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "Product");
     if (cJSON_IsString(productItem) && (productItem->valuestring != NULL))
     {
-        strncpy(Product, productItem->valuestring, ProductStrSize - 1);
-        Product[ProductStrSize - 1] = '\0';
+        strncpy(Product, productItem->valuestring, PRODUCT_STR_SIZE - 1);
+        Product[PRODUCT_STR_SIZE - 1] = '\0';
     }
     cJSON_Delete(J_UsserInfo);
     ESP_LOGI(TAG,"DisplayName: %s\n", DisplayName);

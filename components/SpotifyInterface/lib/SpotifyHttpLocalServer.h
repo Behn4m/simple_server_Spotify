@@ -22,6 +22,12 @@ extern "C"
      * @brief This function starts the mDNS service.
      */
     bool StartMDNSService();
+
+    /**
+     * @brief This function stops the web server for handling HTTPS requests.
+     * @return Returns the HTTP server handle if it is started successfully, or NULL otherwise.
+     */
+    esp_err_t StopSpotifyWebServer(httpd_handle_t server);
 #endif
 #ifdef __cplusplus
 }

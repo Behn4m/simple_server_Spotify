@@ -16,13 +16,13 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
     EventHandlerDataStruct_t *EventData_t;
     EventData_t = (EventHandlerDataStruct_t *)EventData;
     char *TempBuffer;
-    TempBuffer = (char *)malloc(LONGBUF * sizeof(char));
+    TempBuffer = (char *)malloc(LONG_BUF * sizeof(char));
     if (TempBuffer == NULL)
     {
         ESP_LOGE(TAG, "Failed to allocate memory for the array.");
         return;
     }
-    memset(TempBuffer, 0x0, LONGBUF);
+    memset(TempBuffer, 0x0, LONG_BUF);
     if (EventBase == BASE_SPOTIFY_EVENTS)
     {
         switch (EventId)

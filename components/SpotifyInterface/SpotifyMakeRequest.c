@@ -264,7 +264,7 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *
     char RefreshToken[SMALL_BUF + 150];
     strcpy(RefreshToken, RefreshToken_);
     char grand[MEDIUM_BUF] = {0};
-    sprintf(grand, "grant_type=RefreshToken&RefreshToken=%s&redirect_uri=%s", RefreshToken, ReDirectUri);
+    sprintf(grand, "grant_type=refresh_token&refresh_token=%s&redirect_uri=%s", RefreshToken, ReDirectUri);
     memset(Buf, 0x0, SizeBuf);
     sprintf(Buf, "POST /api/token HTTP/1.1 \r\n"
                  "Host: accounts.spotify.com\r\n"

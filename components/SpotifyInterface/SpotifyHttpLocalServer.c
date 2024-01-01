@@ -51,7 +51,7 @@ static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *req)
             {
                 ESP_LOGI(TAG, "Sent data with queue");
             }
-            ESP_LOGI(TAG, "we find CODE");
+            ESP_LOGI(TAG, "the CODE found in response");
             httpd_resp_set_type(req, "text/plain");
             httpd_resp_set_status(req, HTTPD_200);
             httpd_resp_send(req, Buf, HTTPD_RESP_USE_STRLEN);

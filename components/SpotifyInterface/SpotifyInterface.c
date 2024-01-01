@@ -101,7 +101,7 @@ static void IRAM_ATTR Spotify_MainTask(void *pvparameters)
                 char receiveData[LONG_BUF];
                 if (xQueueReceive(*(InterfaceHandler.HttpsBufQueue), receiveData, portMAX_DELAY) == pdTRUE)
                 {
-                    ESP_LOGI(TAG, "Received TOKEN by Queue: %s\n", receiveData);
+                    ESP_LOGI(TAG, "Received CODE by queue: %s\n", receiveData);
                 }
                 Spotify_GetToken(receiveData, sizeof(receiveData));
                 size_t freeHeapSize = xPortGetFreeHeapSize();
@@ -228,7 +228,7 @@ static void Spotify_GetToken(char *code, size_t SizeOfCode)
         vTaskDelay(pdMS_TO_TICKS(SEC));
         if (xQueueReceive(*(InterfaceHandler.HttpsBufQueue), receivedData, portMAX_DELAY) == pdTRUE)
         {
-            ESP_LOGI(TAG, "Received TOKEN by Queue: %s\n", receivedData);
+            ESP_LOGI(TAG, "Received TOKEN by queue: %s\n", receivedData);
         }
     }
     else

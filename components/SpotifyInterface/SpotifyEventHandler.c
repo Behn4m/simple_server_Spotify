@@ -108,6 +108,10 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
         case SpotifyEventGetCurrentPlaying_:
         {
             Spotify_GetCurrentPlaying(EventData_t->token);
+            size_t freeHeapSize = xPortGetFreeHeapSize();
+
+            // Print or use the free heap size as needed
+            ESP_LOGE(TAG, "Free Heap Size: %u bytes\n", freeHeapSize);
             if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
             {
                 ESP_LOGI(TAG, "Receive data in Event handler by queue ");

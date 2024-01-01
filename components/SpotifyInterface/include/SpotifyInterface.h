@@ -44,10 +44,8 @@ extern "C"
         QueueHandle_t *HttpsBufQueue;
         SemaphoreHandle_t *HttpsResponseReadySemaphore;
         SemaphoreHandle_t *IsSpotifyAuthorizedSemaphore;
+        SemaphoreHandle_t *WorkWithStorageInSpotifyComponentSemaphore;
         char *ConfigAddressInSpiffs;
-        ReadTxtFileFromSpiffsPtr ReadTxtFileFromSpiffs;
-        WriteTxtFileToSpiffsPtr WriteTxtFileToSpiffs;
-        CheckAddressInSpiffsPtr CheckAddressInSpiffs;
         EventHandlerCallBackPtr EventHandlerCallBackFunction;
     } SpotifyInterfaceHandler_t;
     /**

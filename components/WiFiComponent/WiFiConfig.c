@@ -52,7 +52,7 @@ static void EventStationModeHandler(void *Arg, esp_event_base_t EventBase,
     {
         ESP_LOGI(TAG, "WiFi connected ... \n");
         // check if the ExitFromApModeSemaphore is defined in AP mode, then give it
-        if (ExitFromApModeSemaphore != NULL) 
+        if (ExitFromApModeSemaphore != NULL)
         {
             xSemaphoreGive(ExitFromApModeSemaphore);
         }
@@ -99,7 +99,7 @@ static void EventStationModeHandler(void *Arg, esp_event_base_t EventBase,
  */
 esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_)
 {
-    #ifndef WIFI_INIT_STA_MODE
+#ifndef WIFI_INIT_STA_MODE
     if (IsThereSaveFlag == 0)
     {
         esp_netif_deinit();
@@ -111,7 +111,7 @@ esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_)
         esp_wifi_stop();
         esp_wifi_deinit();
     }
-    #endif
+#endif
     StationModeEventGroup = xEventGroupCreate();
     ESP_ERROR_CHECK(esp_netif_init());
     NetifStationStruct = esp_netif_create_default_wifi_sta();

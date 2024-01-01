@@ -39,6 +39,7 @@ extern SemaphoreHandle_t FinishWifiConfig;
 
 #ifdef SpotifyEnable
 extern SemaphoreHandle_t IsSpotifyAuthorizedSemaphore;
+extern SemaphoreHandle_t WorkWithStorageInSpotifyComponentSemaphore ;
 /**
  * timeout definition part 
 */

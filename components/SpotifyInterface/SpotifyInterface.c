@@ -1,15 +1,16 @@
 #include <stdio.h>
 #include "SpotifyInterface.h"
-
+#include "SpiffsManger.h"
 // ****************************** Local Variables
 static const char *TAG = "SpotifyTask";
 
 // ****************************** Local Functions
 static void Spotify_GetToken(char *code, size_t SizeOfCode);
 static bool Spotify_IsTokenValid(void);
-static void Spotify_RenewAccessToken(Token_t *token);
+static void Spotify_RenewTokenWithRefreshToken(Token_t *token);
 static void Spotify_MainTask(void *pvparameters);
-
+static bool Spotify_TokenRenew(void);
+static bool CheckTime(bool ExpireFLG);
 // ******************************
 SpotifyPrivateHandler_t PrivateHandler;
 SpotifyInterfaceHandler_t InterfaceHandler;
@@ -21,6 +22,14 @@ static httpd_handle_t SpotifyLocalServer = NULL;
 
 ESP_EVENT_DECLARE_BASE(BASE_SPOTIFY_EVENTS);
 
+void Spotify_CheckRefreshTokenExistence()
+{
+    if (xSemaphoreTake(*(InterfaceHandler.WorkWithStorageInSpotifyComponentSemaphore), 1) == pdTRUE)
+    {
+        PrivateHandler.status = EXPIRED_USER;
+    }
+}
+
 /**
  * @brief This function initiates the Spotify authorization process.
  * @param SpotifyInterfaceHandler as the handler
@@ -30,15 +39,14 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler, uint16
 {
     InterfaceHandler = *SpotifyInterfaceHandler;
     PrivateHandler.status = IDLE;
-    if (InterfaceHandler.CheckAddressInSpiffs != NULL &&
-        InterfaceHandler.ReadTxtFileFromSpiffs != NULL &&
-        InterfaceHandler.WriteTxtFileToSpiffs != NULL &&
-        InterfaceHandler.ConfigAddressInSpiffs != NULL &&
+    Spotify_CheckRefreshTokenExistence();
+    if (InterfaceHandler.ConfigAddressInSpiffs != NULL &&
         InterfaceHandler.HttpsResponseReadySemaphore != NULL &&
         InterfaceHandler.IsSpotifyAuthorizedSemaphore != NULL &&
         InterfaceHandler.EventHandlerCallBackFunction != NULL &&
         InterfaceHandler.HttpsBufQueue != NULL)
     {
+
         xTaskCreate(&Spotify_MainTask, "Spotify_MainTask", SpotifyTaskStackSize, NULL, 9, NULL);
         ESP_LOGI(TAG, "Spotify app initiated successfully");
     }
@@ -69,13 +77,15 @@ void HttpServerService()
         ESP_LOGW(TAG, "Creating Spotify local server failed!");
     }
 }
+
 /**
  * @brief This function is the entry point for handling HTTPS requests for Spotify authorization.
  * @param[in] parameters because it is a Task!
  */
-static void Spotify_MainTask(void *pvparameters)
+static void IRAM_ATTR Spotify_MainTask(void *pvparameters)
 {
     HttpServerService();
+    bool ExpireFLG = 1;
     while (1)
     {
         switch (PrivateHandler.status)
@@ -94,24 +104,109 @@ static void Spotify_MainTask(void *pvparameters)
                     ESP_LOGI(TAG, "Received TOKEN by Queue: %s\n", receiveData);
                 }
                 Spotify_GetToken(receiveData, sizeof(receiveData));
+                size_t freeHeapSize = xPortGetFreeHeapSize();
+                ESP_LOGE(TAG, "Free Heap Size: %u bytes\n", freeHeapSize);
             }
             break;
         }
         case ACTIVE_USER:
         {
+            size_t freeHeapSize = xPortGetFreeHeapSize();
+            ESP_LOGE(TAG, "Free Heap Size: %u bytes\n", freeHeapSize);
             xSemaphoreGive((*InterfaceHandler.IsSpotifyAuthorizedSemaphore));
             StopSpotifyWebServer(SpotifyLocalServer);
             SpotifyLocalServer = NULL;
-            vTaskDelete(NULL);
+            PrivateHandler.status = SAVE_NEW_TOKEN;
+            // vTaskDelete(NULL);
+            break;
+        }
+        case CHECK_TIME:
+        {
+            CheckTime(ExpireFLG);
+            break;
+        }
+        case SAVE_NEW_TOKEN:
+        {
+            SpiffsRemoveFile(InterfaceHandler.ConfigAddressInSpiffs);
+            SaveFileInSpiffsWithTxtFormat(InterfaceHandler.ConfigAddressInSpiffs, "refresh_token", PrivateHandler.token.RefreshToken, NULL, NULL);
+            PrivateHandler.status = CHECK_TIME;
             break;
         }
         case EXPIRED_USER:
         {
-            void Spotify_RenewAccessToken(Token_t * token);
+            if (Spotify_TokenRenew() == true)
+            {
+                PrivateHandler.status = SAVE_NEW_TOKEN;
+            }
+            else
+            {
+                PrivateHandler.status = EXPIRED_USER;
+            }
             break;
         }
         }
         vTaskDelay(pdMS_TO_TICKS(100));
+    }
+}
+
+/**
+ * @brief This function check Time for
+ * @param[in] bool ExpireFLG , this flag showing token is expire or not
+ * @return ExpireFLG
+ * */
+static bool CheckTime(bool ExpireFLG)
+{
+    TickType_t StartTick = 0;
+    TickType_t CurrentTick = 0;
+    if (ExpireFLG)
+    {
+        StartTick = xTaskGetTickCount();
+        ExpireFLG = 0;
+        PrivateHandler.status = CHECK_TIME;
+        return ExpireFLG;
+    }
+    else
+    {
+        CurrentTick = xTaskGetTickCount();
+        uint32_t ElapsedTime = (CurrentTick - StartTick) * portTICK_PERIOD_MS;
+        ElapsedTime = ElapsedTime / 1000;
+        if (ElapsedTime > (HOUR - 300))
+        {
+            PrivateHandler.status = EXPIRED_USER;
+        }
+        ESP_LOGE(TAG, "token getting expired !");
+
+        return ExpireFLG;
+    }
+}
+
+/**
+ * @brief This function reads refresh token from spiffs and send request for new token
+ * @return True if token received and saved, false for otherwise
+ */
+static bool Spotify_TokenRenew(void)
+{
+    char receivedData[LONG_BUF];
+    ReadTxtFileFromSpiffs(InterfaceHandler.ConfigAddressInSpiffs, "refresh_token", PrivateHandler.token.RefreshToken, NULL, NULL);
+    SendRequest_ExchangeTokenWithRefreshToken(receivedData, sizeof(receivedData), PrivateHandler.token.RefreshToken);
+    if (xQueueReceive((*InterfaceHandler.HttpsBufQueue), receivedData, portMAX_DELAY) == pdTRUE)
+    {
+        ESP_LOGI(TAG, "Token received by Queue: %s\n", receivedData);
+        if (Spotify_FindToken(receivedData, sizeof(receivedData)) == 1)
+        {
+            ESP_LOGI(TAG, "Token found!");
+            return true;
+        }
+        else
+        {
+            ESP_LOGW(TAG, "Token not found!");
+            return false;
+        }
+    }
+    else
+    {
+        ESP_LOGW(TAG, "timeout - Spotify not respond!");
+        return false;
     }
 }
 
@@ -174,19 +269,8 @@ static void Spotify_GetToken(char *code, size_t SizeOfCode)
 }
 
 /**
- * @brief Renews the Spotify access token using the refresh token.
- * This function renews the Spotify access token by utilizing the provided refresh token.
- * The refreshed access token will be updated in the provided token structure.
- * @param token A pointer to the Token_t structure containing the refresh token.
- */
-void Spotify_RenewAccessToken(Token_t *token)
-{
-    // TO DO: send request and get new access token, and save it on memory
-}
-
-/**
  * @brief
- * @param code T
+ * @param code
  * @return true if valid, false if not valid
  * */
 bool Spotify_IsTokenValid(void)
@@ -216,7 +300,7 @@ bool Spotify_SendCommand(int command)
 {
     bool retValue = true;
     ESP_LOGI(TAG, "user Command is %d", command);
-    if (PrivateHandler.status != ACTIVE_USER)
+    if (PrivateHandler.status == IDLE || PrivateHandler.status == AUTHORIZED)
     {
         ESP_LOGE(TAG, "You are not authorized !");
         return false;

@@ -380,7 +380,7 @@ void SpiffsGlobalConfig()
     #ifdef SpotifyEnable
     if (SpiffsExistenceCheck(SpotifyConfigAddressInSpiffs) == 1)
     {
-        xSemaphoreGive(IsSpotifyAuthorizedSemaphore);
+        xSemaphoreGive(WorkWithStorageInSpotifyComponentSemaphore);
     }
     #endif
 }

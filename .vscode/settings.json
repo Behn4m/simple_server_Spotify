@@ -38,7 +38,11 @@
         "system_error": "c",
         "regex": "c",
         "spotifyhttplocalserver.h": "c",
-        "spotifymakerequest.h": "c"
+        "spotifymakerequest.h": "c",
+        "task.h": "c",
+        "freertosconfig.h": "c",
+        "semphr.h": "c",
+        "projdefs.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

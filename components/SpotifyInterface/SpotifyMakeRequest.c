@@ -1,6 +1,5 @@
-
-// #include "GlobalInit.h"
 #include "SpotifyMakeRequest.h"
+
 static const char *TAG = "SpotifyTask";
 
 /**

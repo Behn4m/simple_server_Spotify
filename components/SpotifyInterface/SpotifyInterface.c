@@ -17,7 +17,7 @@ SpotifyInterfaceHandler_t InterfaceHandler;
 EventHandlerDataStruct_t EventHandlerData;
 HttpLocalServerParam_t HttpLocalServerParam;
 static httpd_handle_t SpotifyLocalServer = NULL;
-
+QueueHandle_t  SendCodeFromHttpToSpotifyTask = NULL;
 // ******************************
 
 ESP_EVENT_DECLARE_BASE(BASE_SPOTIFY_EVENTS);
@@ -61,9 +61,10 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler, uint16
 /**
  * @brief Run Http local service
  */
-void HttpServerService()
+void HttpServerServiceInit()
 {
-    HttpLocalServerParam.HttpsBufQueue = InterfaceHandler.HttpsBufQueue;
+    SendCodeFromHttpToSpotifyTask= xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF]));
+    HttpLocalServerParam.SendCodeFromHttpToSpotifyTask = &SendCodeFromHttpToSpotifyTask;
     HttpLocalServerParam.status = &(PrivateHandler.status);
     SetupHttpLocalServer(HttpLocalServerParam);
     StartMDNSService();
@@ -82,9 +83,9 @@ void HttpServerService()
  * @brief This function is the entry point for handling HTTPS requests for Spotify authorization.
  * @param[in] parameters because it is a Task!
  */
-static void IRAM_ATTR Spotify_MainTask(void *pvparameters)
+static void Spotify_MainTask(void *pvparameters)
 {
-    HttpServerService();
+    HttpServerServiceInit();
     bool ExpireFLG = 1;
     while (1)
     {
@@ -99,7 +100,7 @@ static void IRAM_ATTR Spotify_MainTask(void *pvparameters)
         {
             {
                 char receiveData[LONG_BUF];
-                if (xQueueReceive(*(InterfaceHandler.HttpsBufQueue), receiveData, portMAX_DELAY) == pdTRUE)
+                if (xQueueReceive(SendCodeFromHttpToSpotifyTask, receiveData, portMAX_DELAY) == pdTRUE)
                 {
                     ESP_LOGI(TAG, "Received CODE by queue: %s\n", receiveData);
                 }

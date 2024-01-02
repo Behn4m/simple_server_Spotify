@@ -10,19 +10,19 @@ HttpLocalServerParam_t HttpLocalServerLocalParam;
  */
 static esp_err_t Spotify_RequestDataAccess(httpd_req_t *req)
 {
-    char *loc_url;
-    loc_url = (char *)malloc((2 * SMALL_BUF) * sizeof(char));
-    if (loc_url == NULL)
+    char *LocalURL;
+    LocalURL = (char *)malloc((2 * SMALL_BUF) * sizeof(char));
+    if (LocalURL == NULL)
     {
         ESP_LOGI(TAG, "Failed to allocate memory for the array.\n\n");
     }
-    memset(loc_url, 0x0, SMALL_BUF * 2);
+    memset(LocalURL, 0x0, SMALL_BUF * 2);
     if (((*HttpLocalServerLocalParam.status) == IDLE))
     {
 
         ESP_LOGI(TAG, "Starting authorization, sending request for TOKEN");
-        sprintf(loc_url, "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state", ClientId, ReDirectUri);
-        httpd_resp_set_hdr(req, "Location", loc_url);
+        sprintf(LocalURL, "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state", ClientId, ReDirectUri);
+        httpd_resp_set_hdr(req, "Location", LocalURL);
         httpd_resp_set_type(req, "text/plain");
         httpd_resp_set_status(req, "302");
         httpd_resp_send(req, "", HTTPD_RESP_USE_STRLEN);
@@ -31,7 +31,7 @@ static esp_err_t Spotify_RequestDataAccess(httpd_req_t *req)
     {
         ESP_LOGW(TAG, "Spotify is already initiated");
     }
-    free(loc_url);
+    free(LocalURL);
     return ESP_OK;
 }
 
@@ -42,12 +42,12 @@ static esp_err_t Spotify_RequestDataAccess(httpd_req_t *req)
  */
 static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *req)
 {
-    char Buf[500];
+    char Buf[SMALL_BUF*2];
     if (httpd_req_get_url_query_str(req, Buf, sizeof(Buf)) == ESP_OK)
     {
         if (Spotify_FindCode(Buf, sizeof(Buf)) == true)
         {
-            if (xQueueSend(*(HttpLocalServerLocalParam.HttpsBufQueue), Buf, 0) == pdTRUE)
+            if (xQueueSend(*(HttpLocalServerLocalParam.SendCodeFromHttpToSpotifyTask), Buf, 0) == pdTRUE)
             {
                 ESP_LOGI(TAG, "Sent data with queue");
             }
@@ -97,7 +97,7 @@ static const httpd_uri_t Spotify_Response_Access_URI = {
  */
 void SetupHttpLocalServer(HttpLocalServerParam_t HttpLocalServerParam_t)
 {
-    HttpLocalServerLocalParam.HttpsBufQueue = HttpLocalServerParam_t.HttpsBufQueue;
+    HttpLocalServerLocalParam.SendCodeFromHttpToSpotifyTask = HttpLocalServerParam_t.SendCodeFromHttpToSpotifyTask;
     HttpLocalServerLocalParam.status = HttpLocalServerParam_t.status;
 }
 

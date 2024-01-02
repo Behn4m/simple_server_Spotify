@@ -103,7 +103,7 @@ extern "C"
     typedef struct
     {
         Status_t *status;
-        QueueHandle_t *HttpsBufQueue;
+        QueueHandle_t *SendCodeFromHttpToSpotifyTask;
     } HttpLocalServerParam_t;
 #endif
 #ifdef __cplusplus

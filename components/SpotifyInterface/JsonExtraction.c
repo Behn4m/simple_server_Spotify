@@ -4,8 +4,7 @@
 #include "HttpsRequests.h"
 #include "cJSON.h"
 #include"JsonExtraction.h"
-extern  struct Token_t TokenParam;
-extern  struct  UserInfo_t UserInfo;
+
 static const char *TAG = "JsonExTraction";
 
 /**

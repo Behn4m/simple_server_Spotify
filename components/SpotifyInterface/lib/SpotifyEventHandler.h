@@ -14,20 +14,21 @@ extern "C" {
 // ****************************************************************
 enum
 {
-    SpotifyEventSendRequestForNext_,
-    SpotifyEventSendRequestForPrevious_,
-    SpotifyEventSendRequestForPlay_,
-    SpotifyEventSendRequestForPause_,
-    SpotifyEventGetUserStatus_,
-    SpotifyEventGetUserTopItems_,
-    SpotifyEventGetUserProfile_,
-    SpotifyEventGetCurrentPlaying_,
+    SpotifyEventSendRequestForNext,
+    SpotifyEventSendRequestForPrevious,
+    SpotifyEventSendRequestForPlay,
+    SpotifyEventSendRequestForPause,
+    SpotifyEventGetUserStatus,
+    SpotifyEventGetUserTopItems,
+    SpotifyEventGetUserProfile,
+    SpotifyEventGetCurrentPlaying,
 };
 /**
  * @brief This function register event handler for spotify , this event is task and need
  *        long stack ,because spotify functions need long stack 
  */
 void Spotify_RegisterEventHandler(void);
+
 /**
  * @brief This function register event handler for spotify and delete event loop
  */

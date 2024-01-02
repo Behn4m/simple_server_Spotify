@@ -6,6 +6,7 @@ extern "C"
 #define SPOTIFY_HTTP_SERVER
 #include "SpotifyTypedef.h"
 #include "SpotifyMakeRequest.h"
+
     /**
      * @brief Setup parameter for starting Http Local server
      * @param[in] HttpLocalServerParam_t HttpLocalServerParam_)

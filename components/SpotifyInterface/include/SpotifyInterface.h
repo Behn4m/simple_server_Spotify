@@ -36,7 +36,7 @@ extern "C"
         GetNowPlaying = 7,
         GetUserInfo = 8,
         GetSongImageUrl = 9,
-        GetArtisImageUrl = 10,
+        GetArtisImageUrl = 10
     } Command_t;
 
     typedef struct

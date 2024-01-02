@@ -82,6 +82,7 @@ static const httpd_uri_t Spotify_Request_Access_URI = {
     .uri = "/",
     .method = HTTP_GET,
     .handler = Spotify_RequestDataAccess};
+
 /**
  * this strcut is http URL handler if receive "/callback" HttpsUserCallBackFunc getting run
  */
@@ -89,14 +90,15 @@ static const httpd_uri_t Spotify_Response_Access_URI = {
     .uri = "/callback/",
     .method = HTTP_GET,
     .handler = Spotify_HttpsCallbackHandler};
+
 /**
  * @brief Setup parameter for starting Http Local server
- * @param[in] HttpLocalServerParam_t HttpLocalServerParam_)
+ * @param[in] HttpLocalServerParam_t HttpLocalServerParam_t
  */
-void SetupHttpLocalServer(HttpLocalServerParam_t HttpLocalServerParam_)
+void SetupHttpLocalServer(HttpLocalServerParam_t HttpLocalServerParam_t)
 {
-    HttpLocalServerLocalParam.HttpsBufQueue = HttpLocalServerParam_.HttpsBufQueue;
-    HttpLocalServerLocalParam.status = HttpLocalServerParam_.status;
+    HttpLocalServerLocalParam.HttpsBufQueue = HttpLocalServerParam_t.HttpsBufQueue;
+    HttpLocalServerLocalParam.status = HttpLocalServerParam_t.status;
 }
 
 /**
@@ -105,16 +107,16 @@ void SetupHttpLocalServer(HttpLocalServerParam_t HttpLocalServerParam_)
  */
 httpd_handle_t StartWebServer()
 {
-    httpd_handle_t localServer = NULL;
-    httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-    config.lru_purge_enable = true;
-    ESP_LOGI(TAG, "Starting server on port: '%d'", config.server_port);
-    if (httpd_start(&localServer, &config) == ESP_OK)
+    httpd_handle_t LocalServer = NULL;
+    httpd_config_t Config = HTTPD_DEFAULT_CONFIG();
+    Config.lru_purge_enable = true;
+    ESP_LOGI(TAG, "Starting server on port: '%d'", Config.server_port);
+    if (httpd_start(&LocalServer, &Config) == ESP_OK)
     {
         ESP_LOGI(TAG, "Registering URI handlers");
-        httpd_register_uri_handler(localServer, &Spotify_Request_Access_URI);
-        httpd_register_uri_handler(localServer, &Spotify_Response_Access_URI);
-        return localServer;
+        httpd_register_uri_handler(LocalServer, &Spotify_Request_Access_URI);
+        httpd_register_uri_handler(LocalServer, &Spotify_Response_Access_URI);
+        return LocalServer;
     }
     else
     {
@@ -129,47 +131,6 @@ httpd_handle_t StartWebServer()
  esp_err_t StopSpotifyWebServer(httpd_handle_t server)
 {
     return httpd_stop(server);
-}
-
-/**
- * @brief This function is the handler for the disconnect event.
- * @param[in] arg Pointer to the HTTP server handle.
- * @param[in] event_base The event base.
- * @param[in] event_id The event ID.
- * @param[in] event_data The event data.
- */
-static void HttpLocalServerDisconnectHandler(void *arg, esp_event_base_t event_base,
-                                             int32_t event_id, void *event_data)
-{
-    httpd_handle_t *server = (httpd_handle_t *)arg;
-    if (*server)
-    {
-        if (StopSpotifyWebServer(*server) == ESP_OK)
-        {
-            *server = NULL;
-        }
-        else
-        {
-            ESP_LOGE(TAG, "Failed to stop https server");
-        }
-    }
-}
-
-/**
- * @brief This function is the handler for the connect event.
- * @param[in] arg Pointer to the HTTP server handle.
- * @param[in] event_base The event base.
- * @param[in] event_id The event ID.
- * @param[in] event_data The event data.
- */
-static void HttpLocalServerConnectHandler(void *arg, esp_event_base_t event_base,
-                                          int32_t event_id, void *event_data)
-{
-    httpd_handle_t *server = (httpd_handle_t *)arg;
-    if (*server == NULL)
-    {
-        *server = StartWebServer();
-    }
 }
 
 /**

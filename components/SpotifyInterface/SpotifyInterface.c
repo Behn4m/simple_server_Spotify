@@ -104,20 +104,15 @@ static void IRAM_ATTR Spotify_MainTask(void *pvparameters)
                     ESP_LOGI(TAG, "Received CODE by queue: %s\n", receiveData);
                 }
                 Spotify_GetToken(receiveData, sizeof(receiveData));
-                size_t freeHeapSize = xPortGetFreeHeapSize();
-                ESP_LOGE(TAG, "Free Heap Size: %u bytes\n", freeHeapSize);
             }
             break;
         }
         case ACTIVE_USER:
         {
-            size_t freeHeapSize = xPortGetFreeHeapSize();
-            ESP_LOGE(TAG, "Free Heap Size: %u bytes\n", freeHeapSize);
             xSemaphoreGive((*InterfaceHandler.IsSpotifyAuthorizedSemaphore));
             StopSpotifyWebServer(SpotifyLocalServer);
             SpotifyLocalServer = NULL;
             PrivateHandler.status = SAVE_NEW_TOKEN;
-            // vTaskDelete(NULL);
             break;
         }
         case CHECK_TIME:
@@ -310,48 +305,46 @@ bool Spotify_SendCommand(int command)
     case Play:
     {
         /* Send PLAY command to Spotify */
-        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForPlay_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
+        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForPlay, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         break;
     }
     case Pause:
     {
         /* Send PAUSE command to Spotify */
-        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForPause_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
+        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForPause, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         break;
     }
     case PlayNext:
     {
         /* Send PLAY_NEXT command to Spotify */
-        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForNext_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
+        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForNext, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         break;
     }
     case PlayPrev:
     {
-        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForPrevious_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
+        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForPrevious, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         /* Send PLAY_PREV command to Spotify */
         break;
     }
     case GetNowPlaying:
     {
-        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventGetCurrentPlaying_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
+        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventGetCurrentPlaying, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         /* Send GET_NOW_PLAYING command to Spotify */
         break;
     }
     case GetUserInfo:
     {
-        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventGetUserStatus_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
+        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventGetUserStatus, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         /* Send GET_USER_INFO command to Spotify */
         break;
     }
     case GetSongImageUrl:
     {
-        // ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForNext_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         /* Send GET_SONG_IMAGE_URL command to Spotify */
         break;
     }
     case GetArtisImageUrl:
     {
-        // ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForNext_, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         /* Send GET_ARTIST_IMAGE_URL command to Spotify */
         break;
     }

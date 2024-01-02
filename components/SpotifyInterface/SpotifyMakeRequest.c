@@ -4,76 +4,76 @@
 static const char *TAG = "SpotifyTask";
 
 /**
- * @brief This function searches for specific patterns ('code' and 'state') within a character array and returns a boolean value indicating if either pattern was found.
- * @param[in] Res The character array to search within, and Res is response from first stage from spotify athurisiation
+ * @brief This function searches for specific patterns ('code' and 'state') within a character array and returns a boolean value indicating if either pattern was Found.
+ * @param[in] Response The character array to search within, and Response is response from first stage from spotify athurisiation
  * @param[in] SizeRes The size of the character array.
- * @return Returns true if either the 'code' or 'state' pattern was found, and false otherwise.
+ * @return Returns true if either the 'code' or 'state' pattern was Found, and false otherwise.
  */
-bool Spotify_FindCode(char *Res, uint16_t SizeRes)
+bool Spotify_FindCode(char *Response, uint16_t SizeRes)
 {
-    char *codeString = {"code"};
-    uint16_t codeLength = strlen(codeString);
+    char *CodeString = {"code"};
+    uint16_t CodeLength = strlen(CodeString);
 
-    if (Res == NULL || SizeRes < codeLength)
+    if (Response == NULL || SizeRes < CodeLength)
     {
         // Invalid input, either null pointer or insufficient buffer size
         return false;
     }
 
-    for (uint16_t i = 0; i <= SizeRes - codeLength; ++i)
+    for (uint16_t i = 0; i <= SizeRes - CodeLength; ++i)
     {
-        bool found = true;
-        for (uint16_t j = 0; j < codeLength; ++j)
+        bool Found = true;
+        for (uint16_t j = 0; j < CodeLength; ++j)
         {
-            if (Res[i + j] != codeString[j])
+            if (Response[i + j] != CodeString[j])
             {
-                found = false;
+                Found = false;
                 break;
             }
         }
-        if (found)
+        if (Found)
         {
             return true; // Found the access token substring
         }
     }
-    return false; // Access token substring not found
+    return false; // Access token substring not Found
 }
 
 /**
  * @brief This function searches for a token within a character array and extracts the corresponding JSON object.
- * @param[in] Res The character array to search within. and Res is response from first stage from spotify athurisiation
+ * @param[in] Response The character array to search within. and Response is response from first stage from spotify athurisiation
  * @param[in] SizeRes The size of the character array.
- * @return Returns true if the token is found and the corresponding JSON object is successfully extracted, otherwise returns false.
+ * @return Returns true if the token is Found and the corresponding JSON object is successfully extracted, otherwise returns false.
  */
-bool Spotify_FindToken(char *Res, uint16_t SizeRes)
+bool Spotify_FindToken(char *Response, uint16_t SizeRes)
 {
     const char *tokenString = "{\"AccessToken\"";
-    uint16_t tokenLength = strlen(tokenString);
+    uint16_t TokenLength = strlen(tokenString);
 
-    if (Res == NULL || SizeRes < tokenLength)
+    if (Response == NULL || SizeRes < TokenLength)
     {
         // Invalid input, either null pointer or insufficient buffer size
         return false;
     }
 
-    for (uint16_t i = 0; i <= SizeRes - tokenLength; ++i)
+    for (uint16_t i = 0; i <= SizeRes - TokenLength; ++i)
     {
-        bool found = true;
-        for (uint16_t j = 0; j < tokenLength; ++j)
+        bool Found = true;
+        for (uint16_t j = 0; j < TokenLength; ++j)
         {
-            if (Res[i + j] != tokenString[j])
+            if (Response[i + j] != tokenString[j])
             {
-                found = false;
+                Found = false;
                 break;
             }
         }
-        if (found)
+        if (Found)
         {
             return true; // Found the access token substring
         }
     }
 
-    return false; // Access token substring not found
+    return false; // Access token substring not Found
 }
 
 /**
@@ -86,9 +86,9 @@ bool Spotify_FindToken(char *Res, uint16_t SizeRes)
  */
 void Spotify_SendTokenRequest(char *Buf, size_t SizeBuf, char *code, size_t SizeCode)
 {
-    char grand[MEDIUM_BUF] = {0};
+    char Grand[MEDIUM_BUF] = {0};
     ESP_LOGI(TAG, "\n%s\n", code);
-    sprintf(grand, "grant_type=authorization_code&redirect_uri=%s&%s", ReDirectUri, code);
+    sprintf(Grand, "grant_type=authorization_code&redirect_uri=%s&%s", ReDirectUri, code);
     memset(Buf, 0x0, SizeBuf);
     sprintf(Buf, "POST /api/token HTTP/1.1 \r\n"
                  "Host: accounts.spotify.com\r\n"
@@ -98,27 +98,27 @@ void Spotify_SendTokenRequest(char *Buf, size_t SizeBuf, char *code, size_t Size
                  "Content-Type: application/x-www-form-urlencoded\r\n"
                  "\r\n"
                  "%s\r",
-            strlen(grand), grand);
-    char url[SMALL_BUF] = "https://accounts.spotify.com/api/token";
-    char server[SMALL_BUF] = "accounts.spotify.com";
-    HttpsHandler(Buf, SizeBuf, url, sizeof(url), server, sizeof(server));
+            strlen(Grand), Grand);
+    char URL[SMALL_BUF] = "https://accounts.spotify.com/api/token";
+    char Server[SMALL_BUF] = "accounts.spotify.com";
+    HttpsHandler(Buf, SizeBuf, URL, sizeof(URL), Server, sizeof(Server));
 }
 
 /**
  * @brief This function sends a request to the Spotify API to perform a player command.
- * @param[in] Method_ The HTTP method to be used in the request (e.g., "POST", "PUT").
- * @param[in] Command_ The specific player command to be executed (e.g., "next", "previous", "play", "pause").
+ * @param[in] Method_t The HTTP method to be used in the request (e.g., "POST", "PUT").
+ * @param[in] Command_t The specific player command to be executed (e.g., "next", "previous", "play", "pause").
  * @param[out] Buf The character buffer to store the request and receive the response.
  * @param[in] SizeBuf The size of the character buffer.
  * @return This function does not return a value.
  */
-void Spotify_MakePlayerCommandAndSendIt(const char *Method_, const char *Command_, char *Buf, size_t SizeBuf, char *AccessToken)
+void Spotify_MakePlayerCommandAndSendIt(const char *Method_t, const char *Command_t, char *Buf, size_t SizeBuf, char *AccessToken)
 {
     //   copy tow of them because ,we dont give size of Method and command
     char Method[50] = {0};
     char Command[50] = {0};
-    strcpy(Method, Method_);
-    strcpy(Command, Command_);
+    strcpy(Method, Method_t);
+    strcpy(Command, Command_t);
     memset(Buf, 0x00, SizeBuf);
     sprintf(Buf, "%s /v1/me/player/%s HTTP/1.1\r\n"
                  "Host: api.spotify.com\r\n"
@@ -127,9 +127,9 @@ void Spotify_MakePlayerCommandAndSendIt(const char *Method_, const char *Command
                  "Connection: close\r\n\r\n",
             Method, Command, AccessToken);
     ESP_LOGI(TAG, "\n\nrequest for %s \n%s\nand size it =%d\n\n",Command, Buf, strlen(Buf));
-    char url[SMALL_BUF] = "https://api.spotify.com";
-    char server[SMALL_BUF] = "api.spotify.com";
-    HttpsHandler(Buf, SizeBuf, url, sizeof(url), server, sizeof(server));
+    char URL[SMALL_BUF] = "https://api.spotify.com";
+    char Server[SMALL_BUF] = "api.spotify.com";
+    HttpsHandler(Buf, SizeBuf, URL, sizeof(URL), Server, sizeof(Server));
 }
 
 /**
@@ -187,9 +187,9 @@ void Spotify_GetUserStatus(char *AccessToken)
                  "Connection: close\r\n\r\n",
             AccessToken);
     ESP_LOGI(TAG, "\n\nrequest for Spotify_GetUserStatus\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
-    char url[SMALL_BUF] = "https://api.spotify.com";
-    char server[SMALL_BUF] = "api.spotify.com";
-    HttpsHandler(Buf, sizeof(Buf), url, sizeof(url), server, sizeof(server));
+    char URL[SMALL_BUF] = "https://api.spotify.com";
+    char Server[SMALL_BUF] = "api.spotify.com";
+    HttpsHandler(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
 }
 
 /**
@@ -206,32 +206,31 @@ void Spotify_GetUserTopItems(char *AccessToken)
                  "Connection: close\r\n\r\n",
             AccessToken);
     ESP_LOGI(TAG, "\n\nrequest for Spotify_GetUserTopItems\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
-    char url[SMALL_BUF] = "https://api.spotify.com";
-    char server[SMALL_BUF] = "api.spotify.com";
-    HttpsHandler(Buf, sizeof(Buf), url, sizeof(url), server, sizeof(server));
+    char URL[SMALL_BUF] = "https://api.spotify.com";
+    char Server[SMALL_BUF] = "api.spotify.com";
+    HttpsHandler(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
 }
 
 /**
  * @brief This function sends a request to the Spotify API to retrieve the profile information of a specific user.
- * @param[in] UserId_ The ID of the user whose profile information is to be retrieved.
+ * @param[in] UserId_t The ID of the user whose profile information is to be retrieved.
  * @return This function does not return a value.
  */
-void Spotify_GetUserProfile(char *UserId_, char *Token)
+void Spotify_GetUserProfile(char *UserId_t, char *Token)
 {
     char Buf[LONG_BUF];
     char UserId[50];
-    strcpy(UserId, UserId_);
+    strcpy(UserId, UserId_t);
     sprintf(Buf, "GET /v1/users/%s HTTP/1.1\r\n"
                  "Host: api.spotify.com\r\n"
                  "Authorization: Bearer %s\r\n"
                  "Content-Length: 0\r\n"
                  "Connection: close\r\n\r\n",
             UserId, Token);
-
     ESP_LOGI(TAG, "\n\nrequest for Spotify_GetUserProfile\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
-    char url[SMALL_BUF] = "https://api.spotify.com";
-    char server[SMALL_BUF] = "api.spotify.com";
-    HttpsHandler(Buf, sizeof(Buf), url, sizeof(url), server, sizeof(server));
+    char URL[SMALL_BUF] = "https://api.spotify.com";
+    char Server[SMALL_BUF] = "api.spotify.com";
+    HttpsHandler(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
 }
 
 /**
@@ -240,16 +239,16 @@ void Spotify_GetUserProfile(char *UserId_, char *Token)
 void Spotify_GetCurrentPlaying(Token_t *Token)
 {
     // return json is so long and we need longer buffer
-    char Buf[LONG_BUF + 1500];
+    char Buf[LONG_BUF + MEDIUM_BUF+SMALL_BUF];
     sprintf(Buf, "GET /v1/me/player/currently-playing HTTP/1.1\r\n"
                  "Host: api.spotify.com\r\n"
                  "Authorization: Bearer %s\r\n"
                  "Connection: close\r\n\r\n",
             Token->AccessToken);
     ESP_LOGI(TAG, "\n\nrequest for Spotify_GetCurrentPlaying\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
-    char url[SMALL_BUF] = "https://api.spotify.com";
-    char server[SMALL_BUF] = "api.spotify.com";
-    HttpsHandler(Buf, sizeof(Buf), url, sizeof(url), server, sizeof(server));
+    char URL[SMALL_BUF] = "https://api.spotify.com";
+    char Server[SMALL_BUF] = "api.spotify.com";
+    HttpsHandler(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
 }
 
 /**
@@ -259,12 +258,12 @@ void Spotify_GetCurrentPlaying(Token_t *Token)
  * @param[in] code is parameter that we give it before .
  * @return This function does not return a value.
  */
-void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *RefreshToken_)
+void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *RefreshToken_t)
 {
     char RefreshToken[SMALL_BUF + 150];
-    strcpy(RefreshToken, RefreshToken_);
-    char grand[MEDIUM_BUF] = {0};
-    sprintf(grand, "grant_type=refresh_token&refresh_token=%s&redirect_uri=%s", RefreshToken, ReDirectUri);
+    strcpy(RefreshToken, RefreshToken_t);
+    char Grand[MEDIUM_BUF] = {0};
+    sprintf(Grand, "grant_type=refresh_token&refresh_token=%s&redirect_uri=%s", RefreshToken, ReDirectUri);
     memset(Buf, 0x0, SizeBuf);
     sprintf(Buf, "POST /api/token HTTP/1.1 \r\n"
                  "Host: accounts.spotify.com\r\n"
@@ -273,9 +272,8 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *
                  "Content-Type: application/x-www-form-urlencoded\r\n"
                  "\r\n"
                  "%s\r",
-            strlen(grand), grand);
-    ESP_LOGI(TAG, "\n%s\n", Buf);
-    char url[SMALL_BUF] = "https://accounts.spotify.com/api/token";
-    char server[SMALL_BUF] = "accounts.spotify.com";
-    HttpsHandler(Buf, SizeBuf, url, sizeof(url), server, sizeof(server));
+            strlen(Grand), Grand);
+    char URL[SMALL_BUF] = "https://accounts.spotify.com/api/token";
+    char Server[SMALL_BUF] = "accounts.spotify.com";
+    HttpsHandler(Buf, SizeBuf, URL, sizeof(URL), Server, sizeof(Server));
 }

@@ -50,6 +50,8 @@ extern "C"
 #define SAVE_NEW_TOKEN 4
 #define EXPIRED_USER 5
 
+#define EVENT_LOOP_QUEUE 5
+
     typedef struct Token_t
     {
         char AccessToken[ACCESS_TOKEN_STR_SIZE];
@@ -82,9 +84,6 @@ extern "C"
 
     } Status_t;
 
-    typedef void (*ReadTxtFileFromSpiffsPtr)(char *addressInSpiffs, char *key, char *value, ...);
-    typedef void (*WriteTxtFileToSpiffsPtr)(char *addressInSpiffs, char *key, char *value, ...);
-    typedef bool (*CheckAddressInSpiffsPtr)(char *addressInSpiffs);
     typedef void (*EventHandlerCallBackPtr)(char *Buffer);
 
     typedef struct

@@ -42,7 +42,9 @@
         "task.h": "c",
         "freertosconfig.h": "c",
         "semphr.h": "c",
-        "projdefs.h": "c"
+        "projdefs.h": "c",
+        "dns.h": "c",
+        "esp_heap_caps.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

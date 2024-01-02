@@ -39,6 +39,9 @@
 #include "lwip/dns.h"
 #include "esp_tls.h"
 #include "sdkconfig.h"
+#include"esp_psram.h"
+#include "esp_system.h"
+#include "esp_heap_caps.h"
 #if CONFIG_MBEDTLS_CERTIFICATE_BUNDLE
 #include "esp_crt_bundle.h"
 #endif

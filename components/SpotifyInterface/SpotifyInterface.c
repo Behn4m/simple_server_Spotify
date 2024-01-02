@@ -17,7 +17,7 @@ SpotifyInterfaceHandler_t InterfaceHandler;
 EventHandlerDataStruct_t EventHandlerData;
 HttpLocalServerParam_t HttpLocalServerParam;
 static httpd_handle_t SpotifyLocalServer = NULL;
-QueueHandle_t  SendCodeFromHttpToSpotifyTask = NULL;
+QueueHandle_t SendCodeFromHttpToSpotifyTask = NULL;
 // ******************************
 
 ESP_EVENT_DECLARE_BASE(BASE_SPOTIFY_EVENTS);
@@ -47,6 +47,27 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler, uint16
         InterfaceHandler.HttpsBufQueue != NULL)
     {
 
+        TaskHandle_t *xTaskHandle = (TaskHandle_t *)malloc(sizeof(TaskHandle_t));
+        StaticTask_t *xTaskBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
+        StackType_t *xStack = (StackType_t *)malloc(SpotifyTaskStackSize * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
+
+        if (xTaskHandle == NULL || xTaskBuffer == NULL || xStack == NULL)
+        {
+            ESP_LOGI(TAG, "Memory allocation failed!\n");
+            free(xTaskHandle);
+            free(xTaskBuffer);
+            free(xStack);
+            return 1; // Exit with an error code
+        }
+        xTaskCreateStatic(
+            Spotify_MainTask, // Task function
+            "Spotify_MainTask",         // Task name (for debugging)
+            SpotifyTaskStackSize,                   // Stack size (in words)
+            NULL,          // Task parameters (passed to the task function)
+            tskIDLE_PRIORITY + 1,  // Task priority (adjust as needed)
+            xStack,                // Stack buffer
+            xTaskBuffer            // Task control block
+        );
         xTaskCreate(&Spotify_MainTask, "Spotify_MainTask", SpotifyTaskStackSize, NULL, 9, NULL);
         ESP_LOGI(TAG, "Spotify app initiated successfully");
     }
@@ -63,7 +84,7 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler, uint16
  */
 void HttpServerServiceInit()
 {
-    SendCodeFromHttpToSpotifyTask= xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF]));
+    SendCodeFromHttpToSpotifyTask = xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF]));
     HttpLocalServerParam.SendCodeFromHttpToSpotifyTask = &SendCodeFromHttpToSpotifyTask;
     HttpLocalServerParam.status = &(PrivateHandler.status);
     SetupHttpLocalServer(HttpLocalServerParam);

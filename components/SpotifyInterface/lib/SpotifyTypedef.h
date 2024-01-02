@@ -17,6 +17,7 @@ extern "C"
 #include "sdkconfig.h"
 #include "mdns.h"
 #include "freertos/queue.h"
+#include"esp_psram.h"
 // **************************************************************** URI links
 #define ReDirectUri "http%3A%2F%2Fdeskhub.local%2Fcallback%2f"
 #define ClientId "55bb974a0667481ab0b2a49fd0abea6d"

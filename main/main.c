@@ -20,8 +20,6 @@ void app_main(void)
     GlobalInit();
     nvsFlashInit();
     size_t freeHeapSize = xPortGetFreeHeapSize();
-
-    // Print or use the free heap size as needed
     ESP_LOGE("heap", "Free Heap Size: %u bytes\n", freeHeapSize);
     SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
@@ -39,19 +37,9 @@ void app_main(void)
     SpotifyInterfaceHandler.EventHandlerCallBackFunction = CallbackTest;
     Spotify_TaskInit(&SpotifyInterfaceHandler, SPOTIFY_TASK_STACK_SIZE);
     freeHeapSize = xPortGetFreeHeapSize();
-
-    // Print or use the free heap size as needed
     ESP_LOGE("TAG", "Free Heap Size: %u bytes\n", freeHeapSize);
     // after this semaphore you can use playback command function in every where !
     if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
         Spotify_SendCommand(GetNowPlaying);
-    vTaskDelay((pdMS_TO_TICKS(SEC * 10)));
-    Spotify_SendCommand(Play);
-    vTaskDelay((pdMS_TO_TICKS(SEC * 15)));
-    Spotify_SendCommand(GetNowPlaying);
-    vTaskDelay((pdMS_TO_TICKS(SEC * 15)));
-    Spotify_SendCommand(GetUserInfo);
-    vTaskDelay((pdMS_TO_TICKS(SEC * 15)));
-    Spotify_SendCommand(Pause);
 #endif
 }

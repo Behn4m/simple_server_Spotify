@@ -46,21 +46,19 @@ bool Spotify_FindCode(char *Response, uint16_t SizeRes)
  */
 bool Spotify_FindToken(char *Response, uint16_t SizeRes)
 {
-    const char *tokenString = "{\"AccessToken\"";
-    uint16_t TokenLength = strlen(tokenString);
-
+    const char *TokenString = "{\"AccessToken\"";
+    uint16_t TokenLength = strlen(TokenString);
     if (Response == NULL || SizeRes < TokenLength)
     {
         // Invalid input, either null pointer or insufficient buffer size
         return false;
     }
-
     for (uint16_t i = 0; i <= SizeRes - TokenLength; ++i)
     {
         bool Found = true;
         for (uint16_t j = 0; j < TokenLength; ++j)
         {
-            if (Response[i + j] != tokenString[j])
+            if (Response[i + j] != TokenString[j])
             {
                 Found = false;
                 break;
@@ -71,7 +69,6 @@ bool Spotify_FindToken(char *Response, uint16_t SizeRes)
             return true; // Found the access token substring
         }
     }
-
     return false; // Access token substring not Found
 }
 

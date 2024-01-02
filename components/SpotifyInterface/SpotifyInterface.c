@@ -17,7 +17,8 @@ SpotifyInterfaceHandler_t InterfaceHandler;
 EventHandlerDataStruct_t EventHandlerData;
 HttpLocalServerParam_t HttpLocalServerParam;
 static httpd_handle_t SpotifyLocalServer = NULL;
-QueueHandle_t  SendCodeFromHttpToSpotifyTask = NULL;
+QueueHandle_t SendCodeFromHttpToSpotifyTask = NULL;
+bool SaveExistence = 0;
 // ******************************
 
 ESP_EVENT_DECLARE_BASE(BASE_SPOTIFY_EVENTS);
@@ -27,6 +28,7 @@ void Spotify_CheckRefreshTokenExistence()
     if (xSemaphoreTake(*(InterfaceHandler.WorkWithStorageInSpotifyComponentSemaphore), 1) == pdTRUE)
     {
         PrivateHandler.status = EXPIRED_USER;
+        SaveExistence = 1;
     }
 }
 
@@ -63,7 +65,7 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler, uint16
  */
 void HttpServerServiceInit()
 {
-    SendCodeFromHttpToSpotifyTask= xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF]));
+    SendCodeFromHttpToSpotifyTask = xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF]));
     HttpLocalServerParam.SendCodeFromHttpToSpotifyTask = &SendCodeFromHttpToSpotifyTask;
     HttpLocalServerParam.status = &(PrivateHandler.status);
     SetupHttpLocalServer(HttpLocalServerParam);
@@ -111,9 +113,12 @@ static void Spotify_MainTask(void *pvparameters)
         case ACTIVE_USER:
         {
             xSemaphoreGive((*InterfaceHandler.IsSpotifyAuthorizedSemaphore));
-            StopSpotifyWebServer(SpotifyLocalServer);
-            SpotifyLocalServer = NULL;
-            PrivateHandler.status = SAVE_NEW_TOKEN;
+            if (SaveExistence != 1)
+            {
+                StopSpotifyWebServer(SpotifyLocalServer);
+                SpotifyLocalServer = NULL;
+            }
+            PrivateHandler.status = CHECK_TIME;
             break;
         }
         case CHECK_TIME:
@@ -125,7 +130,7 @@ static void Spotify_MainTask(void *pvparameters)
         {
             SpiffsRemoveFile(InterfaceHandler.ConfigAddressInSpiffs);
             SaveFileInSpiffsWithTxtFormat(InterfaceHandler.ConfigAddressInSpiffs, "refresh_token", PrivateHandler.token.RefreshToken, NULL, NULL);
-            PrivateHandler.status = CHECK_TIME;
+            PrivateHandler.status = ACTIVE_USER;
             break;
         }
         case EXPIRED_USER:

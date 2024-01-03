@@ -44,11 +44,10 @@ extern "C"
 #define PRODUCT_STR_SIZE 30
 
 #define IDLE 0
-#define AUTHORIZED 1
-#define ACTIVE_USER 2
-#define CHECK_TIME 3
-#define SAVE_NEW_TOKEN 4
-#define EXPIRED_USER 5
+#define AUTHENTICATED 1
+#define AUTHORIZED 2
+#define SAVE_NEW_TOKEN 3
+#define EXPIRED 4
 
 #define EVENT_LOOP_QUEUE 5
 
@@ -78,9 +77,8 @@ extern "C"
         idle = 0,
         authorized = 1,
         active_user = 2,
-        check_time = 3,
-        save_new_token=4,
-        expired_user = 5
+        save_new_token=3,
+        expired_user = 4
 
     } Status_t;
 

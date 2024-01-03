@@ -27,7 +27,7 @@ void Spotify_CheckRefreshTokenExistence()
 {
     if (xSemaphoreTake(*(InterfaceHandler.WorkWithStorageInSpotifyComponentSemaphore), 1) == pdTRUE)
     {
-        PrivateHandler.status = EXPIRED_USER;
+        PrivateHandler.status = EXPIRED;
         SaveExistence = 1;
     }
 }
@@ -98,7 +98,7 @@ static void Spotify_MainTask(void *pvparameters)
             // wait for user to ask for authentication
             break;
         }
-        case AUTHORIZED:
+        case AUTHENTICATED:
         {
             {
                 char receiveData[LONG_BUF];
@@ -110,7 +110,7 @@ static void Spotify_MainTask(void *pvparameters)
             }
             break;
         }
-        case ACTIVE_USER:
+        case AUTHORIZED:
         {
             xSemaphoreGive((*InterfaceHandler.IsSpotifyAuthorizedSemaphore));
             if (SaveExistence != 1)
@@ -118,11 +118,6 @@ static void Spotify_MainTask(void *pvparameters)
                 StopSpotifyWebServer(SpotifyLocalServer);
                 SpotifyLocalServer = NULL;
             }
-            PrivateHandler.status = CHECK_TIME;
-            break;
-        }
-        case CHECK_TIME:
-        {
             CheckTime(ExpireFLG);
             break;
         }
@@ -130,10 +125,10 @@ static void Spotify_MainTask(void *pvparameters)
         {
             SpiffsRemoveFile(InterfaceHandler.ConfigAddressInSpiffs);
             SaveFileInSpiffsWithTxtFormat(InterfaceHandler.ConfigAddressInSpiffs, "refresh_token", PrivateHandler.token.RefreshToken, NULL, NULL);
-            PrivateHandler.status = ACTIVE_USER;
+            PrivateHandler.status = AUTHORIZED;
             break;
         }
-        case EXPIRED_USER:
+        case EXPIRED:
         {
             if (Spotify_TokenRenew() == true)
             {
@@ -141,7 +136,7 @@ static void Spotify_MainTask(void *pvparameters)
             }
             else
             {
-                PrivateHandler.status = EXPIRED_USER;
+                PrivateHandler.status = EXPIRED;
             }
             break;
         }
@@ -163,7 +158,7 @@ static bool CheckTime(bool ExpireFLG)
     {
         StartTick = xTaskGetTickCount();
         ExpireFLG = 0;
-        PrivateHandler.status = CHECK_TIME;
+        PrivateHandler.status = AUTHORIZED;
         return ExpireFLG;
     }
     else
@@ -173,7 +168,7 @@ static bool CheckTime(bool ExpireFLG)
         ElapsedTime = ElapsedTime / 1000;
         if (ElapsedTime > (HOUR - 300))
         {
-            PrivateHandler.status = EXPIRED_USER;
+            PrivateHandler.status = EXPIRED;
         }
         ESP_LOGE(TAG, "token getting expired !");
 
@@ -248,8 +243,8 @@ static void Spotify_GetToken(char *code, size_t SizeOfCode)
                                                   PrivateHandler.token.GrantedScope,
                                                   PrivateHandler.token.ExpiresInMS) == true)
         {
-            PrivateHandler.status = ACTIVE_USER;
-            ESP_LOGI(TAG, "ACTIVE_USER");
+            PrivateHandler.status = AUTHORIZED;
+            ESP_LOGI(TAG, "AUTHORIZED");
             EventHandlerData.EventHandlerCallBackFunction = InterfaceHandler.EventHandlerCallBackFunction;
             EventHandlerData.token = &(PrivateHandler.token);
             EventHandlerData.HttpsBufQueue = InterfaceHandler.HttpsBufQueue;
@@ -301,7 +296,7 @@ bool Spotify_SendCommand(int command)
 {
     bool retValue = true;
     ESP_LOGI(TAG, "user Command is %d", command);
-    if (PrivateHandler.status == IDLE || PrivateHandler.status == AUTHORIZED)
+    if (PrivateHandler.status == IDLE || PrivateHandler.status == AUTHENTICATED)
     {
         ESP_LOGE(TAG, "You are not authorized !");
         return false;

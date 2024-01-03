@@ -55,7 +55,7 @@ static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *req)
             httpd_resp_set_type(req, "text/plain");
             httpd_resp_set_status(req, HTTPD_200);
             httpd_resp_send(req, Buf, HTTPD_RESP_USE_STRLEN);
-            (*HttpLocalServerLocalParam.status) = AUTHORIZED;
+            (*HttpLocalServerLocalParam.status) = AUTHENTICATED;
         }
         else
         {

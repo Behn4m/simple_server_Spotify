@@ -95,7 +95,7 @@ static const httpd_uri_t Spotify_Response_Access_URI = {
  * @brief Setup parameter for starting Http Local server
  * @param[in] HttpLocalServerParam_t HttpLocalServerParam_t
  */
-void SetupHttpLocalServer(HttpLocalServerParam_t HttpLocalServerParam_t)
+void Spotify_SetupHttpLocalServer(HttpLocalServerParam_t HttpLocalServerParam_t)
 {
     HttpLocalServerLocalParam.SendCodeFromHttpToSpotifyTask = HttpLocalServerParam_t.SendCodeFromHttpToSpotifyTask;
     HttpLocalServerLocalParam.status = HttpLocalServerParam_t.status;
@@ -105,7 +105,7 @@ void SetupHttpLocalServer(HttpLocalServerParam_t HttpLocalServerParam_t)
  * @brief This function starts the web server for handling HTTPS requests.
  * @return Returns the HTTP server handle if it is started successfully, or NULL otherwise.
  */
-httpd_handle_t StartWebServer()
+httpd_handle_t Spotify_StartWebServer()
 {
     httpd_handle_t LocalServer = NULL;
     httpd_config_t Config = HTTPD_DEFAULT_CONFIG();
@@ -128,7 +128,7 @@ httpd_handle_t StartWebServer()
  * @brief This function stops the web server for handling HTTPS requests.
  * @return Returns the HTTP server handle if it is started successfully, or NULL otherwise.
  */
- esp_err_t StopSpotifyWebServer(httpd_handle_t server)
+ esp_err_t Spotify_StopSpotifyWebServer(httpd_handle_t server)
 {
     return httpd_stop(server);
 }
@@ -136,7 +136,7 @@ httpd_handle_t StartWebServer()
 /**
  * @brief This function starts the mDNS service.
  */
-bool StartMDNSService()
+bool Spotify_StartMDNSService()
 {
     esp_err_t err = mdns_init();
     if (err)

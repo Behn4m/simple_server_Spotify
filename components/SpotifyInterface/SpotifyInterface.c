@@ -64,14 +64,14 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler, uint16
 /**
  * @brief Run Http local service
  */
-void HttpServerServiceInit()
+void Spotify_HttpServerServiceInit()
 {
     SendCodeFromHttpToSpotifyTask = xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF]));
     HttpLocalServerParam.SendCodeFromHttpToSpotifyTask = &SendCodeFromHttpToSpotifyTask;
     HttpLocalServerParam.status = &(PrivateHandler.status);
-    SetupHttpLocalServer(HttpLocalServerParam);
-    StartMDNSService();
-    SpotifyLocalServer = StartWebServer();
+    Spotify_SetupHttpLocalServer(HttpLocalServerParam);
+    Spotify_StartMDNSService();
+    SpotifyLocalServer = Spotify_StartWebServer();
     if (SpotifyLocalServer != NULL)
     {
         ESP_LOGI(TAG, "** Spotify local server created! **");
@@ -88,7 +88,7 @@ void HttpServerServiceInit()
  */
 static void Spotify_MainTask(void *pvparameters)
 {
-    HttpServerServiceInit();
+    Spotify_HttpServerServiceInit();
     bool ExpireFLG = 1;
     while (1)
     {
@@ -102,7 +102,7 @@ static void Spotify_MainTask(void *pvparameters)
         case AUTHENTICATED:
         {
             {
-                ESP_LOGW(TAG, "AUTHENTICATED");
+                ESP_LOGI(TAG, "AUTHENTICATED");
                 char receiveData[LONG_BUF];
                 if (xQueueReceive(SendCodeFromHttpToSpotifyTask, receiveData, portMAX_DELAY) == pdTRUE)
                 {
@@ -114,11 +114,11 @@ static void Spotify_MainTask(void *pvparameters)
         }
         case AUTHORIZED:
         {
-            ESP_LOGW(TAG, "AUTHORIZED");
+            ESP_LOGI(TAG, "AUTHORIZED");
             xSemaphoreGive((*InterfaceHandler->IsSpotifyAuthorizedSemaphore));
             if (SaveExistence != 1)
             {
-                StopSpotifyWebServer(SpotifyLocalServer);
+                Spotify_StopSpotifyWebServer(SpotifyLocalServer);
                 SpotifyLocalServer = NULL;
             }
             PrivateHandler.status = SAVE_NEW_TOKEN;
@@ -132,7 +132,7 @@ static void Spotify_MainTask(void *pvparameters)
         }
         case SAVE_NEW_TOKEN:
         {
-            ESP_LOGW(TAG, "SAVE_NEW_TOKEN");
+            ESP_LOGI(TAG, "SAVE_NEW_TOKEN");
             SpiffsRemoveFile(InterfaceHandler->ConfigAddressInSpiffs);
             SaveFileInSpiffsWithTxtFormat(InterfaceHandler->ConfigAddressInSpiffs, "refresh_token", PrivateHandler.token.RefreshToken, NULL, NULL);
             PrivateHandler.status = CHECK_TIME;

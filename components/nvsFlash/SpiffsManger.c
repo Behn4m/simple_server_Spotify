@@ -337,7 +337,7 @@ void SaveFileInSpiffsWithTxtFormat(char *addressInSpiffs, char *key, char *value
  *@param[out] ... The variable arguments to store the retrieved values. The last argument must be NULL.
  *@return Returns true if the file is successfully read and key-value pairs are retrieved, and false otherwise.
  */
-void ReadFileFromSpiffsWithTxtFormat(char *addressInSpiffs, char *key, char *value, ...)
+void ReadTxtFileFromSpiffs(char *addressInSpiffs, char *key, char *value, ...)
 {
     char *InternalBuf = (char *)malloc(InternalBufSize_ * sizeof(char));
     SpiffsRead(addressInSpiffs, InternalBuf, InternalBufSize_);
@@ -376,10 +376,13 @@ void SpiffsGlobalConfig()
     {
         xSemaphoreGive(WifiParamExistenceCheckerSemaphore);
     }
+
+    #ifdef SpotifyEnable
     if (SpiffsExistenceCheck(SpotifyConfigAddressInSpiffs) == 1)
     {
-        xSemaphoreGive(SpotifyParamExistenceCheckerSemaphore);
+        xSemaphoreGive(WorkWithStorageInSpotifyComponentSemaphore);
     }
+    #endif
 }
 #ifdef TEST
 /**

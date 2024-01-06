@@ -51,31 +51,35 @@ static void EventStationModeHandler(void *Arg, esp_event_base_t EventBase,
     else if (EventBase == WIFI_EVENT && EventId == WIFI_EVENT_STA_CONNECTED)
     {
         ESP_LOGI(TAG, "WiFi connected ... \n");
-        xSemaphoreGive(ExitFromApModeSemaphore);
+        // check if the ExitFromApModeSemaphore is defined in AP mode, then give it
+        if (ExitFromApModeSemaphore != NULL)
+        {
+            xSemaphoreGive(ExitFromApModeSemaphore);
+        }
     }
     else if (EventBase == WIFI_EVENT && EventId == WIFI_EVENT_STA_WPS_ER_FAILED)
     {
-        ESP_LOGI(TAG, "WiFi WIFI_EVENT_STA_WPS_ER_FAILED config  failed... \n");
+        ESP_LOGW(TAG, "WiFi WIFI_EVENT_STA_WPS_ER_FAILED config  failed... \n");
         xSemaphoreGive(StayInApModeSemaphore);
     }
     else if (EventBase == WIFI_EVENT && EventId == WIFI_EVENT_STA_WPS_ER_TIMEOUT)
     {
-        ESP_LOGI(TAG, "WiFi WIFI_EVENT_STA_WPS_ER_TIMEOUT config failed... \n");
+        ESP_LOGW(TAG, "WiFi WIFI_EVENT_STA_WPS_ER_TIMEOUT config failed... \n");
         xSemaphoreGive(StayInApModeSemaphore);
     }
     else if (EventBase == WIFI_EVENT && EventId == WIFI_EVENT_STA_WPS_ER_PIN)
     {
-        ESP_LOGI(TAG, "WiFi WIFI_EVENT_STA_WPS_ER_PIN config failed... \n");
+        ESP_LOGW(TAG, "WiFi WIFI_EVENT_STA_WPS_ER_PIN config failed... \n");
         xSemaphoreGive(StayInApModeSemaphore);
     }
     else if (EventBase == WIFI_EVENT && EventId == WIFI_EVENT_STA_WPS_ER_PBC_OVERLAP)
     {
-        ESP_LOGI(TAG, "WiFi WIFI_EVENT_STA_WPS_ER_PBC_OVERLAPconfig failed... \n");
+        ESP_LOGW(TAG, "WiFi WIFI_EVENT_STA_WPS_ER_PBC_OVERLAPconfig failed... \n");
         xSemaphoreGive(StayInApModeSemaphore);
     }
     else if (EventBase == WIFI_EVENT && EventId == WIFI_EVENT_STA_BEACON_TIMEOUT)
     {
-        ESP_LOGI(TAG, "WiFi WIFI_EVENT_STA_BEACON_TIMEOUT config failed... \n");
+        ESP_LOGW(TAG, "WiFi WIFI_EVENT_STA_BEACON_TIMEOUT config failed... \n");
         xSemaphoreGive(StayInApModeSemaphore);
     }
     else if (EventBase == IP_EVENT && EventId == IP_EVENT_STA_GOT_IP)
@@ -95,6 +99,7 @@ static void EventStationModeHandler(void *Arg, esp_event_base_t EventBase,
  */
 esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_)
 {
+#ifndef WIFI_INIT_STA_MODE
     if (IsThereSaveFlag == 0)
     {
         esp_netif_deinit();
@@ -106,6 +111,7 @@ esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_)
         esp_wifi_stop();
         esp_wifi_deinit();
     }
+#endif
     StationModeEventGroup = xEventGroupCreate();
     ESP_ERROR_CHECK(esp_netif_init());
     NetifStationStruct = esp_netif_create_default_wifi_sta();
@@ -247,13 +253,13 @@ void WifiConnectionTask()
     if (xSemaphoreTake(WifiParamExistenceCheckerSemaphore, 1) == pdTRUE)
     {
         ESP_LOGI(TAG, "we have save file ! ");
-        ReadFileFromSpiffsWithTxtFormat(WifiConfigDirectoryAddressInSpiffs, "SSID", UserWifi.SSID, "PASS", UserWifi.PassWord, NULL, NULL);
+        ReadTxtFileFromSpiffs(WifiConfigDirectoryAddressInSpiffs, "SSID", UserWifi.SSID, "PASS", UserWifi.PassWord, NULL, NULL);
         IsThereSaveFlag = 1;
         WifiStationMode(UserWifi.SSID, UserWifi.PassWord);
-        if (xSemaphoreTake(ExitFromApModeSemaphore, 30 * Sec / portTICK_PERIOD_MS) == pdTRUE)
+        if (xSemaphoreTake(ExitFromApModeSemaphore, 30 * SEC / portTICK_PERIOD_MS) == pdTRUE)
         {
             ESP_LOGI(TAG, "FinishWifiConfig semaphore ");
-            vTaskDelay(3 * Sec / portTICK_PERIOD_MS);
+            vTaskDelay(3 * SEC / portTICK_PERIOD_MS);
             xSemaphoreGive(FinishWifiConfig);
             vTaskDelete(NULL);
         }
@@ -279,9 +285,9 @@ void WifiConnectionTask()
         if (xSemaphoreTake(WaitSemaphore, portMAX_DELAY) == pdTRUE)
         {
             ESP_LOGI(TAG, "give ssid and password but , we do'nt test them");
-            vTaskDelay(3*Sec / portTICK_PERIOD_MS);
+            vTaskDelay(3*SEC / portTICK_PERIOD_MS);
             WifiStationMode(UserWifi.SSID, UserWifi.PassWord);
-            vTaskDelay(10 * Sec / portTICK_PERIOD_MS);
+            vTaskDelay(10 * SEC / portTICK_PERIOD_MS);
             while (1)
             {
                 if (xSemaphoreTake(ExitFromApModeSemaphore, 10 / portTICK_PERIOD_MS) == pdTRUE)

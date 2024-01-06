@@ -3,12 +3,19 @@ extern "C" {
 #endif
 #ifndef   MAKE_SPOTIFY_REQUEST_H_
 #define   MAKE_SPOTIFY_REQUEST_H_
-#include "SpotifyAuthorization.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "HttpsRequests.h"
+#include "cJSON.h"
+#include "SpotifyInterface.h"
+#include"SpotifyTypedef.h"
 
 /**
 * @brief This function sends a request to the Spotify API to give Curent playing information 
+* @param[in]  Token_t *Token 
 */
-void GetCurrentPlaying();
+void Spotify_GetCurrentPlaying(Token_t *Token);
 
 /**
  * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.
@@ -17,7 +24,7 @@ void GetCurrentPlaying();
  * @param[in] code is parameter that we give it before .
  * @return This function does not return a value.
  */
-void SendRequest_AndGiveTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *RefreshToken_);
+void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *RefreshToken_);
 
 /**
 * @brief This function searches for a token within a character array and extracts the corresponding JSON object.
@@ -25,7 +32,7 @@ void SendRequest_AndGiveTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *R
 * @param[in] SizeRes The size of the character array.
 * @return Returns true if the token is found and the corresponding JSON object is successfully extracted, otherwise returns false.
 */
-bool FindToken(char *Res, uint16_t SizeRes);
+bool Spotify_FindToken(char *Res, uint16_t SizeRes);
 
 /**
 * @brief This function searches for specific patterns ('code' and 'state') within a character array and returns a boolean value indicating if either pattern was found.
@@ -33,7 +40,7 @@ bool FindToken(char *Res, uint16_t SizeRes);
 * @param[in] SizeRes The size of the character array.
 * @return Returns true if either the 'code' or 'state' pattern was found, and false otherwise.
 */
-bool FindCode(char *Res, uint16_t SizeRes);
+bool Spotify_FindCode(char *Res, uint16_t SizeRes);
 
 /**
 * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.
@@ -43,7 +50,7 @@ bool FindCode(char *Res, uint16_t SizeRes);
 * @param[in] SizeCode The size of the authorization code.
 * @return This function does not return a value.
 */
-void SendRequestAndGiveToken(char *Buf, size_t SizeBuf, char *code, size_t SizeCode);
+void Spotify_SendTokenRequest(char *Buf, size_t SizeBuf, char *code, size_t SizeCode);
 
 /**
 * @brief This function sends a request to the Spotify API to perform a player command.
@@ -53,58 +60,57 @@ void SendRequestAndGiveToken(char *Buf, size_t SizeBuf, char *code, size_t SizeC
 * @param[in] SizeBuf The size of the character buffer.
 * @return This function does not return a value.
 */
-void MakePlayerCommandAndSendIt(const char *Method_, const char *Command_, char *Buf, size_t SizeBuf);
+void Spotify_MakePlayerCommandAndSendIt(const char *Method_, const char *Command_, char *Buf, size_t SizeBuf, char *AccessToken);
 
 /**
 * @brief This function sends a request to the Spotify API to pause the current track in the player.
+* @param[in]  Token_t *Token 
 * @return This function does not return a value.
 */
-void SendRequestForPause();
+void Spotify_SendRequestForPause(Token_t *Token);
 
 /**
 * @brief This function sends a request to the Spotify API to play the current track in the player.
+* @param[in]  Token_t *Token 
 * @return This function does not return a value.
 */
-void SendRequestForPlay();
+void Spotify_SendRequestForPlay(Token_t *Token);
 
 /**
 * @brief This function sends a request to the Spotify API to skip to the previous track in the player.
+* @param[in]  Token_t *Token
 * @return This function does not return a value.
 */
-void SendRequestForPrevious();
+void Spotify_SendRequestForPrevious(Token_t *Token);
 
 /**
 * @brief This function sends a request to the Spotify API to skip to the next track in the player.
+* @param[in]  Token_t *Token 
 * @return This function does not return a value.
 */
-void SendRequestForNext();
+void Spotify_SendRequestForNext(Token_t *Token);
 
 /**
 * @brief This function sends a request to the Spotify API to retrieve the user's current status.
+* @param[in]  char *AccessToken 
 * @return This function does not return a value.
 */
-void GetUserStatus();
+void Spotify_GetUserStatus(char *AccessToken);
 
 /**
 * @brief This function sends a request to the Spotify API to retrieve the user's top item.
+* @param[in]  char *AccessToken 
 * @return This function does not return a value.
 */
-void GetUserTopItems();
+void Spotify_GetUserTopItems(char *AccessToken);
 
 /**
 * @brief This function sends a request to the Spotify API to retrieve the profile information of a specific user.
-* @param[in] UserId_ The ID of the user whose profile information is to be retrieved.
+* @param[in] char *AccessToken
+* @param[in] char *UserId_
 * @return This function does not return a value.
 */
-void GetUserProfile(char *UserId_);
-
-/**
- * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a TokenParam structure.
- * @param[in] Json The input JSON string.
- * @param[in] SizeJson The size of the JSON string.
- * @return This function does not return a value.
- */
-void ExtractionJsonParamForFindAccessToken(char *Json, size_t SizeJson);
+void Spotify_GetUserProfile(char *UserId_, char *Token);
 #endif
 #ifdef __cplusplus
 }

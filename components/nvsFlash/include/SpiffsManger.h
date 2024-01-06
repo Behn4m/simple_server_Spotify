@@ -62,7 +62,7 @@ void SaveFileInSpiffsWithTxtFormat(char *addressInSpiffs, char *key, char *value
  *@param[out] ... The variable arguments to store the retrieved values. The last argument must be NULL.
  *@return Returns true if the file is successfully read and key-value pairs are retrieved, and false otherwise.
  */
-void ReadFileFromSpiffsWithTxtFormat(char *addressInSpiffs, char *key, char *value, ...);
+void ReadTxtFileFromSpiffs(char *addressInSpiffs, char *key, char *value, ...);
 
 /**
  *@brief Check if a file exists in the SPIFFS file system.
@@ -70,6 +70,13 @@ void ReadFileFromSpiffsWithTxtFormat(char *addressInSpiffs, char *key, char *val
  * @return True if the file exists, false otherwise.
  */
 bool SpiffsExistenceCheck(char *addressInSpiffs);
+
+/**
+ *@brief This function removes a file from SPIFFS.
+ *@param[in] filename The name of the file to be removed.
+ *@return Returns true if the file removal is successful, and false otherwise.
+ */
+bool SpiffsRemoveFile(char *addressInSpiffs);
 #endif
 #ifdef __cplusplus
 }

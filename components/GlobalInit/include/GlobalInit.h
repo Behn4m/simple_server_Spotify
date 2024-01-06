@@ -15,40 +15,38 @@ extern "C" {
 #include "freertos/event_groups.h"
 #include "freertos/queue.h"
 #include "SpiffsManger.h"
-#define LONGBUF 2500
-#define MEDIUMBUF 1000
-#define SMALLBUF   250
-#define SpotifyTaskStackSize 10*1000
-#define HttpsTaskStackSize   9*1000
-#define WifiModuleTaskStackSize   10*1000
-#define ReDirectUri "http%3A%2F%2Fdeskhub.local%2Fcallback%2f"
-#define ClientId  "55bb974a0667481ab0b2a49fd0abea6d"
+
+// **************************************************************** applicaiton configurations
+#define SpotifyEnable
+#define WIFI_INIT_STA_MODE
+
+// spiffs directories
 #define WifiConfigDirectoryAddressInSpiffs  "/spiffs/WifiConfig.txt"
 #define SpotifyConfigAddressInSpiffs "/spiffs/SpotifyConfig.txt"
-#define Sec 1000
-#define Hour 3600
-extern SemaphoreHandle_t WifiParamExistenceCheckerSemaphore;
-extern SemaphoreHandle_t SpotifyParamExistenceCheckerSemaphore;
-struct Token_
-{
-    char access_token[500];
-    char token_type[20];
-    int expires_in;
-    char refresh_token[500];
-    char scope[200];
-};
-struct UserInfo_
-{
-    char DisplayName[128];
-    char SpotifyProfileURL[256];
-    char UserID[128];
-    char Image1[256];
-    char Image2[256];
-    int Follower;
-    char Country[30];
-    char Product[30];
-};
 
+// **************************************************************** constant macros
+#define SEC 1000
+#define HOUR 3600
+#define LONG_BUF 2500
+#define MEDIUM_BUF 1000
+#define SMALL_BUF   250
+#define SPOTIFY_TASK_STACK_SIZE (uint16_t)(10*1000U)
+#define HttpsTaskStackSize   (uint16_t)(9*1000U)
+#define WifiModuleTaskStackSize   (uint16_t)(10*1000U)
+
+extern SemaphoreHandle_t WifiParamExistenceCheckerSemaphore;
+extern SemaphoreHandle_t FinishWifiConfig;
+
+#ifdef SpotifyEnable
+extern SemaphoreHandle_t IsSpotifyAuthorizedSemaphore;
+extern SemaphoreHandle_t WorkWithStorageInSpotifyComponentSemaphore ;
+/**
+ * timeout definition part 
+*/
+#define SPOTIFY_RESPONSE_TIMEOUT (30*1000)/portTICK_PERIOD_MS
+#endif
+
+// **************************************************************** initilization functions
 /**
  * in this function we init hardware or variable that need them
  *  globally

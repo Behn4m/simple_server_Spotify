@@ -43,8 +43,8 @@
 #include "esp_crt_bundle.h"
 #endif
 #include "time_sync.h"
-#include"GlobalInit.h"
-extern SemaphoreHandle_t GetResponseSemaphore;
+#include "GlobalInit.h"
+extern SemaphoreHandle_t HttpsResponseReadySemaphore;
 extern QueueHandle_t BufQueue1;
 TaskHandle_t xTaskHandlerHTTPS;
 char *WebServerAddress;
@@ -65,14 +65,14 @@ static bool save_client_session = false;
 #endif
 
 /**
-* @brief This function performs an HTTPS GET request to a specified server URL with the provided configuration.
-* @param[in] cfg The TLS configuration for the request.
-* @param[in] WEB_SERVER_URL The URL to which the request should be sent.
-* @param[in] REQUEST The HTTP request to be sent.
-*/
+ * @brief This function performs an HTTPS GET request to a specified server URL with the provided configuration.
+ * @param[in] cfg The TLS configuration for the request.
+ * @param[in] WEB_SERVER_URL The URL to which the request should be sent.
+ * @param[in] REQUEST The HTTP request to be sent.
+ */
 static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, const char *REQUEST)
 {
-    char buf[LONGBUF];
+    char buf[LONG_BUF];
     int ret, len;
 
     esp_tls_t *tls = esp_tls_init();
@@ -122,6 +122,7 @@ static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, con
     {
         len = sizeof(buf) - 1;
         memset(buf, 0x00, sizeof(buf));
+        // vTaskDelay((SEC*5) / portTICK_PERIOD_MS);
         ret = esp_tls_conn_read(tls, (char *)buf, len);
 
         if (ret == ESP_TLS_ERR_SSL_WANT_WRITE || ret == ESP_TLS_ERR_SSL_WANT_READ)
@@ -136,18 +137,21 @@ static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, con
         else if (ret == 0)
         {
             ESP_LOGI(TAG, "connection closed");
+
             vTaskDelete(xTaskHandlerHTTPS);
             break;
         }
         len = ret;
-        ESP_LOGD(TAG, "%d bytes read", len);
         buf[len + 1] = '\n';
-        printf("\n\n\n%s\n\n\n", buf);
-        xSemaphoreGive(GetResponseSemaphore);
-        if (xQueueSend(BufQueue1, buf, 0) == pdTRUE)
+        xSemaphoreGive(HttpsResponseReadySemaphore);
+        if (xQueueSend(BufQueue1, buf, portMAX_DELAY) != pdTRUE)
         {
-            printf("Sent data with queue \n");
+            ESP_LOGE(TAG, "sending data from Https by queue failed !");
+            vTaskDelete(xTaskHandlerHTTPS);
         }
+
+        ESP_LOGD(TAG, "%d bytes read", len);
+
     } while (1);
 cleanup:
     esp_tls_conn_destroy(tls);
@@ -155,7 +159,7 @@ exit:
     for (int countdown = 10; countdown >= 0; countdown--)
     {
         ESP_LOGI(TAG, "%d...", countdown);
-        vTaskDelay(Sec / portTICK_PERIOD_MS);
+        vTaskDelay(SEC / portTICK_PERIOD_MS);
     }
 }
 
@@ -266,14 +270,14 @@ static void https_request_task(void *pvparameters)
 }
 
 /**
-* @brief This function performs an HTTPS GET request to a specified server URL with the provided header request.
-* @param[in] HeaderOfRequest The header of the HTTPS request.
-* @param[in] SizeHeaderOfRequest The size of the header of the HTTPS request.
-* @param[in] Url The URL to which the request should be sent.
-* @param[in] SizeUrl The size of the URL.
-* @param[in] Server The server address.
-* @param[in] SizeServer The size of the server address.
-*/
+ * @brief This function performs an HTTPS GET request to a specified server URL with the provided header request.
+ * @param[in] HeaderOfRequest The header of the HTTPS request.
+ * @param[in] SizeHeaderOfRequest The size of the header of the HTTPS request.
+ * @param[in] Url The URL to which the request should be sent.
+ * @param[in] SizeUrl The size of the URL.
+ * @param[in] Server The server address.
+ * @param[in] SizeServer The size of the server address.
+ */
 void HttpsHandler(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *Url, size_t SizeUrl, char *Server, size_t SizeServer)
 {
     HttpsBuf = (char *)malloc(SizeHeaderOfRequest * sizeof(char));

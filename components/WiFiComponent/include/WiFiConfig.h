@@ -35,6 +35,17 @@ extern esp_netif_t * NetifAccessPointStruct ;
  * This function is the entry point for the Wi-Fi connection task. It initializes necessary components, sets up the SPIFFS, starts the mDNS service, starts the web server, and waits for Wi-Fi connection events.
  */
 void wifiConnectionModule();
+
+#ifdef WIFI_INIT_STA_MODE
+/**
+ * @brief Sets up WiFi station mode.
+ * @param[in] ssid      SSID of the access point.
+ * @param[in] password  Password of the access point.
+ * @return esp_err_t
+ */
+esp_err_t WifiStationMode(char *UserWifiSSID_, char *UserWifiPassWord_);
+#endif
+
 #endif
 #ifdef __cplusplus
 }

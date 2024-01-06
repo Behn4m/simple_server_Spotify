@@ -48,6 +48,7 @@ extern "C"
 #define AUTHORIZED 2
 #define SAVE_NEW_TOKEN 3
 #define EXPIRED 4
+#define CHECK_TIME 5
 
 #define EVENT_LOOP_QUEUE 5
 
@@ -78,7 +79,8 @@ extern "C"
         authorized = 1,
         active_user = 2,
         save_new_token=3,
-        expired_user = 4
+        expired_user = 4,
+        check_time=5
 
     } Status_t;
 

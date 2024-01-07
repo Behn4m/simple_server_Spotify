@@ -82,7 +82,7 @@ static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, con
         goto exit;
     }
 
-    if (esp_tls_conn_http_new_sync(WEB_SERVER_URL, &cfg, tls) == 1)
+    if (esp_tls_conn_http_new_sync(WEB_SERVER_URL, &cfg, tls) == true)
     {
         ESP_LOGI(TAG, "Connection established...");
     }
@@ -92,14 +92,6 @@ static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, con
         goto cleanup;
     }
 
-#ifdef CONFIG_EXAMPLE_CLIENT_SESSION_TICKETS
-    /* The TLS session is successfully established, now saving the session ctx for reuse */
-    if (save_client_session)
-    {
-        esp_tls_free_client_session(tls_client_session);
-        tls_client_session = esp_tls_get_client_session(tls);
-    }
-#endif
     size_t written_bytes = 0;
     do
     {
@@ -118,41 +110,45 @@ static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, con
         }
     } while (written_bytes < strlen(REQUEST));
     ESP_LOGI(TAG, "Reading HTTP response...");
-    do
-    {
+    
+    do {
         len = sizeof(buf) - 1;
         memset(buf, 0x00, sizeof(buf));
-        // vTaskDelay((SEC*5) / portTICK_PERIOD_MS);
+
         ret = esp_tls_conn_read(tls, (char *)buf, len);
 
-        if (ret == ESP_TLS_ERR_SSL_WANT_WRITE || ret == ESP_TLS_ERR_SSL_WANT_READ)
-        {
+        if (ret == ESP_TLS_ERR_SSL_WANT_WRITE || ret == ESP_TLS_ERR_SSL_WANT_READ) {
             continue;
-        }
-        else if (ret < 0)
-        {
-            ESP_LOGE(TAG, "esp_tls_conn_read  returned [-0x%02X](%s)", -ret, esp_err_to_name(ret));
+        } else if (ret < 0) {
+            ESP_LOGE(TAG, "esp_tls_conn_read returned [-0x%02X](%s)", -ret, esp_err_to_name(ret));
             break;
-        }
-        else if (ret == 0)
-        {
+        } else if (ret == 0) {
             ESP_LOGI(TAG, "connection closed");
-
             vTaskDelete(xTaskHandlerHTTPS);
             break;
         }
+
         len = ret;
-        buf[len + 1] = '\n';
-        xSemaphoreGive(HttpsResponseReadySemaphore);
-        if (xQueueSend(BufQueue1, buf, portMAX_DELAY) != pdTRUE)
-        {
-            ESP_LOGE(TAG, "sending data from Https by queue failed !");
-            vTaskDelete(xTaskHandlerHTTPS);
+        buf[len] = '\0'; // Null-terminate the received data
+
+        
+        if (len > 0) {                  // Check if the read operation completed
+            if (xQueueSend(BufQueue1, buf, portMAX_DELAY) == pdTRUE)    // Data reading completed; process the data here if needed
+            {
+                ESP_LOGI(TAG, "Reading response data finished, data sent by queue!");
+                xSemaphoreGive(HttpsResponseReadySemaphore);
+            }
+            else
+            {
+                ESP_LOGE(TAG, "Reading response data finished, but sending data by queue failed!");
+                vTaskDelete(xTaskHandlerHTTPS);
+            }
+
+            ESP_LOGI(TAG, "%d bytes read", len);
         }
 
-        ESP_LOGD(TAG, "%d bytes read", len);
+    } while (len > 0);
 
-    } while (1);
 cleanup:
     esp_tls_conn_destroy(tls);
 exit:
@@ -162,17 +158,6 @@ exit:
         vTaskDelay(SEC / portTICK_PERIOD_MS);
     }
 }
-
-#if CONFIG_MBEDTLS_CERTIFICATE_BUNDLE
-static void https_get_request_using_crt_bundle(void)
-{
-    ESP_LOGI(TAG, "https_request using crt bundle");
-    esp_tls_cfg_t cfg = {
-        .crt_bundle_attach = esp_crt_bundle_attach,
-    };
-    https_get_request(cfg, Web_URL, HttpsBuf);
-}
-#endif // CONFIG_MBEDTLS_CERTIFICATE_BUNDLE
 
 static void https_get_request_using_cacert_buf(void)
 {
@@ -201,68 +186,13 @@ static void https_get_request_using_global_ca_store(void)
     esp_tls_free_global_ca_store();
 }
 
-#ifdef CONFIG_EXAMPLE_CLIENT_SESSION_TICKETS
-static void https_get_request_to_local_server(const char *url)
-{
-    ESP_LOGI(TAG, "https_request to local server");
-    esp_tls_cfg_t cfg = {
-        .cacert_buf = (const unsigned char *)local_server_cert_pem_start,
-        .cacert_bytes = local_server_cert_pem_end - local_server_cert_pem_start,
-        .skip_common_name = true,
-    };
-    save_client_session = true;
-    https_get_request(cfg, url, LOCAL_SRV_REQUEST);
-}
-
-static void https_get_request_using_already_saved_session(const char *url)
-{
-    ESP_LOGI(TAG, "https_request using saved client session");
-    esp_tls_cfg_t cfg = {
-        .client_session = tls_client_session,
-    };
-    https_get_request(cfg, url, LOCAL_SRV_REQUEST);
-    esp_tls_free_client_session(tls_client_session);
-    save_client_session = false;
-    tls_client_session = NULL;
-}
-#endif
 
 static void https_request_task(void *pvparameters)
 {
-    ESP_LOGI(TAG, "Start https_request example");
-
-#ifdef CONFIG_EXAMPLE_CLIENT_SESSION_TICKETS
-    char *server_url = NULL;
-#ifdef CONFIG_EXAMPLE_LOCAL_SERVER_URL_FROM_STDIN
-    char url_buf[SERVER_URL_MAX_SZ];
-    if (strcmp(CONFIG_EXAMPLE_LOCAL_SERVER_URL, "FROM_STDIN") == 0)
-    {
-        example_configure_stdin_stdout();
-        fgets(url_buf, SERVER_URL_MAX_SZ, stdin);
-        int len = strlen(url_buf);
-        url_buf[len - 1] = '\0';
-        server_url = url_buf;
-    }
-    else
-    {
-        ESP_LOGE(TAG, "Configuration mismatch: invalid url for local server");
-        abort();
-    }
-    printf("\nServer URL obtained is %s\n", url_buf);
-#else
-    server_url = CONFIG_EXAMPLE_LOCAL_SERVER_URL;
-#endif /* CONFIG_EXAMPLE_LOCAL_SERVER_URL_FROM_STDIN */
-    https_get_request_to_local_server(server_url);
-    https_get_request_using_already_saved_session(server_url);
-#endif
-
-#if CONFIG_MBEDTLS_CERTIFICATE_BUNDLE
-    https_get_request_using_crt_bundle();
-#endif
+    ESP_LOGI(TAG, "Starting to send HTTP request");
     ESP_LOGI(TAG, "Minimum free heap size: %" PRIu32 " bytes", esp_get_minimum_free_heap_size());
-    https_get_request_using_cacert_buf();
     https_get_request_using_global_ca_store();
-    ESP_LOGI(TAG, "Finish https_request example");
+    ESP_LOGI(TAG, "Sending HTTP request finished");
     free(HttpsBuf);
     free(Web_URL);
     free(WebServerAddress);
@@ -285,7 +215,7 @@ void HttpsHandler(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *Url, 
     WebServerAddress = (char *)malloc(SizeServer * sizeof(char));
     if (HttpsBuf == NULL || Web_URL == NULL || WebServerAddress == NULL)
     {
-        printf("Failed to allocate memory for the array.\n\n");
+        ESP_LOGE(TAG, "Failed to allocate memory for the array.\n\n");
     }
     memset(HttpsBuf, 0x0, SizeHeaderOfRequest);
     memset(Web_URL, 0x0, SizeUrl);

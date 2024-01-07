@@ -33,7 +33,7 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
             Spotify_SendRequestForNext(EventData_t->token);
             if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
             {
-                ESP_LOGI(TAG, "Receive data in Event handler by queue ");
+                ESP_LOGI(TAG, "Data received in Event handler by queue ");
             }
             EventData_t->EventHandlerCallBackFunction(TempBuffer);
 
@@ -44,7 +44,7 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
             Spotify_SendRequestForPrevious(EventData_t->token);
             if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
             {
-                ESP_LOGI(TAG, "Receive data in Event handler by queue ");
+                ESP_LOGI(TAG, "Data received in Event handler by queue ");
             }
             EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
@@ -54,7 +54,7 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
             Spotify_SendRequestForPlay(EventData_t->token);
             if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
             {
-                ESP_LOGI(TAG, "Receive data in Event handler by queue ");
+                ESP_LOGI(TAG, "Data received in Event handler by queue ");
             }
             EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
@@ -64,7 +64,7 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
             Spotify_SendRequestForPause(EventData_t->token);
             if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
             {
-                ESP_LOGI(TAG, "Receive data in Event handler by queue ");
+                ESP_LOGI(TAG, "Data received in Event handler by queue ");
             }
             EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
@@ -74,7 +74,7 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
             Spotify_GetUserStatus(EventData_t->token);
             if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
             {
-                ESP_LOGI(TAG, "Receive data in Event handler by queue ");
+                ESP_LOGI(TAG, "Data received in Event handler by queue ");
             }
             EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
@@ -84,7 +84,7 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
             Spotify_GetUserTopItems(EventData_t->token);
             if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
             {
-                ESP_LOGI(TAG, "Receive data in Event handler by queue ");
+                ESP_LOGI(TAG, "Data received in Event handler by queue ");
             }
             EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
@@ -100,7 +100,7 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
             Spotify_GetUserProfile(EventData_t->UserInfo.UserID, EventData_t->token);
             if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
             {
-                ESP_LOGI(TAG, "Receive data in Event handler by queue ");
+                ESP_LOGI(TAG, "Data received in Event handler by queue ");
             }
             EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;
@@ -110,7 +110,7 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
             Spotify_GetCurrentPlaying(EventData_t->token);
             if (xQueueReceive((*EventData_t->HttpsBufQueue), TempBuffer, portMAX_DELAY) == pdTRUE)
             {
-                ESP_LOGI(TAG, "Receive data in Event handler by queue ");
+                ESP_LOGI(TAG, "Data received in Event handler by queue ");
             }
             EventData_t->EventHandlerCallBackFunction(TempBuffer);
             break;

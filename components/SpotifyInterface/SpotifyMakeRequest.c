@@ -46,33 +46,33 @@ bool Spotify_FindCode(char *Response, uint16_t SizeRes)
  */
 bool Spotify_FindToken(char *Response, uint16_t SizeRes)
 {
-    const char *tokenString = "{\"AccessToken\"";
-    uint16_t TokenLength = strlen(tokenString);
-
-    if (Response == NULL || SizeRes < TokenLength)
+    uint8_t FlgFindToken = 0;
+    uint32_t SizeOfJson = 0;
+    char json[MEDIUM_BUF] = {0};
+    for (uint16_t i = 0; i < SizeRes; i++)
     {
-        // Invalid input, either null pointer or insufficient buffer size
-        return false;
-    }
-
-    for (uint16_t i = 0; i <= SizeRes - TokenLength; ++i)
-    {
-        bool Found = true;
-        for (uint16_t j = 0; j < TokenLength; ++j)
+        if (Response[i] == '{')
         {
-            if (Response[i + j] != tokenString[j])
+            if (Response[i + 1] == '"' && Response[i + 2] == 'a' && Response[i + 3] == 'c' && Response[i + 4] == 'c' && Response[i + 5] == 'e' && Response[i + 6] == 's')
             {
-                Found = false;
-                break;
+                FlgFindToken = 1;
+                SizeOfJson = i;
             }
         }
-        if (Found)
+        if (Response[i] == '}')
         {
-            return true; // Found the access token substring
+            for (uint16_t j = SizeOfJson; j <= i; j++)
+            {
+                json[j - SizeOfJson] = Response[j];
+            }
+            memset(Response, 0x000, SizeRes);
+            for (uint16_t j = 0; j < sizeof(json); j++)
+            {
+                Response[j] = json[j];
+            }
         }
     }
-
-    return false; // Access token substring not Found
+    return FlgFindToken;
 }
 
 /**

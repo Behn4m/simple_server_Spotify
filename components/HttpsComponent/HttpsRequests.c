@@ -125,7 +125,7 @@ static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, con
     {
         len = sizeof(buf) - 1;
         memset(buf, 0x00, sizeof(buf));
-        vTaskDelay((SEC*3) / portTICK_PERIOD_MS);
+        // vTaskDelay((SEC*5) / portTICK_PERIOD_MS);
         ret = esp_tls_conn_read(tls, (char *)buf, len);
 
         if (ret == ESP_TLS_ERR_SSL_WANT_WRITE || ret == ESP_TLS_ERR_SSL_WANT_READ)
@@ -140,17 +140,21 @@ static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, con
         else if (ret == 0)
         {
             ESP_LOGI(TAG, "connection closed");
+
             vTaskDelete(xTaskHandlerHTTPS);
             break;
         }
         len = ret;
-        ESP_LOGD(TAG, "%d bytes read", len);
         buf[len + 1] = '\n';
         xSemaphoreGive(HttpsResponseReadySemaphore);
-        if (xQueueSend(BufQueue1, buf, 0) == pdTRUE)
+        if (xQueueSend(BufQueue1, buf, portMAX_DELAY) != pdTRUE)
         {
-            printf("Sent data with queue \n");
+            ESP_LOGE(TAG, "sending data from Https by queue failed !");
+            vTaskDelete(xTaskHandlerHTTPS);
         }
+
+        ESP_LOGD(TAG, "%d bytes read", len);
+
     } while (1);
 cleanup:
     esp_tls_conn_destroy(tls);

@@ -19,8 +19,6 @@ void app_main(void)
 {
     GlobalInit();
     nvsFlashInit();
-    size_t freeHeapSize = xPortGetFreeHeapSize();
-    ESP_LOGE("heap", "Free Heap Size: %u bytes\n", freeHeapSize);
     SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
     WifiStationMode("Hardware10", "87654321");

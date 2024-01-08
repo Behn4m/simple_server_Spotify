@@ -34,8 +34,7 @@ void app_main(void)
     SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
     SpotifyInterfaceHandler.EventHandlerCallBackFunction = CallbackTest;
     Spotify_TaskInit(&SpotifyInterfaceHandler, SPOTIFY_TASK_STACK_SIZE);
-    freeHeapSize = xPortGetFreeHeapSize();
-    ESP_LOGE("TAG", "Free Heap Size: %u bytes\n", freeHeapSize);
+      ESP_LOGW("bibi ", "\n CONFIG_FREERTOS_HZ =%d",CONFIG_FREERTOS_HZ);
     // after this semaphore you can use playback command function in every where !
     if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
         Spotify_SendCommand(GetNowPlaying);

@@ -50,28 +50,31 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler, uint16
         InterfaceHandler->HttpsBufQueue != NULL)
     {
 
-        // TaskHandle_t *xTaskHandle = (TaskHandle_t *)malloc(sizeof(TaskHandle_t));
-        // StaticTask_t *xTaskBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
-        // StackType_t *xStack = (StackType_t *)malloc(SpotifyTaskStackSize * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
+        StaticTask_t *xTaskBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
+        StackType_t *xStack = (StackType_t *)malloc(SpotifyTaskStackSize * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
 
-        // if (xTaskHandle == NULL || xTaskBuffer == NULL || xStack == NULL)
-        // {
-        //     ESP_LOGI(TAG, "Memory allocation failed!\n");
-        //     free(xTaskHandle);
-        //     free(xTaskBuffer);
-        //     free(xStack);
-        //     return 1; // Exit with an error code
-        // }
-        // xTaskCreateStatic(
-        //     Spotify_MainTask, // Task function
-        //     "Spotify_MainTask",         // Task name (for debugging)
-        //     SpotifyTaskStackSize,                   // Stack size (in words)
-        //     NULL,          // Task parameters (passed to the task function)
-        //     tskIDLE_PRIORITY + 1,  // Task priority (adjust as needed)
-        //     xStack,                // Stack buffer
-        //     xTaskBuffer            // Task control block
-        // );
-        xTaskCreate(&Spotify_MainTask, "Spotify_MainTask", SpotifyTaskStackSize, NULL, 9, NULL);
+        if (xTaskBuffer == NULL || xStack == NULL)
+        {
+            ESP_LOGI(TAG, "Memory allocation failed!\n");
+            free(xTaskBuffer);
+            free(xStack);
+            return 1; // Exit with an error code
+        }
+        unsigned int freeHeapSize;
+        freeHeapSize = xPortGetFreeHeapSize();
+        ESP_LOGE("TAG", "before Spotify Free Heap Size: %u bytes\n", freeHeapSize);
+        xTaskCreateStatic(
+            Spotify_MainTask,     // Task function
+            "Spotify_MainTask",   // Task name (for debugging)
+            SpotifyTaskStackSize, // Stack size (in words)
+            NULL,                 // Task parameters (passed to the task function)
+            tskIDLE_PRIORITY + 9, // Task priority (adjust as needed)
+            xStack,               // Stack buffer
+            xTaskBuffer           // Task control block
+        );
+        freeHeapSize = xPortGetFreeHeapSize();
+        ESP_LOGW("TAG", "after Spotify Free Heap Size: %u bytes\n", freeHeapSize);
+        // xTaskCreate(&Spotify_MainTask, "Spotify_MainTask", SpotifyTaskStackSize, NULL, 9, NULL);
         ESP_LOGI(TAG, "Spotify app initiated successfully");
     }
     else

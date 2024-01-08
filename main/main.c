@@ -9,7 +9,6 @@
 QueueHandle_t BufQueue1;
 SemaphoreHandle_t HttpsResponseReadySemaphore = NULL;
 SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
-
 // ****************************** GLobal Functions ****************************** //
 void CallbackTest(char *buffer)
 {
@@ -17,6 +16,12 @@ void CallbackTest(char *buffer)
 }
 void app_main(void)
 {
+    unsigned int numberOfTasks = uxTaskGetNumberOfTasks();
+    printf("Number of tasks: %u\n", numberOfTasks);
+    unsigned int freeHeapSize;
+    freeHeapSize = xPortGetFreeHeapSize();
+    ESP_LOGE("TAG", "Free Heap Size: %u bytes\n", freeHeapSize);
+
     GlobalInit();
     nvsFlashInit();
     SpiffsGlobalConfig();
@@ -34,9 +39,11 @@ void app_main(void)
     SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
     SpotifyInterfaceHandler.EventHandlerCallBackFunction = CallbackTest;
     Spotify_TaskInit(&SpotifyInterfaceHandler, SPOTIFY_TASK_STACK_SIZE);
-      ESP_LOGW("bibi ", "\n CONFIG_FREERTOS_HZ =%d",CONFIG_FREERTOS_HZ);
+    ESP_LOGW("bibi ", "\n CONFIG_FREERTOS_HZ =%d", CONFIG_FREERTOS_HZ);
     // after this semaphore you can use playback command function in every where !
     if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
         Spotify_SendCommand(GetNowPlaying);
+    numberOfTasks = uxTaskGetNumberOfTasks();
+    printf("Number of tasks: %u\n", numberOfTasks);
 #endif
 }

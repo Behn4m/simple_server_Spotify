@@ -126,6 +126,9 @@ static void Spotify_EventHandler(void *Arg, esp_event_base_t EventBase,
  */
 void Spotify_RegisterEventHandler(void)
 {
+    unsigned int freeHeapSize;
+    freeHeapSize = xPortGetFreeHeapSize();
+    ESP_LOGE("TAG", "before event Free Heap Size: %u bytes\n", freeHeapSize);
     esp_event_loop_args_t Spotify_EventLoopArgs = {
         .queue_size = EVENT_LOOP_QUEUE,
         .task_name = "Spotify_Event_Task", // task will be created
@@ -134,6 +137,8 @@ void Spotify_RegisterEventHandler(void)
         .task_core_id = tskNO_AFFINITY};
     esp_event_loop_create(&Spotify_EventLoopArgs, &Spotify_EventLoopHandle);
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, ESP_EVENT_ANY_ID, Spotify_EventHandler, Spotify_EventLoopHandle, NULL));
+    freeHeapSize = xPortGetFreeHeapSize();
+    ESP_LOGW("TAG", "after Free Heap Size: %u bytes\n", freeHeapSize);
 }
 
 /**

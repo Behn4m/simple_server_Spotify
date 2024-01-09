@@ -9,7 +9,6 @@
 QueueHandle_t BufQueue1;
 SemaphoreHandle_t HttpsResponseReadySemaphore = NULL;
 SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
-
 // ****************************** GLobal Functions ****************************** //
 void CallbackTest(char *buffer)
 {
@@ -33,17 +32,9 @@ void app_main(void)
     SpotifyInterfaceHandler.WorkWithStorageInSpotifyComponentSemaphore = &WorkWithStorageInSpotifyComponentSemaphore;
     SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
     SpotifyInterfaceHandler.EventHandlerCallBackFunction = CallbackTest;
-    Spotify_TaskInit(&SpotifyInterfaceHandler, SPOTIFY_TASK_STACK_SIZE);
+    Spotify_TaskInit(&SpotifyInterfaceHandler);
     // after this semaphore you can use playback command function in every where !
-    if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE);
-    //     Spotify_SendCommand(GetNowPlaying);
-    // vTaskDelay((pdMS_TO_TICKS(SEC * 10)));
-    // Spotify_SendCommand(Play);
-    // vTaskDelay((pdMS_TO_TICKS(SEC * 15)));
-    // Spotify_SendCommand(GetNowPlaying);
-    // vTaskDelay((pdMS_TO_TICKS(SEC * 15)));
-    // Spotify_SendCommand(GetUserInfo);
-    // vTaskDelay((pdMS_TO_TICKS(SEC * 15)));
-    // Spotify_SendCommand(Pause);
+    if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
+        Spotify_SendCommand(GetNowPlaying);
 #endif
 }

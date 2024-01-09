@@ -53,7 +53,7 @@ extern "C"
      * @param SpotifyInterfaceHandler as the handler
      * @return true if task run to the end
      */
-    bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler, uint16_t SpotifyTaskStackSize);
+    bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler);
 
     /**
      * @brief This checks if the applciaiton is initiated and connected to Spotify web service

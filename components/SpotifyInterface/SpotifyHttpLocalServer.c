@@ -47,7 +47,7 @@ static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *req)
     {
         if (Spotify_FindCode(Buf, sizeof(Buf)) == true)
         {
-            if (xQueueSend(*(HttpLocalServerLocalParam.SendCodeFromHttpToSpotifyTask), Buf, portMAX_DELAY) != pdTRUE)
+            if (xQueueSend(*(HttpLocalServerLocalParam.SendCodeFromHttpToSpotifyTask), Buf,  pdMS_TO_TICKS(SEC*15)) != pdTRUE)
             {
                 ESP_LOGE(TAG, "Sent data with queue failed !");
             }

@@ -130,10 +130,11 @@ void Spotify_RegisterEventHandler(void)
         .queue_size = EVENT_LOOP_QUEUE,
         .task_name = "Spotify_Event_Task", // task will be created
         .task_priority = uxTaskPriorityGet(NULL),
-        .task_stack_size = SpotifyEventStack,
+        .task_stack_size = SPOTIFY_EVENT_STACK_SIZE,
         .task_core_id = tskNO_AFFINITY};
     esp_event_loop_create(&Spotify_EventLoopArgs, &Spotify_EventLoopHandle);
     ESP_ERROR_CHECK(esp_event_handler_instance_register_with(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, ESP_EVENT_ANY_ID, Spotify_EventHandler, Spotify_EventLoopHandle, NULL));
+     ESP_LOGI(TAG, "Register Event Handler for Spotify ");
 }
 
 /**

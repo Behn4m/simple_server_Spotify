@@ -24,7 +24,7 @@ void app_main(void)
 #else
     wifiConnectionModule();
 #endif
-    // lvglGui();
+    lvglGui();
 #ifdef SpotifyEnable
     SpotifyInterfaceHandler.HttpsBufQueue = &BufQueue1;
     SpotifyInterfaceHandler.HttpsResponseReadySemaphore = &HttpsResponseReadySemaphore;

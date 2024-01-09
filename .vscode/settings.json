@@ -44,7 +44,8 @@
         "semphr.h": "c",
         "projdefs.h": "c",
         "cstdio": "c",
-        "esp_tls.h": "c"
+        "esp_tls.h": "c",
+        "param.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

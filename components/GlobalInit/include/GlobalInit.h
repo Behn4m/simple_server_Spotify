@@ -25,14 +25,16 @@ extern "C" {
 #define SpotifyConfigAddressInSpiffs "/spiffs/SpotifyConfig.txt"
 
 // **************************************************************** constant macros
+#define HTTPS_PRIORITY 4
+
 #define SEC 1000
 #define HOUR 3600
 #define LONG_BUF 2500
 #define MEDIUM_BUF 1000
 #define SMALL_BUF   250
-#define SPOTIFY_TASK_STACK_SIZE (uint16_t)(10*1000U)
-#define HttpsTaskStackSize   (uint16_t)(9*1000U)
-#define WifiModuleTaskStackSize   (uint16_t)(10*1000U)
+
+#define HTTPS_TASK_STACK_SIZE   (uint16_t)(9*1000U)
+#define WIFI_MODULE_TASK_STACK_SIZE   (uint16_t)(10*1000U)
 
 extern SemaphoreHandle_t WifiParamExistenceCheckerSemaphore;
 extern SemaphoreHandle_t FinishWifiConfig;

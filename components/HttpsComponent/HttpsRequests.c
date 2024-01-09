@@ -288,7 +288,8 @@ void HttpsHandler(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *Url, 
     WebServerAddress = (char *)malloc(SizeServer * sizeof(char));
     if (HttpsBuf == NULL || Web_URL == NULL || WebServerAddress == NULL)
     {
-        printf("Failed to allocate memory for the array.\n\n");
+        ESP_LOGE(TAG,"Failed to allocate memory for the array.\n\n");
+        return;
     }
     memset(HttpsBuf, 0x0, SizeHeaderOfRequest);
     memset(Web_URL, 0x0, SizeUrl);
@@ -312,10 +313,8 @@ void HttpsHandler(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *Url, 
     ESP_ERROR_CHECK(esp_timer_create(&nvs_update_timer_args, &nvs_update_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(nvs_update_timer, TIME_PERIOD));
 
-
     StaticTask_t *xTaskHttpsBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
-    StackType_t *xStackHttpsStack = (StackType_t *)malloc(HttpsTaskStackSize * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
-
+    StackType_t *xStackHttpsStack = (StackType_t *)malloc(HTTPS_TASK_STACK_SIZE * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
     if (xTaskHttpsBuffer == NULL || xStackHttpsStack == NULL)
     {
         ESP_LOGI(TAG, "Memory allocation failed!\n");
@@ -323,19 +322,13 @@ void HttpsHandler(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *Url, 
         free(xStackHttpsStack);
         return ; // Exit with an error code
     }
-    unsigned int freeHeapSize;
-    freeHeapSize = xPortGetFreeHeapSize();
-    ESP_LOGE("TAG", "before Https Free Heap Size: %u bytes\n", freeHeapSize);
     xTaskCreateStatic(
         https_request_task,     // Task function
         "https_request_task",   // Task name (for debugging)
-        HttpsTaskStackSize, // Stack size (in words)
+        HTTPS_TASK_STACK_SIZE, // Stack size (in words)
         NULL,                 // Task parameters (passed to the task function)
-        tskIDLE_PRIORITY + 9, // Task priority (adjust as needed)
+        tskIDLE_PRIORITY + HTTPS_PRIORITY, // Task priority (adjust as needed)
         xStackHttpsStack,     // Stack buffer
         xTaskHttpsBuffer      // Task control block
     );
-    freeHeapSize = xPortGetFreeHeapSize();
-    ESP_LOGW("TAG", "after Https  Free Heap Size: %u bytes\n", freeHeapSize);
-    // xTaskCreate(&https_request_task, "https_get_task", HttpsTaskStackSize, NULL, 1, &xTaskHandlerHTTPS);
 }

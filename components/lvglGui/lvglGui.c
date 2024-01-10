@@ -141,7 +141,7 @@ void lvglGui(void)
     freeHeapSize = xPortGetFreeHeapSize();
     printf("before Free Heap Size: %u bytes\n", freeHeapSize);
     StaticTask_t *xTaskBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
-    StackType_t *xStack = (StackType_t *)malloc(4096 * 8 * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
+    StackType_t *xStack = (StackType_t *)malloc(2000 * 8 * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
     if (xTaskBuffer == NULL || xStack == NULL)
     {
         // ESP_LOGE("TAG", "Memory allocation failed!\n");
@@ -152,9 +152,9 @@ void lvglGui(void)
     xTaskCreateStatic(
         guiTask,              // Task function
         "guiTask",            // Task name (for debugging)
-        4096 * 8,             // Stack size (in words)
+        2000 * 8,             // Stack size (in words)
         NULL,                 // Task parameters (passed to the task function)
-        tskIDLE_PRIORITY + 5, // Task priority (adjust as needed)
+        tskIDLE_PRIORITY + 4, // Task priority (adjust as needed)
         xStack,               // Stack buffer
         xTaskBuffer           // Task control block
     );

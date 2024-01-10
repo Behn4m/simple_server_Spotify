@@ -34,7 +34,7 @@ void app_main(void)
     SpotifyInterfaceHandler.EventHandlerCallBackFunction = CallbackTest;
     Spotify_TaskInit(&SpotifyInterfaceHandler);
     // after this semaphore you can use playback command function in every where !
-    if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
-        Spotify_SendCommand(GetNowPlaying);
+    // if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
+    //     Spotify_SendCommand(GetNowPlaying);
 #endif
 }

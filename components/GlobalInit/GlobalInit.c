@@ -1,8 +1,8 @@
 #include "GlobalInit.h"
 
 static const char *TAG = "Global init";
-extern QueueHandle_t BufQueue1;
-extern SemaphoreHandle_t HttpsResponseReadySemaphore;
+QueueHandle_t BufQueue1;
+SemaphoreHandle_t HttpsResponseReadySemaphore;
 SemaphoreHandle_t FinishWifiConfig = NULL;
 
 #ifdef SpotifyEnable

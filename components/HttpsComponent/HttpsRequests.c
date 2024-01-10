@@ -12,57 +12,31 @@
  *
  * SPDX-FileContributor: 2015-2022 Espressif Systems (Shanghai) CO LTD
  */
+#include "HttpsRequests.h"
 
-#include <string.h>
-#include <stdlib.h>
-#include <inttypes.h>
-#include <time.h>
-#include <sys/time.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/event_groups.h"
-#include "esp_wifi.h"
-#include "esp_event.h"
-#include "esp_log.h"
-#include "esp_system.h"
-#include "esp_timer.h"
-#include "nvs_flash.h"
-#include "nvs.h"
-#include "protocol_examples_common.h"
-#include "esp_sntp.h"
-#include "esp_netif.h"
-#include "freertos/queue.h"
-#include "lwip/err.h"
-#include "lwip/sockets.h"
-#include "lwip/sys.h"
-#include "lwip/netdb.h"
-#include "lwip/dns.h"
-#include "esp_tls.h"
-#include "sdkconfig.h"
-#if CONFIG_MBEDTLS_CERTIFICATE_BUNDLE
-#include "esp_crt_bundle.h"
-#endif
-#include "time_sync.h"
-#include "GlobalInit.h"
-extern SemaphoreHandle_t HttpsResponseReadySemaphore;
-extern QueueHandle_t BufQueue1;
+#define WEB_PORT "443"
+#define SERVER_URL_MAX_SZ 1024
+#define TIME_PERIOD (86400000000ULL)
+
 TaskHandle_t xTaskHandlerHTTPS;
 char *WebServerAddress;
 char *Web_URL;
 char *HttpsBuf;
-#define WEB_PORT "443"
-#define SERVER_URL_MAX_SZ 1024
-#define TIME_PERIOD (86400000000ULL)
+
 static const char *TAG = "Https";
 static void https_request_task(void *pvparameters);
 extern const uint8_t server_root_cert_pem_start[] asm("_binary_server_root_cert_pem_start");
 extern const uint8_t server_root_cert_pem_end[] asm("_binary_server_root_cert_pem_end");
 extern const uint8_t local_server_cert_pem_start[] asm("_binary_local_server_cert_pem_start");
 extern const uint8_t local_server_cert_pem_end[] asm("_binary_local_server_cert_pem_end");
-#ifdef CONFIG_EXAMPLE_CLIENT_SESSION_TICKETS
-static esp_tls_client_session_t *tls_client_session = NULL;
-static bool save_client_session = false;
-#endif
+
+HttpsRequestsHandler_t *HttpsRequestsHandler;
+
+bool Https_ComponentInit(HttpsRequestsHandler_t *pHandler)
+{
+    HttpsRequestsHandler = pHandler;
+    return true;
+}
 
 /**
  * @brief This function performs an HTTPS GET request to a specified server URL with the provided configuration.
@@ -133,10 +107,10 @@ static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, con
 
         
         if (len > 0) {                  // Check if the read operation completed
-            if (xQueueSend(BufQueue1, buf, portMAX_DELAY) == pdTRUE)    // Data reading completed; process the data here if needed
+            if (xQueueSend(*HttpsRequestsHandler->BufQueue1, buf, portMAX_DELAY) == pdTRUE)    // Data reading completed; process the data here if needed
             {
                 ESP_LOGI(TAG, "Reading response data finished, data sent by queue!");
-                xSemaphoreGive(HttpsResponseReadySemaphore);
+                xSemaphoreGive(*HttpsRequestsHandler->HttpsResponseReadySemaphore);
             }
             else
             {

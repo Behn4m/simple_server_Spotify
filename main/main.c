@@ -3,12 +3,14 @@
 #include "nvsFlash.h"
 #include "WiFiConfig.h"
 #include "SpotifyInterface.h"
+#include "HttpsRequests.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 // ****************************** GLobal Variables ****************************** //
 QueueHandle_t BufQueue1;
 SemaphoreHandle_t HttpsResponseReadySemaphore = NULL;
 SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
+HttpsRequestsHandler_t HttpsRequestsHandler; 
 
 // ****************************** GLobal Functions ****************************** //
 void CallbackTest(char *buffer)
@@ -21,12 +23,17 @@ void app_main(void)
     nvsFlashInit();
     SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
+    // WifiStationMode("Hardware10", "87654321");
     WifiStationMode("BELL789", "167271A164A9");
 #else
     wifiConnectionModule();
 #endif
     // lvglGui();
 #ifdef SpotifyEnable
+    HttpsRequestsHandler.BufQueue1 = &BufQueue1;
+    HttpsRequestsHandler.HttpsResponseReadySemaphore = &HttpsResponseReadySemaphore;
+    Https_ComponentInit(&HttpsRequestsHandler);
+
     SpotifyInterfaceHandler.HttpsBufQueue = &BufQueue1;
     SpotifyInterfaceHandler.HttpsResponseReadySemaphore = &HttpsResponseReadySemaphore;
     SpotifyInterfaceHandler.IsSpotifyAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;

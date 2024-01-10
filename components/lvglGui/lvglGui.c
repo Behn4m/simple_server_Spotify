@@ -13,25 +13,16 @@
 #include "esp_system.h"
 #include "driver/gpio.h"
 #include "esp_timer.h"
-#include <esp_wifi.h>
-#include <esp_event.h>
-#include <esp_log.h>
-#include <esp_system.h>
-#include <nvs_flash.h>
-#include <sys/param.h>
-#include "protocol_examples_common.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/event_groups.h"
-#include "freertos/queue.h"
+
 #include "lvgl.h"
 #include "lvgl_helpers.h"
 #include "rm67162Lilygo.h"
 #include "rm67162.h"
+
 #include "lv_demo.h"
 
 #define LV_TICK_PERIOD_MS 1
-static const char *TAG = "LVGL_Task";
+
 // #include "lv_examples.h"
 
 /**
@@ -69,7 +60,7 @@ static void create_demo_application(void)
 /**
  * @brief      global display buffer and its semaphore
  */
-lv_disp_draw_buf_t disp_draw_buf;
+static lv_disp_draw_buf_t disp_draw_buf;
 lv_color_t *buf1;
 lv_color_t *buf2;
 SemaphoreHandle_t xGuiSemaphore;
@@ -84,12 +75,14 @@ static void guiTask(void *pvParameter)
 
     (void)pvParameter;
     xGuiSemaphore = xSemaphoreCreateMutex();
-    lv_disp_draw_buf_t *disp_draw_buf = (lv_disp_draw_buf_t *)malloc(sizeof(lv_disp_draw_buf_t));
-    lv_color_t *buf1 = (lv_color_t *)malloc((LV_HOR_RES_MAX*100)*sizeof(lv_color_t));
-    lv_color_t *buf2 = (lv_color_t *)malloc((LV_HOR_RES_MAX*100)*sizeof(lv_color_t));
+    lv_color_t *buf1 = (lv_color_t *)malloc(LV_HOR_RES_MAX * 100 * sizeof(lv_color_t));
+    lv_color_t *buf2 = (lv_color_t *)malloc(LV_HOR_RES_MAX * 100 * sizeof(lv_color_t));
     lv_init();
+
     lvgl_driver_init();
+
     lv_disp_draw_buf_init(&disp_draw_buf, buf1, buf2, LV_HOR_RES_MAX * 100); // Lilygo
+
     lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);
     disp_drv.hor_res = LV_HOR_RES_MAX;
@@ -144,23 +137,36 @@ static void guiTask(void *pvParameter)
 
 void lvglGui(void)
 {
-    StaticTask_t *xTaskLVGLBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
-    StackType_t *xLVGLStack = (StackType_t *)malloc(16000 * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
-    if (xTaskLVGLBuffer == NULL || xLVGLStack == NULL)
+    unsigned int freeHeapSize;
+    freeHeapSize = xPortGetFreeHeapSize();
+    printf("before Free Heap Size: %u bytes\n", freeHeapSize);
+    StaticTask_t *xTaskBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
+    StackType_t *xStack = (StackType_t *)malloc(4096 * 8 * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
+    if (xTaskBuffer == NULL || xStack == NULL)
     {
-        ESP_LOGE(TAG, "Memory allocation failed!\n");
-        free(xTaskLVGLBuffer);
-        free(xLVGLStack);
+        // ESP_LOGE("TAG", "Memory allocation failed!\n");
+        free(xTaskBuffer);
+        free(xStack);
         return; // Exit with an error code
     }
     xTaskCreateStatic(
-        guiTask,                          // Task function
-        "guiTask",                        // Task name (for debugging)
-        16000,             // Stack size (in words)
-        NULL,                             // Task parameters (passed to the task function)
-        tskIDLE_PRIORITY + 2, // Task priority (adjust as needed)
-        xLVGLStack,                       // Stack buffer
-        xTaskLVGLBuffer                   // Task control block
+        guiTask,              // Task function
+        "guiTask",            // Task name (for debugging)
+        4096 * 8,             // Stack size (in words)
+        NULL,                 // Task parameters (passed to the task function)
+        tskIDLE_PRIORITY + 5, // Task priority (adjust as needed)
+        xStack,               // Stack buffer
+        xTaskBuffer           // Task control block
     );
-    ESP_LOGI(TAG, "LVGL app initiated successfully");
+    freeHeapSize = xPortGetFreeHeapSize();
+    printf("before Free Heap Size: %u bytes\n", freeHeapSize);
+    // ESP_LOGI("TAG", "LVGL app initiated successfully");
+
+    // TaskHandle_t xHandle = NULL;
+
+    // xTaskCreate(guiTask, "guiTask", 2000*8, NULL, tskIDLE_PRIORITY, &xHandle);
+    // configASSERT(xHandle);
+
+    // if(xHandle == NULL)
+    //     vTaskDelete(xHandle);
 }

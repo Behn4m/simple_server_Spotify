@@ -16,11 +16,11 @@ void CallbackTest(char *buffer)
 }
 void app_main(void)
 {
-    // GlobalInit();
-    // nvsFlashInit();
-    // SpiffsGlobalConfig();
+    GlobalInit();
+    nvsFlashInit();
+    SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
-    // WifiStationMode("Hardware10", "87654321");
+    WifiStationMode("Hardware10", "87654321");
 #else
     wifiConnectionModule();
 #endif
@@ -32,9 +32,9 @@ void app_main(void)
     SpotifyInterfaceHandler.WorkWithStorageInSpotifyComponentSemaphore = &WorkWithStorageInSpotifyComponentSemaphore;
     SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
     SpotifyInterfaceHandler.EventHandlerCallBackFunction = CallbackTest;
-    // Spotify_TaskInit(&SpotifyInterfaceHandler);
+    Spotify_TaskInit(&SpotifyInterfaceHandler);
     // after this semaphore you can use playback command function in every where !
-    // if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE);
-        // Spotify_SendCommand(GetNowPlaying);
+    if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
+        Spotify_SendCommand(GetNowPlaying);
 #endif
 }

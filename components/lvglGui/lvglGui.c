@@ -13,12 +13,21 @@
 #include "esp_system.h"
 #include "driver/gpio.h"
 #include "esp_timer.h"
-
+#include <esp_wifi.h>
+#include <esp_event.h>
+#include <esp_log.h>
+#include <esp_system.h>
+#include <nvs_flash.h>
+#include <sys/param.h>
+#include "protocol_examples_common.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/event_groups.h"
+#include "freertos/queue.h"
 #include "lvgl.h"
 #include "lvgl_helpers.h"
 #include "rm67162Lilygo.h"
 #include "rm67162.h"
-#include "GlobalInit.h"
 #include "lv_demo.h"
 
 #define LV_TICK_PERIOD_MS 1
@@ -60,7 +69,7 @@ static void create_demo_application(void)
 /**
  * @brief      global display buffer and its semaphore
  */
-lv_disp_draw_buf_t *disp_draw_buf;
+lv_disp_draw_buf_t disp_draw_buf;
 lv_color_t *buf1;
 lv_color_t *buf2;
 SemaphoreHandle_t xGuiSemaphore;
@@ -136,7 +145,7 @@ static void guiTask(void *pvParameter)
 void lvglGui(void)
 {
     StaticTask_t *xTaskLVGLBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
-    StackType_t *xLVGLStack = (StackType_t *)malloc(LVGL_TASK_STACK_SIZE * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
+    StackType_t *xLVGLStack = (StackType_t *)malloc(16000 * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
     if (xTaskLVGLBuffer == NULL || xLVGLStack == NULL)
     {
         ESP_LOGE(TAG, "Memory allocation failed!\n");
@@ -147,9 +156,9 @@ void lvglGui(void)
     xTaskCreateStatic(
         guiTask,                          // Task function
         "guiTask",                        // Task name (for debugging)
-        LVGL_TASK_STACK_SIZE,             // Stack size (in words)
+        16000,             // Stack size (in words)
         NULL,                             // Task parameters (passed to the task function)
-        tskIDLE_PRIORITY + LVGL_PRIORITY, // Task priority (adjust as needed)
+        tskIDLE_PRIORITY + 2, // Task priority (adjust as needed)
         xLVGLStack,                       // Stack buffer
         xTaskLVGLBuffer                   // Task control block
     );

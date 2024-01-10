@@ -45,7 +45,9 @@
         "projdefs.h": "c",
         "cstdio": "c",
         "esp_tls.h": "c",
-        "param.h": "c"
+        "param.h": "c",
+        "gpio.h": "c",
+        "rm67162.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

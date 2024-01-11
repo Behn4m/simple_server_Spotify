@@ -34,8 +34,8 @@ extern "C" {
 
 typedef struct
 {
-    QueueHandle_t *BufQueue1;
-    SemaphoreHandle_t *HttpsResponseReadySemaphore;
+    QueueHandle_t *ResponseBufQueue;
+    SemaphoreHandle_t *ResponseReadySemaphore;
 } HttpsRequestsHandler_t;
 
 /**

@@ -107,10 +107,10 @@ static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, con
 
         
         if (len > 0) {                  // Check if the read operation completed
-            if (xQueueSend(*HttpsRequestsHandler->BufQueue1, buf, portMAX_DELAY) == pdTRUE)    // Data reading completed; process the data here if needed
+            if (xQueueSend(*HttpsRequestsHandler->ResponseBufQueue, buf, portMAX_DELAY) == pdTRUE)    // Data reading completed; process the data here if needed
             {
                 ESP_LOGI(TAG, "Reading response data finished, data sent by queue!");
-                xSemaphoreGive(*HttpsRequestsHandler->HttpsResponseReadySemaphore);
+                xSemaphoreGive(*HttpsRequestsHandler->ResponseReadySemaphore);
             }
             else
             {

@@ -45,7 +45,8 @@
         "projdefs.h": "c",
         "cstdio": "c",
         "esp_tls.h": "c",
-        "*.tcc": "c"
+        "*.tcc": "c",
+        "esp_system.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

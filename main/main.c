@@ -7,10 +7,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 // ****************************** GLobal Variables ****************************** //
-QueueHandle_t BufQueue1;
+QueueHandle_t BufQueue1 = NULL;
 SemaphoreHandle_t HttpsResponseReadySemaphore = NULL;
-SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
-HttpsRequestsHandler_t HttpsRequestsHandler; 
 
 // ****************************** GLobal Functions ****************************** //
 void CallbackTest(char *buffer)
@@ -30,8 +28,11 @@ void app_main(void)
 #endif
     // lvglGui();
 #ifdef SpotifyEnable
-    HttpsRequestsHandler.BufQueue1 = &BufQueue1;
-    HttpsRequestsHandler.HttpsResponseReadySemaphore = &HttpsResponseReadySemaphore;
+    SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
+    HttpsRequestsHandler_t HttpsRequestsHandler; 
+
+    HttpsRequestsHandler.ResponseBufQueue = &BufQueue1;
+    HttpsRequestsHandler.ResponseReadySemaphore = &HttpsResponseReadySemaphore;
     Https_ComponentInit(&HttpsRequestsHandler);
 
     SpotifyInterfaceHandler.HttpsBufQueue = &BufQueue1;

@@ -233,7 +233,7 @@ esp_err_t WifiSoftAccessPointMode(char *WifiAccessPointSSID, char *WifiAccessPoi
 void wifiConnectionModule()
 {
     ESP_LOGI(TAG, "creat wifi task");
-    xTaskCreate(&WifiConnectionTask, "WifiConnectionTask", WifiModuleTaskStackSize, NULL, 1, NULL);
+    xTaskCreate(&WifiConnectionTask, "WifiConnectionTask", WIFI_MODULE_TASK_STACK_SIZE, NULL, 1, NULL);
     if (xSemaphoreTake(FinishWifiConfig, portMAX_DELAY) == pdTRUE)
     {
         ESP_LOGI(TAG, "wifi configuration get finish !");

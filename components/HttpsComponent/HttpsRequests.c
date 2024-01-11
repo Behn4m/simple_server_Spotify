@@ -189,7 +189,8 @@ void Https_GetRequest(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *U
     WebServerAddress = (char *)malloc(SizeServer * sizeof(char));
     if (HttpsBuf == NULL || Web_URL == NULL || WebServerAddress == NULL)
     {
-        ESP_LOGE(TAG, "Failed to allocate memory for the array.\n\n");
+        ESP_LOGE(TAG,"Failed to allocate memory for the array.\n\n");
+        return;
     }
     memset(HttpsBuf, 0x0, SizeHeaderOfRequest - 1);
     memset(Web_URL, 0x0, SizeUrl - 1);
@@ -206,5 +207,22 @@ void Https_GetRequest(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *U
     ESP_ERROR_CHECK(esp_timer_create(&nvs_update_timer_args, &nvs_update_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(nvs_update_timer, TIME_PERIOD));
 
-    xTaskCreate(&https_request_task, "https_get_task", HttpsTaskStackSize, NULL, 1, &xTaskHandlerHTTPS);
+    StaticTask_t *xTaskHttpsBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
+    StackType_t *xStackHttpsStack = (StackType_t *)malloc(HTTPS_TASK_STACK_SIZE * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
+    if (xTaskHttpsBuffer == NULL || xStackHttpsStack == NULL)
+    {
+        ESP_LOGI(TAG, "Memory allocation failed!\n");
+        free(xTaskHttpsBuffer);
+        free(xStackHttpsStack);
+        return ; // Exit with an error code
+    }
+    xTaskCreateStatic(
+        https_request_task,     // Task function
+        "https_request_task",   // Task name (for debugging)
+        HTTPS_TASK_STACK_SIZE, // Stack size (in words)
+        NULL,                 // Task parameters (passed to the task function)
+        tskIDLE_PRIORITY + HTTPS_PRIORITY, // Task priority (adjust as needed)
+        xStackHttpsStack,     // Stack buffer
+        xTaskHttpsBuffer      // Task control block
+    );
 }

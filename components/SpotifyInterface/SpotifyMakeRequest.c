@@ -100,7 +100,7 @@ void Spotify_SendTokenRequest(char *Buf, size_t SizeBuf, char *code, size_t Size
             strlen(Grand), Grand);
     char URL[SMALL_BUF] = "https://accounts.spotify.com/api/token";
     char Server[SMALL_BUF] = "accounts.spotify.com";
-    HttpsHandler(Buf, SizeBuf, URL, sizeof(URL), Server, sizeof(Server));
+    Https_GetRequest(Buf, SizeBuf, URL, sizeof(URL), Server, sizeof(Server));
 }
 
 /**
@@ -128,7 +128,7 @@ void Spotify_MakePlayerCommandAndSendIt(const char *Method_t, const char *Comman
     ESP_LOGI(TAG, "\n\nrequest for %s \n%s\nand size it =%d\n\n",Command, Buf, strlen(Buf));
     char URL[SMALL_BUF] = "https://api.spotify.com";
     char Server[SMALL_BUF] = "api.spotify.com";
-    HttpsHandler(Buf, SizeBuf, URL, sizeof(URL), Server, sizeof(Server));
+    Https_GetRequest(Buf, SizeBuf, URL, sizeof(URL), Server, sizeof(Server));
 }
 
 /**
@@ -188,7 +188,7 @@ void Spotify_GetUserStatus(char *AccessToken)
     ESP_LOGI(TAG, "\n\nrequest for Spotify_GetUserStatus\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
     char URL[SMALL_BUF] = "https://api.spotify.com";
     char Server[SMALL_BUF] = "api.spotify.com";
-    HttpsHandler(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
+    Https_GetRequest(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
 }
 
 /**
@@ -207,7 +207,7 @@ void Spotify_GetUserTopItems(char *AccessToken)
     ESP_LOGI(TAG, "\n\nrequest for Spotify_GetUserTopItems\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
     char URL[SMALL_BUF] = "https://api.spotify.com";
     char Server[SMALL_BUF] = "api.spotify.com";
-    HttpsHandler(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
+    Https_GetRequest(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
 }
 
 /**
@@ -229,7 +229,7 @@ void Spotify_GetUserProfile(char *UserId_t, char *Token)
     ESP_LOGI(TAG, "\n\nrequest for Spotify_GetUserProfile\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
     char URL[SMALL_BUF] = "https://api.spotify.com";
     char Server[SMALL_BUF] = "api.spotify.com";
-    HttpsHandler(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
+    Https_GetRequest(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
 }
 
 /**
@@ -247,7 +247,7 @@ void Spotify_GetCurrentPlaying(Token_t *Token)
     ESP_LOGI(TAG, "\n\nrequest for Spotify_GetCurrentPlaying\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
     char URL[SMALL_BUF] = "https://api.spotify.com";
     char Server[SMALL_BUF] = "api.spotify.com";
-    HttpsHandler(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
+    Https_GetRequest(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
 }
 
 /**
@@ -274,5 +274,5 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *
             strlen(Grand), Grand);
     char URL[SMALL_BUF] = "https://accounts.spotify.com/api/token";
     char Server[SMALL_BUF] = "accounts.spotify.com";
-    HttpsHandler(Buf, SizeBuf, URL, sizeof(URL), Server, sizeof(Server));
+    Https_GetRequest(Buf, SizeBuf, URL, sizeof(URL), Server, sizeof(Server));
 }

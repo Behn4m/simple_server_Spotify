@@ -54,7 +54,7 @@ bool Https_ComponentInit(HttpsRequestsHandler_t *pHandler);
 * @param[in] Server The server address.
 * @param[in] SizeServer The size of the server address.
 */
-void HttpsHandler(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char* Url,size_t SizeUrl,char* Server,size_t SizeServer);
+void Https_GetRequest(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char* Url,size_t SizeUrl,char* Server,size_t SizeServer);
 
 #endif
 #ifdef __cplusplus

@@ -182,7 +182,7 @@ static void https_request_task(void *pvparameters)
  * @param[in] Server The server address.
  * @param[in] SizeServer The size of the server address.
  */
-void HttpsHandler(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *Url, size_t SizeUrl, char *Server, size_t SizeServer)
+void Https_GetRequest(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *Url, size_t SizeUrl, char *Server, size_t SizeServer)
 {
     HttpsBuf = (char *)malloc(SizeHeaderOfRequest * sizeof(char));
     Web_URL = (char *)malloc(SizeUrl * sizeof(char));

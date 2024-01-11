@@ -192,16 +192,16 @@ void Https_GetRequest(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *U
         ESP_LOGE(TAG,"Failed to allocate memory for the array.\n\n");
         return;
     }
-    memset(HttpsBuf, 0x0, SizeHeaderOfRequest - 1);
-    memset(Web_URL, 0x0, SizeUrl - 1);
-    memset(WebServerAddress, 0x0, SizeServer - 1);
+    memset(HttpsBuf, 0x0, SizeHeaderOfRequest);
+    memset(Web_URL, 0x0, SizeUrl);
+    memset(WebServerAddress, 0x0, SizeServer);
     const esp_timer_create_args_t nvs_update_timer_args = {
         .callback = (void *)&fetch_and_store_time_in_nvs,
     };
 
-    strncpy(Web_URL, Url, SizeUrl);
-    strncpy(WebServerAddress, Server, SizeServer);
-    strncpy(HttpsBuf, HeaderOfRequest, SizeHeaderOfRequest);
+    strncpy(Web_URL, Url, SizeUrl - 1);
+    strncpy(WebServerAddress, Server, SizeServer - 1);
+    strncpy(HttpsBuf, HeaderOfRequest, SizeHeaderOfRequest - 1);
 
     esp_timer_handle_t nvs_update_timer;
     ESP_ERROR_CHECK(esp_timer_create(&nvs_update_timer_args, &nvs_update_timer));

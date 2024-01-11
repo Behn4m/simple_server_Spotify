@@ -197,20 +197,14 @@ void Https_GetRequest(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *U
     const esp_timer_create_args_t nvs_update_timer_args = {
         .callback = (void *)&fetch_and_store_time_in_nvs,
     };
-    for (int i = 0; i < SizeUrl; i++)
-    {
-        Web_URL[i] = Url[i];
-    }
-    for (int i = 0; i < SizeServer; i++)
-    {
-        WebServerAddress[i] = Server[i];
-    }
-    for (int i = 0; i < SizeHeaderOfRequest; i++)
-    {
-        HttpsBuf[i] = HeaderOfRequest[i];
-    }
+
+    strncpy(Web_URL, Url, SizeUrl);
+    strncpy(WebServerAddress, Server, SizeServer);
+    strncpy(HttpsBuf, HeaderOfRequest, SizeHeaderOfRequest);
+
     esp_timer_handle_t nvs_update_timer;
     ESP_ERROR_CHECK(esp_timer_create(&nvs_update_timer_args, &nvs_update_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(nvs_update_timer, TIME_PERIOD));
+    
     xTaskCreate(&https_request_task, "https_get_task", HttpsTaskStackSize, NULL, 1, &xTaskHandlerHTTPS);
 }

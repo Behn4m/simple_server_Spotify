@@ -184,24 +184,34 @@ static void https_request_task(void *pvparameters)
  */
 void Https_GetRequest(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *Url, size_t SizeUrl, char *Server, size_t SizeServer)
 {
-    HttpsBuf = (char *)malloc(SizeHeaderOfRequest * sizeof(char));
-    Web_URL = (char *)malloc(SizeUrl * sizeof(char));
-    WebServerAddress = (char *)malloc(SizeServer * sizeof(char));
+    HttpsBuf = (char *)malloc((SizeHeaderOfRequest + 1) * sizeof(char));
+    Web_URL = (char *)malloc((SizeUrl + 1) * sizeof(char));
+    WebServerAddress = (char *)malloc((SizeServer + 1) * sizeof(char));
+
     if (HttpsBuf == NULL || Web_URL == NULL || WebServerAddress == NULL)
     {
         ESP_LOGE(TAG,"Failed to allocate memory for the array.\n\n");
+        free(HttpsBuf);
+        free(Web_URL);
+        free(WebServerAddress);
         return;
     }
-    memset(HttpsBuf, 0x0, SizeHeaderOfRequest);
-    memset(Web_URL, 0x0, SizeUrl);
-    memset(WebServerAddress, 0x0, SizeServer);
+    memset(HttpsBuf, 0x0, SizeHeaderOfRequest + 1);
+    memset(Web_URL, 0x0, SizeUrl + 1);
+    memset(WebServerAddress, 0x0, SizeServer + 1);
+
     const esp_timer_create_args_t nvs_update_timer_args = {
         .callback = (void *)&fetch_and_store_time_in_nvs,
     };
 
-    strncpy(Web_URL, Url, SizeUrl - 1);
-    strncpy(WebServerAddress, Server, SizeServer - 1);
-    strncpy(HttpsBuf, HeaderOfRequest, SizeHeaderOfRequest - 1);
+    strncpy(Web_URL, Url, SizeUrl);
+    Web_URL[SizeUrl] = '\0';
+
+    strncpy(WebServerAddress, Server, SizeServer);
+    WebServerAddress[SizeServer] = '\0';
+
+    strncpy(HttpsBuf, HeaderOfRequest, SizeHeaderOfRequest);
+    HttpsBuf[SizeHeaderOfRequest] = '\0';
 
     esp_timer_handle_t nvs_update_timer;
     ESP_ERROR_CHECK(esp_timer_create(&nvs_update_timer_args, &nvs_update_timer));
@@ -212,6 +222,9 @@ void Https_GetRequest(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *U
     if (xTaskHttpsBuffer == NULL || xStackHttpsStack == NULL)
     {
         ESP_LOGI(TAG, "Memory allocation failed!\n");
+        free(HttpsBuf);
+        free(Web_URL);
+        free(WebServerAddress);
         free(xTaskHttpsBuffer);
         free(xStackHttpsStack);
         return ; // Exit with an error code

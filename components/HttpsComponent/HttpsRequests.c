@@ -18,7 +18,9 @@
 #define SERVER_URL_MAX_SZ 1024
 #define TIME_PERIOD (86400000000ULL)
 
-TaskHandle_t xTaskHandlerHTTPS;
+StaticTask_t *xTaskHttpsBuffer;
+StackType_t *xStackHttpsStack;
+
 char *WebServerAddress;
 char *Web_URL;
 char *HttpsBuf;
@@ -31,6 +33,7 @@ extern const uint8_t local_server_cert_pem_start[] asm("_binary_local_server_cer
 extern const uint8_t local_server_cert_pem_end[] asm("_binary_local_server_cert_pem_end");
 
 HttpsRequestsHandler_t *HttpsRequestsHandler;
+
 
 bool Https_ComponentInit(HttpsRequestsHandler_t *pHandler)
 {
@@ -98,7 +101,6 @@ static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, con
             break;
         } else if (ret == 0) {
             ESP_LOGI(TAG, "connection closed");
-            vTaskDelete(xTaskHandlerHTTPS);
             break;
         }
 
@@ -115,7 +117,6 @@ static void https_get_request(esp_tls_cfg_t cfg, const char *WEB_SERVER_URL, con
             else
             {
                 ESP_LOGE(TAG, "Reading response data finished, but sending data by queue failed!");
-                vTaskDelete(xTaskHandlerHTTPS);
             }
 
             ESP_LOGI(TAG, "%d bytes read", len);
@@ -170,6 +171,9 @@ static void https_request_task(void *pvparameters)
     free(HttpsBuf);
     free(Web_URL);
     free(WebServerAddress);
+    free(xTaskHttpsBuffer);
+    free(xStackHttpsStack);
+    
     vTaskDelete(NULL);
 }
 
@@ -217,8 +221,8 @@ void Https_GetRequest(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *U
     ESP_ERROR_CHECK(esp_timer_create(&nvs_update_timer_args, &nvs_update_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(nvs_update_timer, TIME_PERIOD));
 
-    StaticTask_t *xTaskHttpsBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
-    StackType_t *xStackHttpsStack = (StackType_t *)malloc(HTTPS_TASK_STACK_SIZE * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
+    xTaskHttpsBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
+    xStackHttpsStack = (StackType_t *)malloc(HTTPS_TASK_STACK_SIZE * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
     if (xTaskHttpsBuffer == NULL || xStackHttpsStack == NULL)
     {
         ESP_LOGI(TAG, "Memory allocation failed!\n");
@@ -238,4 +242,6 @@ void Https_GetRequest(char *HeaderOfRequest, size_t SizeHeaderOfRequest, char *U
         xStackHttpsStack,     // Stack buffer
         xTaskHttpsBuffer      // Task control block
     );
+    size_t free_heap = esp_get_free_heap_size();
+    printf("Free Heap Size: %d bytes\n", free_heap);
 }

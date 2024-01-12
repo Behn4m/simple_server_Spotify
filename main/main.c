@@ -46,14 +46,11 @@ void app_main(void)
     if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
     {
         Spotify_SendCommand(GetNowPlaying);
-        vTaskDelay((pdMS_TO_TICKS(SEC * 10)));
-        Spotify_SendCommand(Play);
-        vTaskDelay((pdMS_TO_TICKS(SEC * 15)));
-        Spotify_SendCommand(GetNowPlaying);
-        vTaskDelay((pdMS_TO_TICKS(SEC * 15)));
-        Spotify_SendCommand(GetUserInfo);
-        vTaskDelay((pdMS_TO_TICKS(SEC * 15)));
+        vTaskDelay((pdMS_TO_TICKS(SEC * 5)));
         Spotify_SendCommand(Pause);
+        vTaskDelay((pdMS_TO_TICKS(SEC * 5)));
+        Spotify_SendCommand(Play);
+        vTaskDelay((pdMS_TO_TICKS(SEC * 5)));
     }
 #endif
 }

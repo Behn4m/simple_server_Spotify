@@ -63,6 +63,7 @@ static void create_demo_application(void)
 static lv_disp_draw_buf_t disp_draw_buf;
 lv_color_t *buf1;
 lv_color_t *buf2;
+
 SemaphoreHandle_t xGuiSemaphore;
 
 /**

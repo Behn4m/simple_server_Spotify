@@ -47,7 +47,8 @@
         "esp_tls.h": "c",
         "param.h": "c",
         "gpio.h": "c",
-        "rm67162.h": "c"
+        "rm67162.h": "c",
+        "rm67162lilygo.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

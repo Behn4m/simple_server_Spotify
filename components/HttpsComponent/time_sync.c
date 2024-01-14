@@ -28,21 +28,26 @@ static const char *TAG = "time_sync";
 #define STORAGE_NAMESPACE "storage"
 void initialize_sntp(void)
 {
+    ESP_LOGE(TAG, "we are in initialize_sntp ");
+
     ESP_LOGI(TAG, "Initializing SNTP");
     esp_sntp_config_t config = ESP_NETIF_SNTP_DEFAULT_CONFIG_MULTIPLE(2,
-                               ESP_SNTP_SERVER_LIST("time.windows.com", "pool.ntp.org" ) );
+                                                                      ESP_SNTP_SERVER_LIST("time.windows.com", "pool.ntp.org"));
     esp_netif_sntp_init(&config);
 }
 
 static esp_err_t obtain_time(void)
 {
     // wait for time to be set
+    ESP_LOGE(TAG, "we are in obtain_time ");
     int retry = 0;
     const int retry_count = 10;
-    while (esp_netif_sntp_sync_wait(pdMS_TO_TICKS(2000)) != ESP_OK && ++retry < retry_count) {
+    while (esp_netif_sntp_sync_wait(pdMS_TO_TICKS(2000)) != ESP_OK && ++retry < retry_count)
+    {
         ESP_LOGI(TAG, "Waiting for system time to be set... (%d/%d)", retry, retry_count);
     }
-    if (retry == retry_count) {
+    if (retry == retry_count)
+    {
         return ESP_FAIL;
     }
     return ESP_OK;
@@ -50,8 +55,10 @@ static esp_err_t obtain_time(void)
 
 esp_err_t fetch_and_store_time_in_nvs(void *args)
 {
+    ESP_LOGE(TAG, "we are in fetch_and_store_time_in_nvs ");
     initialize_sntp();
-    if (obtain_time() != ESP_OK) {
+    if (obtain_time() != ESP_OK)
+    {
         return ESP_FAIL;
     }
     nvs_handle_t my_handle;
@@ -59,24 +66,30 @@ esp_err_t fetch_and_store_time_in_nvs(void *args)
     time_t now;
     time(&now);
     err = nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle);
-    if (err != ESP_OK) {
+    if (err != ESP_OK)
+    {
         goto exit;
     }
     err = nvs_set_i64(my_handle, "timestamp", now);
-    if (err != ESP_OK) {
+    if (err != ESP_OK)
+    {
         goto exit;
     }
     err = nvs_commit(my_handle);
-    if (err != ESP_OK) {
+    if (err != ESP_OK)
+    {
         goto exit;
     }
     nvs_close(my_handle);
     esp_netif_deinit();
 
 exit:
-    if (err != ESP_OK) {
+    if (err != ESP_OK)
+    {
         ESP_LOGE(TAG, "Error updating time in nvs");
-    } else {
+    }
+    else
+    {
         ESP_LOGI(TAG, "Updated time in NVS");
     }
     return err;
@@ -84,23 +97,32 @@ exit:
 
 esp_err_t update_time_from_nvs(void)
 {
+    ESP_LOGE(TAG, "we are in update_time_from_nvs ");
+
     nvs_handle_t my_handle;
     esp_err_t err;
     err = nvs_open(STORAGE_NAMESPACE, NVS_READWRITE, &my_handle);
-    if (err != ESP_OK) {
+    if (err != ESP_OK)
+    {
         ESP_LOGE(TAG, "Error opening NVS");
         goto exit;
     }
     int64_t timestamp = 0;
     err = nvs_get_i64(my_handle, "timestamp", &timestamp);
-    if (err == ESP_ERR_NVS_NOT_FOUND) {
+    if (err == ESP_ERR_NVS_NOT_FOUND)
+    {
         ESP_LOGI(TAG, "Time not found in NVS. Syncing time from SNTP server.");
-        if (fetch_and_store_time_in_nvs(NULL) != ESP_OK) {
+        if (fetch_and_store_time_in_nvs(NULL) != ESP_OK)
+        {
             err = ESP_FAIL;
-        } else {
+        }
+        else
+        {
             err = ESP_OK;
         }
-    } else if (err == ESP_OK) {
+    }
+    else if (err == ESP_OK)
+    {
         struct timeval get_nvs_time;
         get_nvs_time.tv_sec = timestamp;
         settimeofday(&get_nvs_time, NULL);

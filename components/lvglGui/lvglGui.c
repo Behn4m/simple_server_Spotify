@@ -1,28 +1,10 @@
 #include <stdio.h>
 #include "lvglGui.h"
 
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_freertos_hooks.h"
-#include "freertos/semphr.h"
-#include "esp_system.h"
-#include "driver/gpio.h"
-#include "esp_timer.h"
-
-#include "lvgl.h"
-#include "lvgl_helpers.h"
-#include "rm67162Lilygo.h"
-#include "rm67162.h"
-
-#include "lv_demo.h"
 
 #define LV_TICK_PERIOD_MS 1
 
+static const char *TAG = "LVGL_GUI";
 // #include "lv_examples.h"
 
 /**
@@ -36,25 +18,77 @@ static void lv_tick_task(void *arg)
 
     lv_tick_inc(LV_TICK_PERIOD_MS);
 }
+#include "styles/lv_example_style.h"
+#include "get_started/lv_example_get_started.h"
+#include "widgets/lv_example_widgets.h"
+#include "layouts/lv_example_layout.h"
+#include "scroll/lv_example_scroll.h"
+#include "anim/lv_example_anim.h"
+#include "event/lv_example_event.h"
+#include "styles/lv_example_style.h"
+#include "others/lv_example_others.h"
+#include "libs/lv_example_libs.h"
+#include "lvgl.h"
+void lv_example_style_11111(void)
+{
+    /*A base style*/
+    static lv_style_t style_base;
+    lv_style_init(&style_base);
+    lv_style_set_bg_color(&style_base, lv_palette_main(LV_PALETTE_NONE));
+    lv_style_set_border_color(&style_base, lv_palette_darken(LV_PALETTE_LIGHT_BLUE, 3));
+    lv_style_set_border_width(&style_base, 2);
+    lv_style_set_radius(&style_base, 10);
+    lv_style_set_shadow_width(&style_base, 10);
+    lv_style_set_shadow_ofs_y(&style_base, 5);
+    lv_style_set_shadow_opa(&style_base, LV_OPA_50);
+    lv_style_set_text_color(&style_base, lv_color_white());
+    lv_style_set_width(&style_base, 100);
+    lv_style_set_height(&style_base, LV_SIZE_CONTENT);
 
+    /*Set only the properties that should be different*/
+    static lv_style_t style_warning;
+    lv_style_init(&style_warning);
+    lv_style_set_bg_color(&style_warning, lv_palette_main(LV_PALETTE_NONE));
+    lv_style_set_border_color(&style_warning, lv_palette_darken(LV_PALETTE_RED, 3));
+    lv_style_set_text_color(&style_warning, lv_color_white());
+
+    /*Create an object with the base style only*/
+    lv_obj_t * obj_base = lv_obj_create(lv_scr_act());
+    lv_obj_add_style(obj_base, &style_base, 0);
+    lv_obj_align(obj_base, LV_ALIGN_LEFT_MID, 20, 0);
+
+    lv_obj_t * label = lv_label_create(obj_base);
+    lv_label_set_text(label, "Shadmehr");
+    lv_obj_center(label);
+
+    /*Create another object with the base style and earnings style too*/
+    lv_obj_t * obj_warning = lv_obj_create(lv_scr_act());
+    lv_obj_add_style(obj_warning, &style_base, 0);
+    lv_obj_add_style(obj_warning, &style_warning, 0);
+    lv_obj_align(obj_warning, LV_ALIGN_RIGHT_MID, -20, 0);
+
+    label = lv_label_create(obj_warning);
+    lv_label_set_text(label, "Tardid");
+    lv_obj_center(label);
+}
 static void create_demo_application(void)
 {
     // lv_obj_t *label1 = lv_label_create(lv_scr_act());
     // lv_label_set_long_mode(label1, LV_LABEL_LONG_WRAP);     /*Break the long lines*/
     // lv_label_set_recolor(label1, true);                      /*Enable re-coloring by commands in the text*/
-    // lv_label_set_text(label1, "#0000ff Re-color# #ff00ff words# #ff0000 of a# label, align the lines to the center "
-    //                   "and wrap long text automatically.");
-    // lv_obj_set_width(label1, 150);  /*Set smaller width to make the lines wrap*/
+    // lv_label_set_text(label1, "#0000ff Shadmehr Aghili #" 
+    //                   "#ff00ff Tardid#");
+    // lv_obj_set_width(label1, 1000);  /*Set smaller width to make the lines wrap*/
     // lv_obj_set_style_text_align(label1, LV_TEXT_ALIGN_CENTER, 0);
     // lv_obj_align(label1, LV_ALIGN_CENTER, 0, -40);
 
     // lv_obj_t *label2 = lv_label_create(lv_scr_act());
     // lv_label_set_long_mode(label2, LV_LABEL_LONG_SCROLL_CIRCULAR);     /*Circular scroll*/
-    // lv_obj_set_width(label2, 150);
+    // lv_obj_set_width(label2, 500);
     // lv_label_set_text(label2, "It is a circularly scrolling text. ");
     // lv_obj_align(label2, LV_ALIGN_CENTER, 0, 40);
-
-    lv_demo_music();
+lv_example_style_11111();
+    // lv_demo_music();
 }
 
 /**
@@ -92,12 +126,12 @@ static void guiTask(void *pvParameter)
     disp_drv.draw_buf = &disp_draw_buf;
     lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
 
-    lv_theme_t *theme = lv_theme_default_init(disp,
-                                              lv_palette_main(LV_PALETTE_BLUE),
-                                              lv_palette_main(LV_PALETTE_RED),
-                                              LV_THEME_DEFAULT_DARK,
-                                              LV_FONT_DEFAULT);
-    lv_disp_set_theme(disp, theme);
+    // lv_theme_t *theme = lv_theme_default_init(disp,
+    //                                           lv_palette_main(LV_PALETTE_BLUE),
+    //                                           lv_palette_main(LV_PALETTE_RED),
+    //                                           LV_THEME_DEFAULT_DARK,
+    //                                           LV_FONT_DEFAULT);
+    // lv_disp_set_theme(disp, theme);
 
     /* Register an input device when enabled on the menuconfig */
 #if CONFIG_LV_TOUCH_CONTROLLER != TOUCH_CONTROLLER_NONE
@@ -140,14 +174,16 @@ void lvglGui(void)
 {
     unsigned int freeHeapSize;
     freeHeapSize = xPortGetFreeHeapSize();
-    printf("before Free Heap Size: %u bytes\n", freeHeapSize);
-    StaticTask_t *xTaskBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
-    StackType_t *xStack = (StackType_t *)malloc(2000 * 8 * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
-    if (xTaskBuffer == NULL || xStack == NULL)
+    size_t free_heap = esp_get_free_heap_size();
+    ESP_LOGW(TAG, "Free external Heap Size: %d bytes\n", free_heap);
+    ESP_LOGW(TAG, " Free Local Heap Size: %u bytes\n", freeHeapSize);
+    StaticTask_t *xTaskLVgLBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
+    StackType_t *xLVGLStack = (StackType_t *)malloc(2000 * 8 * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
+    if (xTaskLVgLBuffer == NULL || xLVGLStack == NULL)
     {
         // ESP_LOGE("TAG", "Memory allocation failed!\n");
-        free(xTaskBuffer);
-        free(xStack);
+        free(xTaskLVgLBuffer);
+        free(xLVGLStack);
         return; // Exit with an error code
     }
     xTaskCreateStatic(
@@ -156,18 +192,9 @@ void lvglGui(void)
         2000 * 8,             // Stack size (in words)
         NULL,                 // Task parameters (passed to the task function)
         tskIDLE_PRIORITY + 4, // Task priority (adjust as needed)
-        xStack,               // Stack buffer
-        xTaskBuffer           // Task control block
+        xLVGLStack,           // Stack buffer
+        xTaskLVgLBuffer       // Task control block
     );
-    freeHeapSize = xPortGetFreeHeapSize();
-    printf("before Free Heap Size: %u bytes\n", freeHeapSize);
-    // ESP_LOGI("TAG", "LVGL app initiated successfully");
-
-    // TaskHandle_t xHandle = NULL;
-
-    // xTaskCreate(guiTask, "guiTask", 2000*8, NULL, tskIDLE_PRIORITY, &xHandle);
-    // configASSERT(xHandle);
-
-    // if(xHandle == NULL)
-    //     vTaskDelete(xHandle);
+    free_heap = esp_get_free_heap_size();
+    ESP_LOGW(TAG, "Free external Heap Size: %d bytes\n", free_heap);
 }

@@ -289,21 +289,8 @@ static void Spotify_GetToken(char *code, size_t SizeOfCode)
     ESP_LOGI(TAG, "Spotify_GetToken RUN");
     char ReceivedData[LONG_BUF];
     memset(ReceivedData, 0x0, sizeof(ReceivedData));
-    Spotify_SendTokenRequest(ReceivedData, sizeof(ReceivedData), code, SizeOfCode);
-    if (xSemaphoreTake(*(InterfaceHandler->HttpsResponseReadySemaphore), portMAX_DELAY) == pdTRUE)
-    {
-        vTaskDelay(pdMS_TO_TICKS(SEC));
-        if (xQueueReceive(*(InterfaceHandler->HttpsBufQueue), ReceivedData, pdMS_TO_TICKS(SEC * 15)) == pdTRUE)
-        {
-            ESP_LOGI(TAG, "Received TOKEN by queue: %s\n", ReceivedData);
-        }
-    }
-    else
-    {
-        ESP_LOGE(TAG, "Timeout, Spotify dont respond");
-        return;
-        // TO DO: the handler should reset here
-    }
+    Spotify_SendTokenRequest(code, SizeOfCode);
+
     if (Spotify_ValueOfVariables(ReceivedData, sizeof(ReceivedData)) == 1)
     {
         ESP_LOGI(TAG, "Token found!");

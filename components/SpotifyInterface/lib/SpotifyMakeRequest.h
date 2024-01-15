@@ -6,8 +6,8 @@ extern "C" {
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "HttpsRequests.h"
 #include "cJSON.h"
+#include "esp_http_client.h"
 #include "SpotifyInterface.h"
 #include"SpotifyTypedef.h"
 
@@ -50,7 +50,7 @@ bool Spotify_FindCode(char *Res, uint16_t SizeRes);
 * @param[in] SizeCode The size of the authorization code.
 * @return This function does not return a value.
 */
-void Spotify_SendTokenRequest(char *Buf, size_t SizeBuf, char *code, size_t SizeCode);
+void Spotify_SendTokenRequest(char *code, size_t SizeCode);
 
 /**
 * @brief This function sends a request to the Spotify API to perform a player command.

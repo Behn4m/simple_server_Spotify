@@ -1,7 +1,6 @@
 #include "SpotifyInterface.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "HttpsRequests.h"
 #include "cJSON.h"
 #include"JsonExtraction.h"
 

@@ -1,6 +1,6 @@
 #include "SpotifyMakeRequest.h"
+static const char *TAG = "HTTP";
 
-static const char *TAG = "SpotifyTask";
 
 /**
  * @brief This function searches for specific patterns ('code' and 'state') within a character array and returns a boolean value indicating if either pattern was Found.
@@ -75,6 +75,40 @@ bool Spotify_FindToken(char *Response, uint16_t SizeRes)
     return FlgFindToken;
 }
 
+static esp_err_t HttpEventHandler(esp_http_client_event_t *evt) 
+{
+    switch (evt->event_id) 
+    {
+        case HTTP_EVENT_ERROR:
+            ESP_LOGE(TAG, "HTTP_EVENT_ERROR");
+            break;
+        case HTTP_EVENT_ON_CONNECTED:
+            ESP_LOGI(TAG, "HTTP_EVENT_ON_CONNECTED");
+            break;
+        case HTTP_EVENT_HEADER_SENT:
+            ESP_LOGI(TAG, "HTTP_EVENT_HEADER_SENT");
+            break;
+        case HTTP_EVENT_ON_HEADER:
+            ESP_LOGI(TAG, "HTTP_EVENT_ON_HEADER, key=%s, value=%s", evt->header_key, evt->header_value);
+            // Handle HTTP header received, if needed
+            break;
+        case HTTP_EVENT_ON_DATA:
+            ESP_LOGI(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
+            ESP_LOGI(TAG, "Reading response data finished, data sent by queue!");                
+            break;
+        case HTTP_EVENT_ON_FINISH:
+            ESP_LOGI(TAG, "HTTP_EVENT_ON_FINISH");
+            break;
+        case HTTP_EVENT_DISCONNECTED:
+            ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
+            break;
+        case HTTP_EVENT_REDIRECT:
+            ESP_LOGI(TAG, "redirected");
+            break;
+    }
+    return ESP_OK;
+}
+
 /**
  * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.
  * @param[in,out] Buf The character buffer to store the request and receive the response.
@@ -83,24 +117,47 @@ bool Spotify_FindToken(char *Response, uint16_t SizeRes)
  * @param[in] SizeCode The size of the authorization code.
  * @return This function does not return a value.
  */
-void Spotify_SendTokenRequest(char *Buf, size_t SizeBuf, char *code, size_t SizeCode)
+void Spotify_SendTokenRequest(char *code, size_t SizeCode)
 {
-    char Grand[MEDIUM_BUF] = {0};
-    ESP_LOGI(TAG, "\n%s\n", code);
-    sprintf(Grand, "grant_type=authorization_code&redirect_uri=%s&%s", ReDirectUri, code);
-    memset(Buf, 0x0, SizeBuf);
-    sprintf(Buf, "POST /api/token HTTP/1.1 \r\n"
-                 "Host: accounts.spotify.com\r\n"
-                 "Authorization: Basic NTViYjk3NGEwNjY3NDgxYWIwYjJhNDlmZDBhYmVhNmQ6ZDgwYmQ3ZThjMWIwNGJmY2FjZGI1ZWNmNmExNTUyMTU=\r\n"
-                 "Content-Length: %d\r\n"
-                 "Cookie: __Host-device_id=AQAwmp7jxagopcWw89BjSDAA530mHwIieOZdJ9Im8nI0-70oEsSInx3jkeSO09YQ7sPgPaIUyMEvZ-tct7I6OlshJrzVYOqcgo0; sp_tr=false\r\n"
-                 "Content-Type: application/x-www-form-urlencoded\r\n"
-                 "\r\n"
-                 "%s\r",
-            strlen(Grand), Grand);
-    char URL[SMALL_BUF] = "https://accounts.spotify.com/api/token";
-    char Server[SMALL_BUF] = "accounts.spotify.com";
-    Https_GetRequest(Buf, SizeBuf, URL, sizeof(URL), Server, sizeof(Server));
+    esp_http_client_config_t custom_config;
+
+    custom_config.url = "https://accounts.spotify.com/api/token";
+    custom_config.method = HTTP_METHOD_POST;
+    custom_config.host = "accounts.spotify.com";   // since it typically doesn't change dynamically and is part of the URL you dont need to set it seperatley
+    custom_config.event_handler = HttpEventHandler;
+    ESP_LOGI(TAG, "custom_config filled");
+    
+    vTaskDelay(pdMS_TO_TICKS(500));
+    esp_http_client_handle_t client = esp_http_client_init(&custom_config);
+    ESP_LOGI(TAG, "client init done");
+    vTaskDelay(pdMS_TO_TICKS(500));
+
+    if (client == NULL) 
+    {
+        ESP_LOGE(TAG, "Failed to initialize HTTP client");
+        return;
+    }
+    // esp_http_client_set_header(client, "Authorization", "Basic NTViYjk3NGEwNjY3NDgxYWIwYjJhNDlmZDBhYmVahNmQ6ZDgwYmQ3ZThjMWIwNGJmY2FjZGI1ZWNmNmExNTUyMTU=");
+    // esp_http_client_set_header(client, "Content-Type", "application/x-www-form-urlencoded");
+    // esp_http_client_set_header(client, "Cookie", "__Host-device_id=AQAwmp7jxagopcWw89BjSDAA530mHwIieOZdJ9Im8nI0-70oEsSInx3jkeSO09YQ7sPgPaIUyMEvZ-tct7I6OlshJrzVYOqcgo0; sp_tr=false");
+
+    // // Set the request body
+    // const char *Grand = "grant_type=authorization_code&redirect_uri=YOUR_REDIRECT_URI&code=YOUR_CODE";
+    // esp_http_client_set_post_field(client, Grand, strlen(Grand));
+
+    ESP_LOGI(TAG, "client haeder & body updated");
+
+    esp_err_t err = esp_http_client_perform(client);
+    if (err != ESP_OK) 
+    {
+        ESP_LOGE(TAG, "HTTP client perform failed: %s", esp_err_to_name(err));
+    }
+    else
+    {
+        ESP_LOGI(TAG, "HTTP client perfored");
+    }
+
+    esp_http_client_cleanup(client);
 }
 
 /**
@@ -128,7 +185,7 @@ void Spotify_MakePlayerCommandAndSendIt(const char *Method_t, const char *Comman
     ESP_LOGI(TAG, "\n\nrequest for %s \n%s\nand size it =%d\n\n",Command, Buf, strlen(Buf));
     char URL[SMALL_BUF] = "https://api.spotify.com";
     char Server[SMALL_BUF] = "api.spotify.com";
-    Https_GetRequest(Buf, SizeBuf, URL, sizeof(URL), Server, sizeof(Server));
+    //Https_GetRequest(Buf, SizeBuf, URL, sizeof(URL), Server, sizeof(Server));
 }
 
 /**
@@ -188,7 +245,7 @@ void Spotify_GetUserStatus(char *AccessToken)
     ESP_LOGI(TAG, "\n\nrequest for Spotify_GetUserStatus\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
     char URL[SMALL_BUF] = "https://api.spotify.com";
     char Server[SMALL_BUF] = "api.spotify.com";
-    Https_GetRequest(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
+    //Https_GetRequest(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
 }
 
 /**
@@ -207,7 +264,7 @@ void Spotify_GetUserTopItems(char *AccessToken)
     ESP_LOGI(TAG, "\n\nrequest for Spotify_GetUserTopItems\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
     char URL[SMALL_BUF] = "https://api.spotify.com";
     char Server[SMALL_BUF] = "api.spotify.com";
-    Https_GetRequest(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
+    //Https_GetRequest(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
 }
 
 /**
@@ -229,7 +286,7 @@ void Spotify_GetUserProfile(char *UserId_t, char *Token)
     ESP_LOGI(TAG, "\n\nrequest for Spotify_GetUserProfile\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
     char URL[SMALL_BUF] = "https://api.spotify.com";
     char Server[SMALL_BUF] = "api.spotify.com";
-    Https_GetRequest(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
+    //Https_GetRequest(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
 }
 
 /**
@@ -247,7 +304,7 @@ void Spotify_GetCurrentPlaying(Token_t *Token)
     ESP_LOGI(TAG, "\n\nrequest for Spotify_GetCurrentPlaying\n%s\nand size it =%d\n\n", Buf, strlen(Buf));
     char URL[SMALL_BUF] = "https://api.spotify.com";
     char Server[SMALL_BUF] = "api.spotify.com";
-    Https_GetRequest(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
+    //Https_GetRequest(Buf, sizeof(Buf), URL, sizeof(URL), Server, sizeof(Server));
 }
 
 /**
@@ -274,5 +331,5 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *
             strlen(Grand), Grand);
     char URL[SMALL_BUF] = "https://accounts.spotify.com/api/token";
     char Server[SMALL_BUF] = "accounts.spotify.com";
-    Https_GetRequest(Buf, SizeBuf, URL, sizeof(URL), Server, sizeof(Server));
+    //Https_GetRequest(Buf, SizeBuf, URL, sizeof(URL), Server, sizeof(Server));
 }

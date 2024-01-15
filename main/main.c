@@ -3,7 +3,6 @@
 #include "nvsFlash.h"
 #include "WiFiConfig.h"
 #include "SpotifyInterface.h"
-#include "HttpsRequests.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 // ****************************** GLobal Variables ****************************** //
@@ -29,11 +28,6 @@ void app_main(void)
     // lvglGui();
 #ifdef SpotifyEnable
     SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
-    HttpsRequestsHandler_t HttpsRequestsHandler; 
-
-    HttpsRequestsHandler.ResponseBufQueue = &BufQueue1;
-    HttpsRequestsHandler.ResponseReadySemaphore = &HttpsResponseReadySemaphore;
-    Https_ComponentInit(&HttpsRequestsHandler);
 
     SpotifyInterfaceHandler.HttpsBufQueue = &BufQueue1;
     SpotifyInterfaceHandler.HttpsResponseReadySemaphore = &HttpsResponseReadySemaphore;

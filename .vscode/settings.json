@@ -46,7 +46,9 @@
         "cstdio": "c",
         "esp_tls.h": "c",
         "*.tcc": "c",
-        "esp_system.h": "c"
+        "esp_system.h": "c",
+        "esp_timer.h": "c",
+        "string.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

@@ -27,9 +27,9 @@ extern "C" {
 #include "lwip/sys.h"
 #include "lwip/netdb.h"
 #include "lwip/dns.h"
-#include "esp_tls.h"
 #include "sdkconfig.h"
 #include "time_sync.h"
+#include "esp_http_client.h"
 #include "GlobalInit.h"
 
 typedef struct

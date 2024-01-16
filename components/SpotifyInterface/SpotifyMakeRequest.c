@@ -98,7 +98,7 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
             break;
         case HTTP_EVENT_ON_DATA:
             ESP_LOGI(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
-            ESP_LOGI(TAG, "Reading response data finished, data sent by queue!");                
+            ESP_LOGI(TAG, "HTTP_EVENT_ON_DATA, %s", (char *)evt->data);          
             break;
         case HTTP_EVENT_ON_FINISH:
             ESP_LOGI(TAG, "HTTP_EVENT_ON_FINISH");
@@ -123,54 +123,49 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
  */
 void Spotify_SendTokenRequest(char *code, size_t SizeCode)
 {  
-    esp_tls_set_global_ca_store(server_root_cert_pem_start, server_root_cert_pem_end - server_root_cert_pem_start);
-    
-    esp_tls_cfg_t esp_tls_cfg = {
-        .timeout_ms = 5000,                               // Set the timeout (adjust as needed)
-        .use_global_ca_store = true,
-        // Add more options as needed
-    };
-
     esp_http_client_config_t custom_config = {
         .url = "https://accounts.spotify.com/api/token",
         .method = HTTP_METHOD_POST,
         .event_handler = HttpEventHandler,
-        // .user_data = local_response_buffer,        // Pass address of local buffer to get response
-        .disable_auto_redirect = true,
+        .disable_auto_redirect = false,
+        .cert_pem = (char *)server_root_cert_pem_start,
+        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,
     };
 
-    vTaskDelay(pdMS_TO_TICKS(500));
+    // Initialize HTTP client with custom configuration
     esp_http_client_handle_t client = esp_http_client_init(&custom_config);
-    ESP_LOGI(TAG, "client init done");
-    vTaskDelay(pdMS_TO_TICKS(500));
 
-    if (client == NULL) 
-    {
+    if (client == NULL) {
         ESP_LOGE(TAG, "Failed to initialize HTTP client");
         return;
     }
+
+    // Set headers for authentication and content type
     esp_http_client_set_header(client, "Authorization", "Basic NTViYjk3NGEwNjY3NDgxYWIwYjJhNDlmZDBhYmVahNmQ6ZDgwYmQ3ZThjMWIwNGJmY2FjZGI1ZWNmNmExNTUyMTU=");
     esp_http_client_set_header(client, "Content-Type", "application/x-www-form-urlencoded");
     esp_http_client_set_header(client, "Cookie", "__Host-device_id=AQAwmp7jxagopcWw89BjSDAA530mHwIieOZdJ9Im8nI0-70oEsSInx3jkeSO09YQ7sPgPaIUyMEvZ-tct7I6OlshJrzVYOqcgo0; sp_tr=false");
 
-    // Set the request body
-    const char *Grand = "grant_type=authorization_code&redirect_uri=YOUR_REDIRECT_URI&code=YOUR_CODE";
+
+    // Set the request body (POST data)
+    char Grand[MEDIUM_BUF] = {0};
+    sprintf(Grand, "grant_type=authorization_code&redirect_uri=%s&%s", ReDirectUri, code);
     esp_http_client_set_post_field(client, Grand, strlen(Grand));
 
-    ESP_LOGI(TAG, "client haeder & body updated");
+    // Enable detailed logging for debugging
+    // esp_http_client_set_debug(client, true);
 
+    // Perform HTTP request
     esp_err_t err = esp_http_client_perform(client);
-    if (err != ESP_OK) 
-    {
+
+    // Cleanup HTTP client
+    esp_http_client_cleanup(client);
+
+    if (err != ESP_OK) {
         ESP_LOGE(TAG, "HTTP client perform failed: %s", esp_err_to_name(err));
-    }
-    else
-    {
-        ESP_LOGI(TAG, "HTTP client perfored");
+    } else {
+        ESP_LOGI(TAG, "HTTP client performed successfully");
     }
 
-    esp_tls_free_global_ca_store();
-    esp_http_client_cleanup(client);
 }
 
 /**
@@ -342,7 +337,5 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *
                  "\r\n"
                  "%s\r",
             strlen(Grand), Grand);
-    char URL[SMALL_BUF] = "https://accounts.spotify.com/api/token";
-    char Server[SMALL_BUF] = "accounts.spotify.com";
     //Https_GetRequest(Buf, SizeBuf, URL, sizeof(URL), Server, sizeof(Server));
 }

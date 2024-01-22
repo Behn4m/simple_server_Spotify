@@ -121,8 +121,6 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
 
 /**
  * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.
- * @param[in,out] Buf The character buffer to store the request and receive the response.
- * @param[in] SizeBuf The size of the character buffer.
  * @param[in] code is parameter that we give it before .
  * @param[in] SizeCode The size of the authorization code.
  * @return This function does not return a value.
@@ -136,12 +134,12 @@ void Spotify_SendTokenRequest(char *code, size_t SizeCode)
         .method = HTTP_METHOD_POST,
         .event_handler = HttpEventHandler,
         .disable_auto_redirect = false,
-        .cert_pem = (const char *)server_root_cert_pem_start, // Server root certificate
-        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,  // Length of server root certification
-        .client_cert_pem = (const char *)local_server_cert_pem_start, // Local server certificate
+        .cert_pem = (const char *)server_root_cert_pem_start,                       // Server root certificate
+        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,          // Length of server root certification
+        .client_cert_pem = (const char *)local_server_cert_pem_start,               // Local server certificate
         .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start, // Length of local server certificate
-        .client_key_pem = (const char *)local_server_key_pem_start, // Local server private key
-        .client_key_len = local_server_key_pem_end - local_server_key_pem_start, // Length of local server private key
+        .client_key_pem = (const char *)local_server_key_pem_start,                 // Local server private key
+        .client_key_len = local_server_key_pem_end - local_server_key_pem_start,    // Length of local server private key
     };
 
     // Initialize HTTP client with custom configuration
@@ -155,7 +153,7 @@ void Spotify_SendTokenRequest(char *code, size_t SizeCode)
     // Set headers for authentication and content type
     esp_http_client_set_header(client, "Authorization", "Basic NTViYjk3NGEwNjY3NDgxYWIwYjJhNDlmZDBhYmVahNmQ6ZDgwYmQ3ZThjMWIwNGJmY2FjZGI1ZWNmNmExNTUyMTU=");
     esp_http_client_set_header(client, "Content-Type", "application/x-www-form-urlencoded");
-    // esp_http_client_set_header(client, "Cookie", "__Host-device_id=AQAwmp7jxagopcWw89BjSDAA530mHwIieOZdJ9Im8nI0-70oEsSInx3jkeSO09YQ7sPgPaIUyMEvZ-tct7I6OlshJrzVYOqcgo0; sp_tr=false");
+    esp_http_client_set_header(client, "Cookie", "__Host-device_id=AQAwmp7jxagopcWw89BjSDAA530mHwIieOZdJ9Im8nI0-70oEsSInx3jkeSO09YQ7sPgPaIUyMEvZ-tct7I6OlshJrzVYOqcgo0; sp_tr=false");
 
 
     // Set the request body (POST data)

@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "lvglGui.h"
 
-
 #define LV_TICK_PERIOD_MS 1
 
 static const char *TAG = "LVGL_GUI";
@@ -34,13 +33,10 @@ void lv_example_style_11111(void)
     /*A base style*/
     static lv_style_t style_base;
     lv_style_init(&style_base);
-    lv_style_set_bg_color(&style_base, lv_palette_main(LV_PALETTE_NONE));
-    lv_style_set_border_color(&style_base, lv_palette_darken(LV_PALETTE_LIGHT_BLUE, 3));
-    lv_style_set_border_width(&style_base, 2);
+    lv_style_set_bg_color(&style_base, lv_color_make(0x00, 0x0, 0xff));
+    lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x003a57), LV_PART_MAIN);
+    lv_style_set_border_color(&style_base, lv_color_make(0x00, 0x0, 0xff));
     lv_style_set_radius(&style_base, 10);
-    lv_style_set_shadow_width(&style_base, 10);
-    lv_style_set_shadow_ofs_y(&style_base, 5);
-    lv_style_set_shadow_opa(&style_base, LV_OPA_50);
     lv_style_set_text_color(&style_base, lv_color_white());
     lv_style_set_width(&style_base, 100);
     lv_style_set_height(&style_base, LV_SIZE_CONTENT);
@@ -48,25 +44,22 @@ void lv_example_style_11111(void)
     /*Set only the properties that should be different*/
     static lv_style_t style_warning;
     lv_style_init(&style_warning);
-    lv_style_set_bg_color(&style_warning, lv_palette_main(LV_PALETTE_NONE));
-    lv_style_set_border_color(&style_warning, lv_palette_darken(LV_PALETTE_RED, 3));
+    lv_style_set_bg_color(&style_warning, lv_color_make(0xff, 0x0, 0x00));
+    lv_style_set_border_color(&style_warning, lv_color_make(0xff, 0x0, 0x00));
     lv_style_set_text_color(&style_warning, lv_color_white());
-
     /*Create an object with the base style only*/
-    lv_obj_t * obj_base = lv_obj_create(lv_scr_act());
+    lv_obj_t *obj_base = lv_obj_create(lv_scr_act());
     lv_obj_add_style(obj_base, &style_base, 0);
-    lv_obj_align(obj_base, LV_ALIGN_LEFT_MID, 20, 0);
-
-    lv_obj_t * label = lv_label_create(obj_base);
+    lv_obj_align(obj_base, LV_ALIGN_BOTTOM_MID, 0, 0);
+    lv_obj_t *label = lv_label_create(obj_base);
     lv_label_set_text(label, "Shadmehr");
     lv_obj_center(label);
 
     /*Create another object with the base style and earnings style too*/
-    lv_obj_t * obj_warning = lv_obj_create(lv_scr_act());
+    lv_obj_t *obj_warning = lv_obj_create(lv_scr_act());
     lv_obj_add_style(obj_warning, &style_base, 0);
     lv_obj_add_style(obj_warning, &style_warning, 0);
-    lv_obj_align(obj_warning, LV_ALIGN_RIGHT_MID, -20, 0);
-
+    lv_obj_align(obj_warning, LV_ALIGN_BOTTOM_MID, 0, -50);
     label = lv_label_create(obj_warning);
     lv_label_set_text(label, "Tardid");
     lv_obj_center(label);
@@ -76,7 +69,7 @@ static void create_demo_application(void)
     // lv_obj_t *label1 = lv_label_create(lv_scr_act());
     // lv_label_set_long_mode(label1, LV_LABEL_LONG_WRAP);     /*Break the long lines*/
     // lv_label_set_recolor(label1, true);                      /*Enable re-coloring by commands in the text*/
-    // lv_label_set_text(label1, "#0000ff Shadmehr Aghili #" 
+    // lv_label_set_text(label1, "#0000ff Shadmehr Aghili #"
     //                   "#ff00ff Tardid#");
     // lv_obj_set_width(label1, 1000);  /*Set smaller width to make the lines wrap*/
     // lv_obj_set_style_text_align(label1, LV_TEXT_ALIGN_CENTER, 0);
@@ -87,7 +80,7 @@ static void create_demo_application(void)
     // lv_obj_set_width(label2, 500);
     // lv_label_set_text(label2, "It is a circularly scrolling text. ");
     // lv_obj_align(label2, LV_ALIGN_CENTER, 0, 40);
-lv_example_style_11111();
+    lv_example_style_11111();
     // lv_demo_music();
 }
 

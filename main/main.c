@@ -16,11 +16,11 @@ void CallbackTest(char *buffer)
 }
 void app_main(void)
 {
-    GlobalInit();
-    nvsFlashInit();
-    SpiffsGlobalConfig();
+    // GlobalInit();
+    // nvsFlashInit();
+    // SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
-    WifiStationMode("Hardware", "87654321");
+    // WifiStationMode("Hardware", "87654321");
 #else
     wifiConnectionModule();
 #endif

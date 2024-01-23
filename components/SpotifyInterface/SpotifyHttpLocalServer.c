@@ -52,10 +52,7 @@ static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *req)
                 ESP_LOGE(TAG, "Sent data with queue failed !");
             }
             ESP_LOGI(TAG, "the CODE found in response");
-            httpd_resp_set_type(req, "text/plain");
-            httpd_resp_set_status(req, HTTPD_200);
-            httpd_resp_send(req, Buf, HTTPD_RESP_USE_STRLEN);
-            (*HttpLocalServerLocalParam.status) = AUTHENTICATED;
+            // (*HttpLocalServerLocalParam.status) = AUTHENTICATED;
         }
         else
         {
@@ -66,9 +63,7 @@ static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *req)
     }
     else
     {
-        httpd_resp_set_type(req, "text/plain");
-        httpd_resp_set_status(req, HTTPD_500);
-        httpd_resp_send(req, Buf, HTTPD_RESP_USE_STRLEN);
+
         ESP_LOGW(TAG, "bad arguments - the response does not include correct structure");
         (*HttpLocalServerLocalParam.status) = IDLE;
     }

@@ -1,4 +1,6 @@
 #include "SpotifyMakeRequest.h"
+
+
 static const char *TAG = "HTTP";
 
 // Include the server root certificate data
@@ -10,7 +12,6 @@ extern const uint8_t local_server_cert_pem_start[] asm("_binary_local_server_cer
 extern const uint8_t local_server_cert_pem_end[] asm("_binary_local_server_cert_pem_end");
 extern const uint8_t local_server_key_pem_start[] asm("_binary_local_server_key_pem_start");
 extern const uint8_t local_server_key_pem_end[] asm("_binary_local_server_key_pem_end");
-
 
 /**
  * @brief This function searches for specific patterns ('code' and 'state') within a character array and returns a boolean value indicating if either pattern was Found.
@@ -87,6 +88,11 @@ bool Spotify_FindToken(char *Response, uint16_t SizeRes)
 
 static esp_err_t HttpEventHandler(esp_http_client_event_t *evt) 
 {
+    static char receivedData[MEDIUM_BUF] = {};
+    static int totalLen = 0;
+    static bool dataToRead = false;
+    // Create the queue and semaphore
+
     switch (evt->event_id) 
     {
         case HTTP_EVENT_ERROR:
@@ -104,13 +110,29 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
             break;
         case HTTP_EVENT_ON_DATA:
             ESP_LOGI(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
-            ESP_LOGI(TAG, "HTTP_EVENT_ON_DATA, %s", (char *)evt->data);          
+            dataToRead = true;
+            memcpy(receivedData + totalLen, evt->data, evt->data_len);
+            totalLen += evt->data_len;
             break;
         case HTTP_EVENT_ON_FINISH:
+            receivedData[totalLen] = '\0';
             ESP_LOGI(TAG, "HTTP_EVENT_ON_FINISH");
             break;
         case HTTP_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
+            ESP_LOGI(TAG, "### %s ###", receivedData); 
+            if (dataToRead == true)
+            {
+                if (xQueueSend(httpToSpotifyDataQueue, receivedData, pdMS_TO_TICKS(SEC * 15)) == pdTRUE)
+                {
+                    ESP_LOGI(TAG, "Data sent from HTTP to Spotify Interface Handler");
+                }
+                else
+                {
+                    ESP_LOGE(TAG, "Sending Received Data by Queue failed"); 
+                }
+                dataToRead = false;
+            }
             break;
         case HTTP_EVENT_REDIRECT:
             ESP_LOGI(TAG, "redirected");
@@ -167,14 +189,14 @@ void Spotify_SendTokenRequest(char *code, size_t SizeCode)
     // Perform HTTP request
     esp_err_t err = esp_http_client_perform(client);
 
-    // Cleanup HTTP client
-    esp_http_client_cleanup(client);
-
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "HTTP client perform failed: %s", esp_err_to_name(err));
     } else {
         ESP_LOGI(TAG, "HTTP client performed successfully");
     }
+    
+    // Cleanup HTTP client
+    esp_http_client_cleanup(client);
 
 }
 

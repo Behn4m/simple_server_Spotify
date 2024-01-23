@@ -22,6 +22,9 @@ QueueHandle_t SendCodeFromHttpToSpotifyTask = NULL;
 bool SaveExistence = 0;
 // ******************************
 
+
+QueueHandle_t httpToSpotifyDataQueue = NULL;
+
 ESP_EVENT_DECLARE_BASE(BASE_SPOTIFY_EVENTS);
 
 void Spotify_CheckRefreshTokenExistence()
@@ -58,6 +61,7 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
             free(xStack);
             return false; // Exit with an error code
         }
+
         xTaskCreateStatic(
             Spotify_MainTask,                    // Task function
             "Spotify_MainTask",                  // Task name (for debugging)
@@ -67,6 +71,10 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
             xStack,                              // Stack buffer
             xTaskBuffer                          // Task control block
         );
+
+        // create queue to transfer data between the http and interface tasks
+        httpToSpotifyDataQueue = xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF]));
+
         ESP_LOGI(TAG, "Spotify app initiated successfully");
     }
     else
@@ -74,6 +82,9 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
         ESP_LOGE(TAG, "SpotifyIntefaceHandler is is missing some pointers, can not run the app");
         return false;
     }
+
+
+
     return true;
 }
 
@@ -108,23 +119,37 @@ static void Spotify_MainTask(void *pvparameters)
     bool ExpireFLG = 1;
     while (1)
     {
+        char ReceivedData[MEDIUM_BUF];
         switch (PrivateHandler.status)
         {
         case IDLE:
         {
             // wait for user to ask for authentication
+            if (xQueueReceive(SendCodeFromHttpToSpotifyTask, ReceivedData, pdMS_TO_TICKS(SEC * 1)) == pdTRUE)
+            {
+                ESP_LOGI(TAG, "Received CODE by queue: %s\n", ReceivedData);
+                Spotify_SendTokenRequest(ReceivedData, sizeof(ReceivedData));
+                PrivateHandler.status = AUTHENTICATED;
+            }
+
             break;
         }
         case AUTHENTICATED:
         {
+            ESP_LOGI(TAG, "AUTHENTICATED");
+
+            if (xQueueReceive(httpToSpotifyDataQueue, ReceivedData, portMAX_DELAY) == pdTRUE)
             {
-                ESP_LOGI(TAG, "AUTHENTICATED");
-                char ReceiveData[LONG_BUF];
-                if (xQueueReceive(SendCodeFromHttpToSpotifyTask, ReceiveData, pdMS_TO_TICKS(SEC * 15)) == pdTRUE)
+                if (Spotify_ValueOfVariables(ReceivedData, sizeof(ReceivedData)) == 1)
                 {
-                    ESP_LOGI(TAG, "Received CODE by queue: %s\n", ReceiveData);
+                    ESP_LOGI(TAG, "Token found!");
+                    PrivateHandler.status = AUTHORIZED;
                 }
-                Spotify_GetToken(ReceiveData, sizeof(ReceiveData));
+                else
+                {
+                    ESP_LOGW(TAG, "Token not found!");
+                    PrivateHandler.status = IDLE;
+                }            
             }
             break;
         }
@@ -277,31 +302,6 @@ bool Spotify_ValueOfVariables(char *ReceivedData, size_t SizeOfReceivedData)
     }
 }
 
-/**
- * @brief Retrieves the Spotify token based on the provided code.
- * This function sends a request to obtain the Spotify token and processes the response data.
- * @param code The code used to request the Spotify token.
- * @param[in] size_t SizeOfCode , size of code buffer
- * @return None
- * */
-static void Spotify_GetToken(char *code, size_t SizeOfCode)
-{
-    ESP_LOGI(TAG, "Spotify_GetToken RUN");
-    char ReceivedData[LONG_BUF];
-    memset(ReceivedData, 0x0, sizeof(ReceivedData));
-    Spotify_SendTokenRequest(code, SizeOfCode);
-
-    if (Spotify_ValueOfVariables(ReceivedData, sizeof(ReceivedData)) == 1)
-    {
-        ESP_LOGI(TAG, "Token found!");
-        PrivateHandler.status = AUTHORIZED;
-    }
-    else
-    {
-        ESP_LOGW(TAG, "Token not found!");
-        PrivateHandler.status = IDLE;
-    }
-}
 
 /**
  * @brief

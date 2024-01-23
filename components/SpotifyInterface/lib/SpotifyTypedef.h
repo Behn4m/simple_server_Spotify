@@ -55,59 +55,85 @@ extern "C"
 
 #define EVENT_LOOP_QUEUE 5
 
-    typedef struct Token_t
-    {
-        char AccessToken[ACCESS_TOKEN_STR_SIZE];
-        char TokenType[TOKEN_TYPE_STR_SIZE];
-        int ExpiresInMS;
-        char RefreshToken[REFRESH_TOKEN_STP_SIZE];
-        char GrantedScope[GRANTED_SCOP_STR_SIZE];
-    } Token_t;
+typedef struct Token_t
+{
+    char AccessToken[ACCESS_TOKEN_STR_SIZE];
+    char TokenType[TOKEN_TYPE_STR_SIZE];
+    int ExpiresInMS;
+    char RefreshToken[REFRESH_TOKEN_STP_SIZE];
+    char GrantedScope[GRANTED_SCOP_STR_SIZE];
+} Token_t;
 
-    typedef struct UserInfo_t
-    {
-        char DisplayName[DISPLAY_NAME_STR_SIZE];
-        char ProfileURL[PROFILE_STR_SIZE];
-        char UserID[USER_ID_SIZE];
-        char Image1[IMAGE1_STR_SIZE];
-        char Image2[IMAGE2_STR_SIZE];
-        int Follower;
-        char Country[COUNTERY_STR_SIZE];
-        char Product[PRODUCT_STR_SIZE];
-    } UserInfo_t;
+typedef struct UserInfo_t
+{
+    char DisplayName[DISPLAY_NAME_STR_SIZE];
+    char ProfileURL[PROFILE_STR_SIZE];
+    char UserID[USER_ID_SIZE];
+    char Image1[IMAGE1_STR_SIZE];
+    char Image2[IMAGE2_STR_SIZE];
+    int Follower;
+    char Country[COUNTERY_STR_SIZE];
+    char Product[PRODUCT_STR_SIZE];
+} UserInfo_t;
 
-    typedef enum
-    {
-        idle = 0,
-        authorized = 1,
-        active_user = 2,
-        save_new_token=3,
-        expired_user = 4,
-        check_time=5
+typedef enum
+{
+    idle = 0,
+    authorized = 1,
+    active_user = 2,
+    save_new_token=3,
+    expired_user = 4,
+    check_time=5
 
-    } Status_t;
+} Status_t;
 
-    typedef void (*EventHandlerCallBackPtr)(char *Buffer);
+typedef void (*EventHandlerCallBackPtr)(char *Buffer);
 
-    typedef struct
-    {
-        char *code;
-        Token_t token;       // Nested struct for token information
-        UserInfo_t userInfo; // Nested struct for user information
-        Status_t status;
-    } SpotifyPrivateHandler_t;
-    typedef struct
-    {
-        EventHandlerCallBackPtr EventHandlerCallBackFunction;
-        Token_t *token;
-        QueueHandle_t *HttpsBufQueue;
-        UserInfo_t UserInfo;
-    } EventHandlerDataStruct_t;
-    typedef struct
-    {
-        Status_t *status;
-        QueueHandle_t *SendCodeFromHttpToSpotifyTask;
-    } HttpLocalServerParam_t;
+typedef struct
+{
+    char *code;
+    Token_t token;       // Nested struct for token information
+    UserInfo_t userInfo; // Nested struct for user information
+    Status_t status;
+} SpotifyPrivateHandler_t;
+typedef struct
+{
+    EventHandlerCallBackPtr EventHandlerCallBackFunction;
+    Token_t *token;
+    QueueHandle_t *HttpsBufQueue;
+    UserInfo_t UserInfo;
+} EventHandlerDataStruct_t;
+typedef struct
+{
+    Status_t *status;
+    QueueHandle_t *SendCodeFromHttpToSpotifyTask;
+} HttpLocalServerParam_t;
+
+typedef enum
+{
+    NoCommand = 0,
+    PlayPause = 1,
+    PlayNext = 2,
+    PlayPrev = 3,
+    Stop = 4,
+    Play = 5,
+    Pause = 6,
+    GetNowPlaying = 7,
+    GetUserInfo = 8,
+    GetSongImageUrl = 9,
+    GetArtisImageUrl = 10
+} Command_t;
+
+typedef struct
+{
+    QueueHandle_t *HttpsBufQueue;
+    SemaphoreHandle_t *HttpsResponseReadySemaphore;
+    SemaphoreHandle_t *IsSpotifyAuthorizedSemaphore;
+    SemaphoreHandle_t *WorkWithStorageInSpotifyComponentSemaphore;
+    char *ConfigAddressInSpiffs;
+    EventHandlerCallBackPtr EventHandlerCallBackFunction;
+} SpotifyInterfaceHandler_t;
+
 #endif
 #ifdef __cplusplus
 }

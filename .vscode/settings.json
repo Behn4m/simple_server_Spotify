@@ -55,7 +55,10 @@
         "lv_example_libs.h": "c",
         "lvglgui.h": "c",
         "lv_example_event.h": "c",
-        "lv_example_style.h": "c"
+        "lv_example_style.h": "c",
+        "string.h": "c",
+        "lv_font.h": "c",
+        "lv_example_get_started.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

@@ -91,10 +91,12 @@ typedef void (*EventHandlerCallBackPtr)(char *Buffer);
 
 typedef struct
 {
-    char *code;
-    Token_t token;       // Nested struct for token information
-    UserInfo_t userInfo; // Nested struct for user information
-    Status_t status;
+    char *code;                     // code received from Apotify api
+    Token_t token;                  // Nested struct for token information
+    TickType_t tokenLastUpdate;     // System Tick of last token update
+    UserInfo_t userInfo;            // Nested struct for user information
+    Status_t status;                // state machine 
+
 } SpotifyPrivateHandler_t;
 typedef struct
 {

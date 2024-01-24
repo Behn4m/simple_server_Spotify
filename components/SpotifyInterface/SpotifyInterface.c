@@ -125,7 +125,7 @@ static void Spotify_MainTask(void *pvparameters)
         case IDLE:
         {
             // wait for user to ask for authentication
-            if (xQueueReceive(SendCodeFromHttpToSpotifyTask, ReceivedData, pdMS_TO_TICKS(SEC * 1)) == pdTRUE)
+            if (xQueueReceive(SendCodeFromHttpToSpotifyTask, ReceivedData, pdMS_TO_TICKS(SEC * 5)) == pdTRUE)
             {
                 ESP_LOGI(TAG, "Received CODE by queue: %s\n", ReceivedData);
                 Spotify_SendTokenRequest(ReceivedData, sizeof(ReceivedData));
@@ -150,6 +150,9 @@ static void Spotify_MainTask(void *pvparameters)
                     ESP_LOGW(TAG, "Token not found!");
                     PrivateHandler.status = IDLE;
                 }            
+            }
+            {
+                ESP_LOGW(TAG, "timeout - Spotify not responded!");
             }
             break;
         }
@@ -242,23 +245,23 @@ static bool Spotify_TokenRenew(void)
     ESP_LOGI(TAG, "RefreshToken=%s", ReceivedData);
     SendRequest_ExchangeTokenWithRefreshToken(ReceivedData, sizeof(ReceivedData), ReceivedData);
     memset(ReceivedData, 0x0, LONG_BUF);
-    if (xQueueReceive((*InterfaceHandler->HttpsBufQueue), ReceivedData, pdMS_TO_TICKS(SEC * 15)) == pdTRUE)
+
+    if (xQueueReceive(httpToSpotifyDataQueue, ReceivedData, pdMS_TO_TICKS(SEC * 5)) == pdTRUE)
     {
-        ESP_LOGI(TAG, "Token received by Queue: %s\n", ReceivedData);
         if (Spotify_ValueOfVariables(ReceivedData, sizeof(ReceivedData)) == 1)
         {
-            ESP_LOGI(TAG, "Token found!");
+            ESP_LOGI(TAG, "new Token found!");
             return true;
         }
         else
         {
-            ESP_LOGW(TAG, "Token not found!");
+            ESP_LOGW(TAG, "new Token not found!");
             return false;
         }
     }
     else
     {
-        ESP_LOGW(TAG, "timeout - Spotify not respond!");
+        ESP_LOGW(TAG, "timeout - Spotify not responded!");
         return false;
     }
 }

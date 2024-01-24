@@ -17,6 +17,7 @@ static void lv_tick_task(void *arg)
 
     lv_tick_inc(LV_TICK_PERIOD_MS);
 }
+#define LV_FONT_MONTSERRAT_14
 #include "styles/lv_example_style.h"
 #include "get_started/lv_example_get_started.h"
 #include "widgets/lv_example_widgets.h"
@@ -28,15 +29,18 @@ static void lv_tick_task(void *arg)
 #include "others/lv_example_others.h"
 #include "libs/lv_example_libs.h"
 #include "lvgl.h"
+#include"lvgl/src/font/lv_font.h"
+#include "image_test.h"
+
 void lv_example_style_11111(void)
 {
     /*A base style*/
     static lv_style_t style_base;
     lv_style_init(&style_base);
     lv_style_set_bg_color(&style_base, lv_color_make(0x00, 0x0, 0xff));
-    lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x003a57), LV_PART_MAIN);
-    lv_style_set_border_color(&style_base, lv_color_make(0x00, 0x0, 0xff));
-    lv_style_set_radius(&style_base, 10);
+    // lv_obj_set_style_bg_color(lv_scr_act(), lv_color_hex(0x003a57), LV_PART_MAIN);
+    // lv_style_set_border_color(&style_base, lv_color_make(0x00, 0x0, 0xff));
+    // lv_style_set_radius(&style_base, 10);
     lv_style_set_text_color(&style_base, lv_color_white());
     lv_style_set_width(&style_base, 100);
     lv_style_set_height(&style_base, LV_SIZE_CONTENT);
@@ -45,13 +49,20 @@ void lv_example_style_11111(void)
     static lv_style_t style_warning;
     lv_style_init(&style_warning);
     lv_style_set_bg_color(&style_warning, lv_color_make(0xff, 0x0, 0x00));
-    lv_style_set_border_color(&style_warning, lv_color_make(0xff, 0x0, 0x00));
+    // lv_style_set_border_color(&style_warning, lv_color_make(0xff, 0x0, 0x00));
     lv_style_set_text_color(&style_warning, lv_color_white());
     /*Create an object with the base style only*/
     lv_obj_t *obj_base = lv_obj_create(lv_scr_act());
     lv_obj_add_style(obj_base, &style_base, 0);
     lv_obj_align(obj_base, LV_ALIGN_BOTTOM_MID, 0, 0);
+    lv_obj_set_size(obj_base, LV_HOR_RES, LV_VER_RES / 3); // Set size to cover entire horizontal, half vertic
     lv_obj_t *label = lv_label_create(obj_base);
+
+    lv_style_set_text_font(&style_warning, &lv_font_montserrat_18); // Set the font
+        lv_style_set_text_font(&style_base, &lv_font_montserrat_18); // Set the font
+
+    lv_obj_add_style(label, label, &style_warning);
+
     lv_label_set_text(label, "Shadmehr");
     lv_obj_center(label);
 
@@ -59,7 +70,9 @@ void lv_example_style_11111(void)
     lv_obj_t *obj_warning = lv_obj_create(lv_scr_act());
     lv_obj_add_style(obj_warning, &style_base, 0);
     lv_obj_add_style(obj_warning, &style_warning, 0);
-    lv_obj_align(obj_warning, LV_ALIGN_BOTTOM_MID, 0, -50);
+    lv_obj_align(obj_warning, LV_ALIGN_BOTTOM_MID, 0, -70);
+    lv_obj_set_size(obj_warning, LV_HOR_RES, LV_VER_RES / 3); // Set size to cover entire horizontal, half vertical
+
     label = lv_label_create(obj_warning);
     lv_label_set_text(label, "Tardid");
     lv_obj_center(label);

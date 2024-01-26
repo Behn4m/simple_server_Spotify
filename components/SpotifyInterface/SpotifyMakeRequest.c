@@ -43,47 +43,10 @@ bool Spotify_FindCode(char *Response, uint16_t SizeRes)
         }
         if (Found)
         {
-            return true; // Found the access token substring
+            return true;    // Found the access token substring
         }
     }
-    return false; // Access token substring not Found
-}
-
-/**
- * @brief This function searches for a token within a character array and extracts the corresponding JSON object.
- * @param[in] Response The character array to search within. and Response is response from first stage from spotify athurisiation
- * @param[in] SizeRes The size of the character array.
- * @return Returns true if the token is Found and the corresponding JSON object is successfully extracted, otherwise returns false.
- */
-bool Spotify_FindToken(char *Response, uint16_t SizeRes)
-{
-    uint8_t FlgFindToken = 0;
-    uint32_t SizeOfJson = 0;
-    char json[MEDIUM_BUF] = {0};
-    for (uint16_t i = 0; i < SizeRes; i++)
-    {
-        if (Response[i] == '{')
-        {
-            if (Response[i + 1] == '"' && Response[i + 2] == 'a' && Response[i + 3] == 'c' && Response[i + 4] == 'c' && Response[i + 5] == 'e' && Response[i + 6] == 's')
-            {
-                FlgFindToken = 1;
-                SizeOfJson = i;
-            }
-        }
-        if (Response[i] == '}')
-        {
-            for (uint16_t j = SizeOfJson; j <= i; j++)
-            {
-                json[j - SizeOfJson] = Response[j];
-            }
-            memset(Response, 0x000, SizeRes);
-            for (uint16_t j = 0; j < sizeof(json); j++)
-            {
-                Response[j] = json[j];
-            }
-        }
-    }
-    return FlgFindToken;
+    return false;           // Access token substring not Found
 }
 
 static esp_err_t HttpEventHandler(esp_http_client_event_t *evt) 
@@ -110,18 +73,19 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
             break;
         case HTTP_EVENT_ON_DATA:
             ESP_LOGI(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
-            dataToRead = true;
-            memcpy(receivedData + totalLen, evt->data, evt->data_len);
-            totalLen += evt->data_len;
+            dataToRead = true;                                                      // set flag true if server set some data
+            memcpy(receivedData + totalLen, evt->data, evt->data_len);              // copy received data to the end of previous received data
+            totalLen += evt->data_len;                                              // update pointer to the end of copied data
             break;
         case HTTP_EVENT_ON_FINISH:
-            receivedData[totalLen] = '\0';
+            receivedData[totalLen] = '\0';                                          // write 0 to the end of string
             ESP_LOGI(TAG, "HTTP_EVENT_ON_FINISH");
             break;
         case HTTP_EVENT_DISCONNECTED:
             ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
             ESP_LOGI(TAG, "### %s ###", receivedData); 
-            if (dataToRead == true)
+            // if any data received, send a queue so other tasks can receive and process it
+            if (dataToRead == true)                             
             {
                 if (xQueueSend(httpToSpotifyDataQueue, receivedData, pdMS_TO_TICKS(SEC * 15)) == pdTRUE)
                 {
@@ -131,7 +95,7 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
                 {
                     ESP_LOGE(TAG, "Sending Received Data by Queue failed"); 
                 }
-                dataToRead = false;
+                dataToRead = false;     // reset flag tp prepare it for next packets
             }
             break;
         case HTTP_EVENT_REDIRECT:
@@ -150,18 +114,18 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
 void Spotify_SendTokenRequest(char *code, size_t SizeCode)
 {  
     esp_http_client_config_t custom_config = {
-        .url = "https://accounts.spotify.com/api/token",
+        .url = "https://accounts.spotify.com/api/token",                            
         .host = "accounts.spotify.com",
         .path = "/api/token",
         .method = HTTP_METHOD_POST,
         .event_handler = HttpEventHandler,
         .disable_auto_redirect = false,
-        .cert_pem = (const char *)server_root_cert_pem_start,                       // Server root certificate
-        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,          // Length of server root certification
-        .client_cert_pem = (const char *)local_server_cert_pem_start,               // Local server certificate
-        .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start, // Length of local server certificate
-        .client_key_pem = (const char *)local_server_key_pem_start,                 // Local server private key
-        .client_key_len = local_server_key_pem_end - local_server_key_pem_start,    // Length of local server private key
+        .cert_pem = (const char *)server_root_cert_pem_start,                           // Server root certificate
+        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,              // Length of server root certification
+        .client_cert_pem = (const char *)local_server_cert_pem_start,                   // Local server certificate
+        .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start,     // Length of local server certificate
+        .client_key_pem = (const char *)local_server_key_pem_start,                     // Local server private key
+        .client_key_len = local_server_key_pem_end - local_server_key_pem_start,        // Length of local server private key
     };
 
     // Initialize HTTP client with custom configuration
@@ -208,6 +172,7 @@ void Spotify_SendTokenRequest(char *code, size_t SizeCode)
 */
 void Spotify_ControlPlayback(int Command, char *AccessToken)
 {
+    // fill path and method variables based on the Spotify API document
     char path[30] = {};
     esp_http_client_method_t method = HTTP_METHOD_POST;
     if (Command == Play)
@@ -231,22 +196,23 @@ void Spotify_ControlPlayback(int Command, char *AccessToken)
         method = HTTP_METHOD_POST;
     }
     
+    // Configure client object  
     esp_http_client_config_t custom_config = {
-    .host = "api.spotify.com",
-    .path = path,
-    .method = method,
-    .event_handler = HttpEventHandler,
+    .host = "api.spotify.com",                                                          // host for spotify api call
+    .path = path,                                                                       // path already filled based in API
+    .method = method,                                                                   // method variable already filled based on API 
+    .event_handler = HttpEventHandler,                                                  // Event handler function
     .disable_auto_redirect = false,
-        .cert_pem = (const char *)server_root_cert_pem_start,                       // Server root certificate
-        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,          // Length of server root certification
-        .client_cert_pem = (const char *)local_server_cert_pem_start,               // Local server certificate
-        .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start, // Length of local server certificate
-        .client_key_pem = (const char *)local_server_key_pem_start,                 // Local server private key
-        .client_key_len = local_server_key_pem_end - local_server_key_pem_start,    // Length of local server private key
+        .cert_pem = (const char *)server_root_cert_pem_start,                           // Server root certificate
+        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,              // Length of server root certification
+        .client_cert_pem = (const char *)local_server_cert_pem_start,                   // Local server certificate
+        .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start,     // Length of local server certificate
+        .client_key_pem = (const char *)local_server_key_pem_start,                     // Local server private key
+        .client_key_len = local_server_key_pem_end - local_server_key_pem_start,        // Length of local server private key
 };
 
 // Initialize HTTP client with custom configuration
-esp_http_client_handle_t client = esp_http_client_init(&custom_config);
+esp_http_client_handle_t client = esp_http_client_init(&custom_config);                 // apply configuration to the client object
 
 if (client == NULL) {
     ESP_LOGE(TAG, "Failed to create the HTTP client");
@@ -256,11 +222,11 @@ if (client == NULL) {
 // Set headers for authentication
 char authorizationHeader[MEDIUM_BUF];
 snprintf(authorizationHeader, sizeof(authorizationHeader), "Bearer %s", AccessToken);
-esp_http_client_set_header(client, "Authorization", authorizationHeader);
-esp_http_client_set_header(client, "Content-Length", "0");
+esp_http_client_set_header(client, "Authorization", authorizationHeader);               // authorization set based on Spotify API
+esp_http_client_set_header(client, "Content-Length", "0");                              // thess requests are not going to send any data to the host
 
 // Perform the GET request
-esp_err_t err = esp_http_client_perform(client);
+esp_err_t err = esp_http_client_perform(client);                                        // perform http request
 
 if (err == ESP_OK) 
 {
@@ -274,7 +240,7 @@ else
 }
 
 // Cleanup
-esp_http_client_cleanup(client);
+esp_http_client_cleanup(client);                                                        // close all connection releated to this client object 
 }
 
 /**
@@ -371,12 +337,12 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *
         .method = HTTP_METHOD_POST,
         .event_handler = HttpEventHandler,
         .disable_auto_redirect = false,
-        .cert_pem = (const char *)server_root_cert_pem_start,                       // Server root certificate
-        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,          // Length of server root certification
-        .client_cert_pem = (const char *)local_server_cert_pem_start,               // Local server certificate
-        .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start, // Length of local server certificate
-        .client_key_pem = (const char *)local_server_key_pem_start,                 // Local server private key
-        .client_key_len = local_server_key_pem_end - local_server_key_pem_start,    // Length of local server private key
+        .cert_pem = (const char *)server_root_cert_pem_start,                           // Server root certificate
+        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,              // Length of server root certification
+        .client_cert_pem = (const char *)local_server_cert_pem_start,                   // Local server certificate
+        .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start,     // Length of local server certificate
+        .client_key_pem = (const char *)local_server_key_pem_start,                     // Local server private key
+        .client_key_len = local_server_key_pem_end - local_server_key_pem_start,        // Length of local server private key
     };
 
     // Initialize HTTP client with custom configuration
@@ -406,6 +372,5 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *
         ESP_LOGI(TAG, "HTTP client performed successfully");
     }
     
-    // Cleanup HTTP client
-    esp_http_client_cleanup(client);
+    esp_http_client_cleanup(client);                                                    // close all connection releated to this client object 
 }

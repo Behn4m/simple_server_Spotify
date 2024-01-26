@@ -27,14 +27,6 @@ void Spotify_GetCurrentPlaying(Token_t *Token);
 void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *RefreshToken_);
 
 /**
-* @brief This function searches for a token within a character array and extracts the corresponding JSON object.
-* @param[in] Res The character array to search within. and Res is response from first stage from spotify athurisiation
-* @param[in] SizeRes The size of the character array.
-* @return Returns true if the token is found and the corresponding JSON object is successfully extracted, otherwise returns false.
-*/
-bool Spotify_FindToken(char *Res, uint16_t SizeRes);
-
-/**
 * @brief This function searches for specific patterns ('code' and 'state') within a character array and returns a boolean value indicating if either pattern was found.
 * @param[in] Res The character array to search within, and Res is response from first stage from spotify athurisiation
 * @param[in] SizeRes The size of the character array.
@@ -54,10 +46,8 @@ void Spotify_SendTokenRequest(char *code, size_t SizeCode);
 
 /**
 * @brief This function sends a request to the Spotify API to perform a player command.
-* @param[in] Method_ The HTTP method to be used in the request (e.g., "POST", "PUT").
-* @param[in] Command_ The specific player command to be executed (e.g., "next", "previous", "play", "pause").
-* @param[out] Buf The character buffer to store the request and receive the response.
-* @param[in] SizeBuf The size of the character buffer.
+* @param[in] Command The specific player command to be executed (e.g., "next", "previous", "play", "pause").
+* @param[in] AcessToken the spotify authorized AccessToken.
 * @return This function does not return a value.
 */
 void Spotify_ControlPlayback(int Command, char *AccessToken);

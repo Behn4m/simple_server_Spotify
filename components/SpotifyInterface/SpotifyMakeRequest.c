@@ -201,72 +201,80 @@ void Spotify_SendTokenRequest(char *code, size_t SizeCode)
 }
 
 /**
- * @brief This function sends a request to the Spotify API to perform a player command.
- * @param[in] Method_t The HTTP method to be used in the request (e.g., "POST", "PUT").
- * @param[in] Command_t The specific player command to be executed (e.g., "next", "previous", "play", "pause").
- * @param[out] Buf The character buffer to store the request and receive the response.
- * @param[in] SizeBuf The size of the character buffer.
- * @return This function does not return a value.
- */
-void Spotify_MakePlayerCommandAndSendIt(const char *Method_t, const char *Command_t, char *Buf, size_t SizeBuf, char *AccessToken)
+* @brief This function sends a request to the Spotify API to perform a play/pause/next/previous commands.
+* @param[in] Command_ The specific player command to be executed (e.g., "next", "previous", "play", "pause").
+* @param[in] AccessToken given by authorization step.
+* @return This function does not return a value.
+*/
+void Spotify_ControlPlayback(int Command, char *AccessToken)
 {
-    //   copy tow of them because ,we dont give size of Method and command
-    char Method[50] = {0};
-    char Command[50] = {0};
-    strcpy(Method, Method_t);
-    strcpy(Command, Command_t);
-    memset(Buf, 0x00, SizeBuf);
-    sprintf(Buf, "%s /v1/me/player/%s HTTP/1.1\r\n"
-                 "Host: api.spotify.com\r\n"
-                 "Authorization: Bearer %s\r\n"
-                 "Content-Length: 0\r\n"
-                 "Connection: close\r\n\r\n",
-            Method, Command, AccessToken);
-    ESP_LOGI(TAG, "\n\nrequest for %s \n%s\nand size it =%d\n\n",Command, Buf, strlen(Buf));
-    char URL[SMALL_BUF] = "https://api.spotify.com";
-    char Server[SMALL_BUF] = "api.spotify.com";
-    //Https_GetRequest(Buf, SizeBuf, URL, sizeof(URL), Server, sizeof(Server));
+    char path[30] = {};
+    esp_http_client_method_t method = HTTP_METHOD_POST;
+    if (Command == Play)
+    {
+        sprintf(path, "/v1/me/player/play");
+        method = HTTP_METHOD_PUT;
+    }
+    else if(Command == Pause)
+    {
+        sprintf(path, "/v1/me/player/pause");
+        method = HTTP_METHOD_PUT;
+    }
+    else if(Command == PlayNext)
+    {
+        sprintf(path, "/v1/me/player/next");
+        method = HTTP_METHOD_POST;
+    }
+    else if(Command == PlayPrev)
+    {
+        sprintf(path, "/v1/me/player/previous");
+        method = HTTP_METHOD_POST;
+    }
+    
+    esp_http_client_config_t custom_config = {
+    .host = "api.spotify.com",
+    .path = path,
+    .method = method,
+    .event_handler = HttpEventHandler,
+    .disable_auto_redirect = false,
+        .cert_pem = (const char *)server_root_cert_pem_start,                       // Server root certificate
+        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,          // Length of server root certification
+        .client_cert_pem = (const char *)local_server_cert_pem_start,               // Local server certificate
+        .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start, // Length of local server certificate
+        .client_key_pem = (const char *)local_server_key_pem_start,                 // Local server private key
+        .client_key_len = local_server_key_pem_end - local_server_key_pem_start,    // Length of local server private key
+};
+
+// Initialize HTTP client with custom configuration
+esp_http_client_handle_t client = esp_http_client_init(&custom_config);
+
+if (client == NULL) {
+    ESP_LOGE(TAG, "Failed to create the HTTP client");
+    return;
 }
 
-/**
- * @brief This function sends a request to the Spotify API to skip to the next track in the player.
- * @return This function does not return a value.
- */
-void Spotify_SendRequestForNext(Token_t *Token)
+// Set headers for authentication
+char authorizationHeader[MEDIUM_BUF];
+snprintf(authorizationHeader, sizeof(authorizationHeader), "Bearer %s", AccessToken);
+esp_http_client_set_header(client, "Authorization", authorizationHeader);
+esp_http_client_set_header(client, "Content-Length", "0");
+
+// Perform the GET request
+esp_err_t err = esp_http_client_perform(client);
+
+if (err == ESP_OK) 
 {
-    char Buf[LONG_BUF];
-    ESP_LOGE(TAG, "we are in Send Spotify_SendRequestForNext ");
-    Spotify_MakePlayerCommandAndSendIt("POST", "next", Buf, LONG_BUF, Token->AccessToken);
+    ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %lld",
+             esp_http_client_get_status_code(client),
+             esp_http_client_get_content_length(client));
+} 
+else 
+{
+    ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
 }
 
-/**
- * @brief This function sends a request to the Spotify API to skip to the previous track in the player.
- * @return This function does not return a value.
- */
-void Spotify_SendRequestForPrevious(Token_t *Token)
-{
-    char Buf[LONG_BUF];
-    Spotify_MakePlayerCommandAndSendIt("POST", "previous", Buf, LONG_BUF, Token->AccessToken);
-}
-
-/**
- * @brief This function sends a request to the Spotify API to play the current track in the player.
- * @return This function does not return a value.
- */
-void Spotify_SendRequestForPlay(Token_t *Token)
-{
-    char Buf[LONG_BUF];
-    Spotify_MakePlayerCommandAndSendIt("PUT", "play", Buf, LONG_BUF, Token->AccessToken);
-}
-
-/**
- * @brief This function sends a request to the Spotify API to pause the current track in the player.
- * @return This function does not return a value.
- */
-void Spotify_SendRequestForPause(Token_t *Token)
-{
-    char Buf[LONG_BUF];
-    Spotify_MakePlayerCommandAndSendIt("PUT", "pause", Buf, LONG_BUF, Token->AccessToken);
+// Cleanup
+esp_http_client_cleanup(client);
 }
 
 /**

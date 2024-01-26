@@ -60,35 +60,7 @@ void Spotify_SendTokenRequest(char *code, size_t SizeCode);
 * @param[in] SizeBuf The size of the character buffer.
 * @return This function does not return a value.
 */
-void Spotify_MakePlayerCommandAndSendIt(const char *Method_, const char *Command_, char *Buf, size_t SizeBuf, char *AccessToken);
-
-/**
-* @brief This function sends a request to the Spotify API to pause the current track in the player.
-* @param[in]  Token_t *Token 
-* @return This function does not return a value.
-*/
-void Spotify_SendRequestForPause(Token_t *Token);
-
-/**
-* @brief This function sends a request to the Spotify API to play the current track in the player.
-* @param[in]  Token_t *Token 
-* @return This function does not return a value.
-*/
-void Spotify_SendRequestForPlay(Token_t *Token);
-
-/**
-* @brief This function sends a request to the Spotify API to skip to the previous track in the player.
-* @param[in]  Token_t *Token
-* @return This function does not return a value.
-*/
-void Spotify_SendRequestForPrevious(Token_t *Token);
-
-/**
-* @brief This function sends a request to the Spotify API to skip to the next track in the player.
-* @param[in]  Token_t *Token 
-* @return This function does not return a value.
-*/
-void Spotify_SendRequestForNext(Token_t *Token);
+void Spotify_ControlPlayback(int Command, char *AccessToken);
 
 /**
 * @brief This function sends a request to the Spotify API to retrieve the user's current status.

@@ -1,5 +1,5 @@
 idf_component_register(SRCS "JsonExtraction.c" "SpotifyInterface.c" "SpotifyMakeRequest.c" 
-                            "SpotifyEventHandler.c" "SpotifyHttpLocalServer.c"
+                            "SpotifyHttpLocalServer.c"
                     INCLUDE_DIRS "include" "lib"
                     EMBED_TXTFILES server_root_cert.pem local_server_cert.pem local_server_key.pem
 

@@ -39,12 +39,13 @@ void app_main(void)
     // after this semaphore you can use playback command function in every where !
     if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
     {
-        Spotify_SendCommand(GetNowPlaying);
-        vTaskDelay((pdMS_TO_TICKS(SEC * 5)));
         Spotify_SendCommand(Pause);
         vTaskDelay((pdMS_TO_TICKS(SEC * 5)));
         Spotify_SendCommand(Play);
         vTaskDelay((pdMS_TO_TICKS(SEC * 5)));
+        Spotify_SendCommand(PlayPrev);
+        vTaskDelay((pdMS_TO_TICKS(SEC * 5)));
+        Spotify_SendCommand(PlayNext);
     }
 #endif
 }

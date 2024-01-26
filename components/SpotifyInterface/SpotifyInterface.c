@@ -269,6 +269,7 @@ bool Spotify_ValueOfVariables(char *ReceivedData, size_t SizeOfReceivedData)
     // extract keys from JSON
     if (ExtractJsonFromHttpResponse(ReceivedData, SizeOfReceivedData) == true)
     {
+        ESP_LOGE(TAG, "HERE");
         if (ExtractionJsonParamForFindAccessToken(ReceivedData, LONG_BUF,
                                                   PrivateHandler.token.AccessToken,
                                                   PrivateHandler.token.TokenType,
@@ -276,10 +277,7 @@ bool Spotify_ValueOfVariables(char *ReceivedData, size_t SizeOfReceivedData)
                                                   PrivateHandler.token.GrantedScope,
                                                   PrivateHandler.token.ExpiresInMS) == true)
         {
-            EventHandlerData.EventHandlerCallBackFunction = InterfaceHandler->EventHandlerCallBackFunction;
-            EventHandlerData.token = &(PrivateHandler.token);
-            EventHandlerData.HttpsBufQueue = InterfaceHandler->HttpsBufQueue;
-            Spotify_RegisterEventHandler();
+            ESP_LOGW(TAG, "%s", PrivateHandler.token.AccessToken );
             return true;
         }
         else
@@ -316,7 +314,6 @@ bool Spotify_ValueOfVariables(char *ReceivedData, size_t SizeOfReceivedData)
  */
 bool Spotify_SendCommand(int command)
 {
-    bool retValue = true;
     ESP_LOGI(TAG, "user Command is %d", command);
     if (PrivateHandler.status == IDLE || PrivateHandler.status == AUTHENTICATED)
     {
@@ -326,38 +323,21 @@ bool Spotify_SendCommand(int command)
     switch (command)
     {
     case Play:
-    {
-        /* Send PLAY command to Spotify */
-        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForPlay, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
-        break;
-    }
     case Pause:
-    {
-        /* Send PAUSE command to Spotify */
-        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForPause, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
-        break;
-    }
     case PlayNext:
-    {
-        /* Send PLAY_NEXT command to Spotify */
-        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForNext, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
-        break;
-    }
     case PlayPrev:
     {
-        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventSendRequestForPrevious, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         /* Send PLAY_PREV command to Spotify */
+        Spotify_ControlPlayback(command, PrivateHandler.token.AccessToken);
         break;
     }
     case GetNowPlaying:
     {
-        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventGetCurrentPlaying, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         /* Send GET_NOW_PLAYING command to Spotify */
         break;
     }
     case GetUserInfo:
     {
-        ESP_ERROR_CHECK(esp_event_post_to(Spotify_EventLoopHandle, BASE_SPOTIFY_EVENTS, SpotifyEventGetUserStatus, &EventHandlerData, sizeof(EventHandlerDataStruct_t), portMAX_DELAY));
         /* Send GET_USER_INFO command to Spotify */
         break;
     }

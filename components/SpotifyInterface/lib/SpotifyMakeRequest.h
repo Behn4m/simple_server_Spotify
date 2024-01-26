@@ -13,9 +13,10 @@ extern "C" {
 
 /**
 * @brief This function sends a request to the Spotify API to give Curent playing information 
-* @param[in]  Token_t *Token 
+* @param[in]  Token is the access token received from Spotify during authorization progress 
+* @param[in]  Command is the specific player command to be executed (e.g., "next", "previous", "play", "pause").
 */
-void Spotify_GetCurrentPlaying(Token_t *Token);
+void Spotify_GetInfo(int *Command, char *AccessToken);
 
 /**
  * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.
@@ -52,27 +53,6 @@ void Spotify_SendTokenRequest(char *code, size_t SizeCode);
 */
 void Spotify_ControlPlayback(int Command, char *AccessToken);
 
-/**
-* @brief This function sends a request to the Spotify API to retrieve the user's current status.
-* @param[in]  char *AccessToken 
-* @return This function does not return a value.
-*/
-void Spotify_GetUserStatus(char *AccessToken);
-
-/**
-* @brief This function sends a request to the Spotify API to retrieve the user's top item.
-* @param[in]  char *AccessToken 
-* @return This function does not return a value.
-*/
-void Spotify_GetUserTopItems(char *AccessToken);
-
-/**
-* @brief This function sends a request to the Spotify API to retrieve the profile information of a specific user.
-* @param[in] char *AccessToken
-* @param[in] char *UserId_
-* @return This function does not return a value.
-*/
-void Spotify_GetUserProfile(char *UserId_, char *Token);
 #endif
 #ifdef __cplusplus
 }

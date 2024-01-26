@@ -5,8 +5,6 @@
 static const char *TAG = "SpotifyTask";
 
 // ****************************** Local Functions
-static void Spotify_GetToken(char *code, size_t SizeOfCode);
-static void Spotify_RenewTokenWithRefreshToken(Token_t *token);
 static void Spotify_MainTask(void *pvparameters);
 static bool Spotify_TokenRenew(void);
 static bool Spotify_IsTokenValid();
@@ -81,9 +79,6 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
         ESP_LOGE(TAG, "SpotifyIntefaceHandler is is missing some pointers, can not run the app");
         return false;
     }
-
-
-
     return true;
 }
 
@@ -327,28 +322,22 @@ bool Spotify_SendCommand(int command)
     case PlayNext:
     case PlayPrev:
     {
-        /* Send PLAY_PREV command to Spotify */
         Spotify_ControlPlayback(command, PrivateHandler.token.AccessToken);
         break;
     }
     case GetNowPlaying:
-    {
-        /* Send GET_NOW_PLAYING command to Spotify */
-        break;
-    }
     case GetUserInfo:
+    case GetUserTopItems:
     {
-        /* Send GET_USER_INFO command to Spotify */
+        Spotify_GetInfo(command, PrivateHandler.token.AccessToken);
         break;
     }
     case GetSongImageUrl:
     {
-        /* Send GET_SONG_IMAGE_URL command to Spotify */
         break;
     }
     case GetArtisImageUrl:
     {
-        /* Send GET_ARTIST_IMAGE_URL command to Spotify */
         break;
     }
     }

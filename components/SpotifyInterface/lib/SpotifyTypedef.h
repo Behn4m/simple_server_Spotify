@@ -123,7 +123,8 @@ typedef enum
     GetNowPlaying = 7,
     GetUserInfo = 8,
     GetSongImageUrl = 9,
-    GetArtisImageUrl = 10
+    GetArtisImageUrl = 10,
+    GetUserTopItems = 11
 } Command_t;
 
 typedef struct

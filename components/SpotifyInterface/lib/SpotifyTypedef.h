@@ -23,7 +23,6 @@ extern "C"
 #define ClientId "55bb974a0667481ab0b2a49fd0abea6d"
 
 // ****************************************************************
-#define SPOTIFY_EVENT_STACK_SIZE (uint32_t)(10*1000U)
 #define SPOTIFY_TASK_STACK_SIZE (uint32_t)(10*1000U)
 #define SPOTIFY_PRIORITY 4
 

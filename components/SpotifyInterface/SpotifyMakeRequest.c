@@ -50,7 +50,7 @@ bool Spotify_FindCode(char *Response, uint16_t SizeRes)
 
 static esp_err_t HttpEventHandler(esp_http_client_event_t *evt) 
 {
-    static char receivedData[MEDIUM_BUF] = {};
+    static char receivedData[LONG_BUF] = {};
     static int totalLen = 0;
     static bool dataToRead = false;
     // Create the queue and semaphore
@@ -72,9 +72,12 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
             break;
         case HTTP_EVENT_ON_DATA:
             ESP_LOGI(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
-            dataToRead = true;                                                          // set flag true if server set some data
-            memcpy(receivedData + totalLen, evt->data, evt->data_len);                  // copy received data to the end of previous received data
-            totalLen += evt->data_len;                                                  // update pointer to the end of copied data
+            dataToRead = true;
+            if (totalLen + evt->data_len < LONG_BUF)                                    // check if receved data is not larger than buffer size 
+            {                                                                           // set flag true if server set some data
+                memcpy(receivedData + totalLen, evt->data, evt->data_len);              // copy received data to the end of previous received data
+                totalLen += evt->data_len;                                              // update pointer to the end of copied data
+            }
             break;
         case HTTP_EVENT_ON_FINISH:
             receivedData[totalLen] = '\0';                                              // write 0 to the end of string

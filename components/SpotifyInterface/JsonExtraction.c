@@ -6,43 +6,6 @@
 
 static const char *TAG = "JsonExTraction";
 
-/**
- * @brief Extracts JSON content from an HTTP response string.
- * This function separates the JSON content from an HTTP response header and extracts the JSON string.
- * @param[in] HttpResponse The input string containing an HTTP response with JSON content.
- * @param[out] Json The output buffer to store the extracted JSON content.
- * @return Returns true if the JSON content is successfully extracted, otherwise false.
- */
-bool ExtractJsonFromHttpResponse(char *HttpResponse, size_t SizeRes) 
-{
- uint8_t FlgFindToken = 0;
-    uint32_t SizeOfJson = 0;
-    char json[MEDIUM_BUF] = {0};
-    for (uint16_t i = 0; i < SizeRes; i++)
-    {
-        if (HttpResponse[i] == '{')
-        {
-            if (HttpResponse[i + 1] == '"' && HttpResponse[i + 2] == 'a' && HttpResponse[i + 3] == 'c' && HttpResponse[i + 4] == 'c' && HttpResponse[i + 5] == 'e' && HttpResponse[i + 6] == 's')
-            {
-                FlgFindToken = 1;
-                SizeOfJson = i;
-            }
-        }
-        if (HttpResponse[i] == '}')
-        {
-            for (uint16_t j = SizeOfJson; j <= i; j++)
-            {
-                json[j - SizeOfJson] = HttpResponse[j];
-            }
-            memset(HttpResponse, 0x000, SizeRes);
-            for (uint16_t j = 0; j < sizeof(json); j++)
-            {
-                HttpResponse[j] = json[j];
-            }
-        }
-    }
-    return FlgFindToken;
-}
 
 /**
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a TokenParam structure.
@@ -50,12 +13,12 @@ bool ExtractJsonFromHttpResponse(char *HttpResponse, size_t SizeRes)
  * @param[in] JsonBufSize The size of the JSON string.
  * @return false if fail, true if finish successful.
  */
-bool ExtractionJsonParamForFindAccessToken(char *Json, size_t JsonBufSize,
-                                           char *AccessToken,
-                                           char *TokenType,
-                                           char *RefreshToken,
-                                           char *GrantedScope,
-                                           int ExpiresInMS) 
+bool ExtractAccessParamsTokenFromJson( char *Json, size_t JsonBufSize,
+                                       char *AccessToken,
+                                       char *TokenType,
+                                       char *RefreshToken,
+                                       char *GrantedScope,
+                                       int ExpiresInMS) 
     {
     
     cJSON *J_Token = cJSON_Parse(Json);
@@ -124,7 +87,7 @@ bool ExtractionJsonParamForFindAccessToken(char *Json, size_t JsonBufSize,
  * @param[in] JsonUSerInfo The input JSON string containing user information.
  * @return Returns 0 if the JSON is parsed successfully, or 1 otherwise.
  */
-int ExtractionJsonParamForFindUserInfo(char *JsonUSerInfo, char *DisplayName, char *ProfileURL, char *UserID, char *Image1, char *Image2, int *Follower, char *Country, char *Product)
+int ExtractUserInfoParamsfromJson(char *JsonUSerInfo, char *DisplayName, char *ProfileURL, char *UserID, char *Image1, char *Image2, int *Follower, char *Country, char *Product)
 {
     cJSON *J_UsserInfo = cJSON_Parse(JsonUSerInfo);
     if (J_UsserInfo == NULL)

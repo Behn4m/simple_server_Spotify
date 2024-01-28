@@ -114,7 +114,7 @@ esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
  * @param[in] SizeCode The size of the authorization code.
  * @return This function does not return a value.
  */
-void Spotify_SendTokenRequest(char *code, size_t SizeCode)
+void Spotify_SendTokenRequest(char *code)
 {  
     esp_http_client_config_t clientConfig = {
         .url = "https://accounts.spotify.com/api/token",                            
@@ -166,6 +166,55 @@ void Spotify_SendTokenRequest(char *code, size_t SizeCode)
 }
 
 /**
+ * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.
+ * @param[in] code is parameter that we give it before .
+ * @return This function does not return a value.
+ */
+void SendRequest_ExchangeTokenWithRefreshToken(char *refreshToken)
+{
+    esp_http_client_config_t clientConfig = {
+        .url = "https://accounts.spotify.com/api/token",
+        .host = "accounts.spotify.com",
+        .path = "/api/token",
+        .method = HTTP_METHOD_POST,
+        .event_handler = HttpEventHandler,
+        .disable_auto_redirect = false,
+        .cert_pem = (const char *)server_root_cert_pem_start,                               // Server root certificate
+        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,                  // Length of server root certification
+        .client_cert_pem = (const char *)local_server_cert_pem_start,                       // Local server certificate
+        .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start,         // Length of local server certificate
+        .client_key_pem = (const char *)local_server_key_pem_start,                         // Local server private key
+        .client_key_len = local_server_key_pem_end - local_server_key_pem_start,            // Length of local server private key
+    };
+
+    // Initialize HTTP client with custom configuration
+    esp_http_client_handle_t client = esp_http_client_init(&clientConfig);
+    if (client == NULL) {
+        ESP_LOGE(TAG, "Failed to refresh the token client");
+        return;
+    }
+
+    // Set headers for authentication and content type
+    esp_http_client_set_header(client, "Authorization", "Basic NTViYjk3NGEwNjY3NDgxYWIwYjJhNDlmZDBhYmVhNmQ6ZDgwYmQ3ZThjMWIwNGJmY2FjZGI1ZWNmNmExNTUyMTU=");
+    esp_http_client_set_header(client, "Content-Type", "application/x-www-form-urlencoded");
+
+    // Set the request body (POST data)
+    char Grand[SMALL_BUF] = {0};
+    sprintf(Grand, "grant_type=refresh_token&refresh_token=%s&redirect_uri=%s", refreshToken, ReDirectUri);
+    esp_http_client_set_post_field(client, Grand, strlen(Grand));
+
+    // Perform HTTP request
+    esp_err_t err = esp_http_client_perform(client);
+    if (err != ESP_OK) {
+        ESP_LOGE(TAG, "HTTP client perform failed: %s", esp_err_to_name(err));
+    } else {
+        ESP_LOGI(TAG, "HTTP client performed successfully");
+    }
+    
+    esp_http_client_cleanup(client);                                                        // close all connection releated to this client object 
+}
+
+/**
 * @brief This function sends a request to the Spotify API to perform a play/pause/next/previous commands.
 * @param[in] Command_ The specific player command to be executed (e.g., "next", "previous", "play", "pause").
 * @param[in] AccessToken given by authorization step.
@@ -195,6 +244,10 @@ void Spotify_ControlPlayback(int Command, char *AccessToken)
     {
         sprintf(clientPath, "/v1/me/player/previous");
         clientMethod = HTTP_METHOD_POST;
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Incorrect function call - incompatible command code for 'Spotify_ControlPlayback'");
     }
     
     // Configure client object  
@@ -263,6 +316,10 @@ void Spotify_GetInfo(int *Command, char *AccessToken)
     {
         sprintf(clientPath, "v1/me/top/artists");
     }
+    else
+    {
+        ESP_LOGE(TAG, "Incorrect function call - incompatible command code for 'Spotify_GetInfo'");
+    }
 
    // Configure client object  
     esp_http_client_config_t clientConfig = {
@@ -306,56 +363,5 @@ void Spotify_GetInfo(int *Command, char *AccessToken)
     }
 
     // Cleanup
-    esp_http_client_cleanup(client);                                                        // close all connection releated to this client object 
-}
-
-/**
- * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.
- * @param[in,out] Buf The character buffer to store the request and receive the response.
- * @param[in] SizeBuf The size of the character buffer.
- * @param[in] code is parameter that we give it before .
- * @return This function does not return a value.
- */
-void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *refreshToken)
-{
-    esp_http_client_config_t clientConfig = {
-        .url = "https://accounts.spotify.com/api/token",
-        .host = "accounts.spotify.com",
-        .path = "/api/token",
-        .method = HTTP_METHOD_POST,
-        .event_handler = HttpEventHandler,
-        .disable_auto_redirect = false,
-        .cert_pem = (const char *)server_root_cert_pem_start,                               // Server root certificate
-        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,                  // Length of server root certification
-        .client_cert_pem = (const char *)local_server_cert_pem_start,                       // Local server certificate
-        .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start,         // Length of local server certificate
-        .client_key_pem = (const char *)local_server_key_pem_start,                         // Local server private key
-        .client_key_len = local_server_key_pem_end - local_server_key_pem_start,            // Length of local server private key
-    };
-
-    // Initialize HTTP client with custom configuration
-    esp_http_client_handle_t client = esp_http_client_init(&clientConfig);
-    if (client == NULL) {
-        ESP_LOGE(TAG, "Failed to refresh the token client");
-        return;
-    }
-
-    // Set headers for authentication and content type
-    esp_http_client_set_header(client, "Authorization", "Basic NTViYjk3NGEwNjY3NDgxYWIwYjJhNDlmZDBhYmVhNmQ6ZDgwYmQ3ZThjMWIwNGJmY2FjZGI1ZWNmNmExNTUyMTU=");
-    esp_http_client_set_header(client, "Content-Type", "application/x-www-form-urlencoded");
-
-    // Set the request body (POST data)
-    char Grand[SMALL_BUF] = {0};
-    sprintf(Grand, "grant_type=refresh_token&refresh_token=%s&redirect_uri=%s", refreshToken, ReDirectUri);
-    esp_http_client_set_post_field(client, Grand, strlen(Grand));
-
-    // Perform HTTP request
-    esp_err_t err = esp_http_client_perform(client);
-    if (err != ESP_OK) {
-        ESP_LOGE(TAG, "HTTP client perform failed: %s", esp_err_to_name(err));
-    } else {
-        ESP_LOGI(TAG, "HTTP client performed successfully");
-    }
-    
     esp_http_client_cleanup(client);                                                        // close all connection releated to this client object 
 }

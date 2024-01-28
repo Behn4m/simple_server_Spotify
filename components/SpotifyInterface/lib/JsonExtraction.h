@@ -10,7 +10,7 @@ extern "C" {
  * @param[in] SizeJson The size of the JSON string.
  * @return fasle if fail, true if finish successfull.
  */
-bool ExtractAccessParamsTokenFromJson(char *Json, size_t SizeJson, char *Token, char *TokenType, char *RefreshToken, char *GrantedScope, int ExpiresInMS);
+bool ExtractAccessTokenParamsTokenFromJson(char *Json, size_t SizeJson, char *Token, char *TokenType, char *RefreshToken, char *GrantedScope, int ExpiresInMS);
 
 /**
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a UserInfo structure.

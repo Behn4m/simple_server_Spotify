@@ -13,12 +13,12 @@ static const char *TAG = "JsonExTraction";
  * @param[in] JsonBufSize The size of the JSON string.
  * @return false if fail, true if finish successful.
  */
-bool ExtractAccessParamsTokenFromJson( char *Json, size_t JsonBufSize,
-                                       char *AccessToken,
-                                       char *TokenType,
-                                       char *RefreshToken,
-                                       char *GrantedScope,
-                                       int ExpiresInMS) 
+bool ExtractAccessTokenParamsTokenFromJson(char *Json, size_t JsonBufSize,
+                                           char *AccessToken,
+                                           char *TokenType,
+                                           char *RefreshToken,
+                                           char *GrantedScope,
+                                           int ExpiresInMS) 
     {
     
     cJSON *J_Token = cJSON_Parse(Json);

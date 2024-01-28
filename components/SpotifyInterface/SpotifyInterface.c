@@ -46,7 +46,7 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
         InterfaceHandler->HttpsBufQueue != NULL)
     {
         StaticTask_t *xTaskBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
-        StackType_t *xStack = (StackType_t *)malloc(SPOTIFY_TASK_STACK_SIZE * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
+        StackType_t *xStack = (StackType_t *)malloc(SPOTIFY_TASK_STACK_SIZE * sizeof(StackType_t));                 // Assuming a stack size of 400 words (adjust as needed)
         if (xTaskBuffer == NULL || xStack == NULL)
         {
             ESP_LOGE(TAG, "Memory allocation failed!\n");
@@ -113,10 +113,10 @@ static void Spotify_MainTask(void *pvparameters)
         case IDLE:
             {
                 
-                if (xQueueReceive(SendCodeFromHttpToSpotifyTask, ReceivedData, pdMS_TO_TICKS(SEC * 1)) == pdTRUE)   // Waiting for Code to be recieved by queue
+                if (xQueueReceive(SendCodeFromHttpToSpotifyTask, ReceivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)       // Waiting for Code to be recieved by queue
                 {
                     ESP_LOGI(TAG, "Received CODE by queue: %s\n", ReceivedData);
-                    Spotify_SendTokenRequest(ReceivedData, sizeof(ReceivedData));                                   // send request for Token
+                    Spotify_SendTokenRequest(ReceivedData);                                                         // send request for Token
                     PrivateHandler.status = AUTHENTICATED;                                                          // Code received and checked, so update status to AUTHENTICATED         
                 }
                 break;
@@ -125,9 +125,9 @@ static void Spotify_MainTask(void *pvparameters)
             {
                 ESP_LOGI(TAG, "AUTHENTICATED");
 
-                if (xQueueReceive(httpToSpotifyDataQueue, ReceivedData, pdMS_TO_TICKS(SEC * 1)) == pdTRUE)                   // Waiting for Token to be recieved by queue
+                if (xQueueReceive(httpToSpotifyDataQueue, ReceivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)              // Waiting for Token to be recieved by queue
                 {
-                    if (Spotify_ExtractAccessToken(ReceivedData, sizeof(ReceivedData)) == true)                          // extract all keys from spotify server response
+                    if (Spotify_ExtractAccessToken(ReceivedData, sizeof(ReceivedData)) == true)                     // extract all keys from spotify server response
                     {
                         ESP_LOGI(TAG, "Token found!");
                         PrivateHandler.tokenLastUpdate = xTaskGetTickCount();
@@ -141,7 +141,8 @@ static void Spotify_MainTask(void *pvparameters)
                 }
                 else
                 {
-                    ESP_LOGW(TAG, "timeout - Spotify not responded!");
+                    PrivateHandler.status = IDLE;
+                    ESP_LOGW(TAG, "Timeout - Spotify did not respond within the expected time.!");
                 }
                 break;
             }
@@ -163,7 +164,7 @@ static void Spotify_MainTask(void *pvparameters)
             }
             case CHECK_TIME:
             {
-                if (Spotify_IsTokenValid() == true)                                                                   // Check if the expiration time has elapsed since the last received token
+                if (Spotify_IsTokenValid() == true)                                                                 // Check if the expiration time has elapsed since the last received token
                 {
                     PrivateHandler.status = EXPIRED;
                 }            
@@ -193,7 +194,7 @@ static void Spotify_MainTask(void *pvparameters)
                 break;
             }
         }
-        vTaskDelay(pdMS_TO_TICKS(100));                                                                         // Task delay at the end of while(1) loop
+        vTaskDelay(pdMS_TO_TICKS(100));                                                                             // Task delay at the end of while(1) loop
     }
 }
 
@@ -223,10 +224,10 @@ static bool Spotify_TokenRenew(void)
     char ReceivedData[LONG_BUF];
     ReadTxtFileFromSpiffs(InterfaceHandler->ConfigAddressInSpiffs, "refresh_token", ReceivedData, NULL, NULL);
     ESP_LOGI(TAG, "RefreshToken=%s", ReceivedData);
-    SendRequest_ExchangeTokenWithRefreshToken(ReceivedData, sizeof(ReceivedData), ReceivedData);
+    SendRequest_ExchangeTokenWithRefreshToken(ReceivedData);
     memset(ReceivedData, 0x0, LONG_BUF);
 
-    if (xQueueReceive(httpToSpotifyDataQueue, ReceivedData, pdMS_TO_TICKS(SEC * 5)) == pdTRUE)
+    if (xQueueReceive(httpToSpotifyDataQueue, ReceivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)
     {
         if (Spotify_ExtractAccessToken(ReceivedData, sizeof(ReceivedData)) == true)
         {
@@ -256,12 +257,12 @@ static bool Spotify_TokenRenew(void)
 bool Spotify_ExtractAccessToken(char *ReceivedData, size_t SizeOfReceivedData)
 {
     // extract keys from JSON
-    if (ExtractAccessParamsTokenFromJson(ReceivedData, LONG_BUF,
-                                                PrivateHandler.token.AccessToken,
-                                                PrivateHandler.token.TokenType,
-                                                PrivateHandler.token.RefreshToken,
-                                                PrivateHandler.token.GrantedScope,
-                                                PrivateHandler.token.ExpiresInMS) == true)
+    if (ExtractAccessTokenParamsTokenFromJson(ReceivedData, SizeOfReceivedData,
+                                              PrivateHandler.token.AccessToken,
+                                              PrivateHandler.token.TokenType,
+                                              PrivateHandler.token.RefreshToken,
+                                              PrivateHandler.token.GrantedScope,
+                                              PrivateHandler.token.ExpiresInMS) == true)
     {
         ESP_LOGW(TAG, "%s", PrivateHandler.token.AccessToken );
         return true;

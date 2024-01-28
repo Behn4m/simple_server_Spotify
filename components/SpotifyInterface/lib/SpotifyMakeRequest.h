@@ -25,7 +25,7 @@ void Spotify_GetInfo(int *Command, char *AccessToken);
  * @param[in] code is parameter that we give it before .
  * @return This function does not return a value.
  */
-void SendRequest_ExchangeTokenWithRefreshToken(char *Buf, size_t SizeBuf, char *RefreshToken_);
+void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken_);
 
 /**
 * @brief This function searches for specific patterns ('code' and 'state') within a character array and returns a boolean value indicating if either pattern was found.
@@ -37,13 +37,10 @@ bool Spotify_FindCode(char *Res, uint16_t SizeRes);
 
 /**
 * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.
-* @param[in,out] Buf The character buffer to store the request and receive the response.
-* @param[in] SizeBuf The size of the character buffer.
-* @param[in] code is parameter that we give it before .
-* @param[in] SizeCode The size of the authorization code.
+* @param[in] code is parameter recived from Spotify api.
 * @return This function does not return a value.
 */
-void Spotify_SendTokenRequest(char *code, size_t SizeCode);
+void Spotify_SendTokenRequest(char *code);
 
 /**
 * @brief This function sends a request to the Spotify API to perform a player command.

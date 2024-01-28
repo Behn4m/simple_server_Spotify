@@ -112,7 +112,6 @@ static void Spotify_MainTask(void *pvparameters)
         {
         case IDLE:
             {
-                
                 if (xQueueReceive(SendCodeFromHttpToSpotifyTask, ReceivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)       // Waiting for Code to be recieved by queue
                 {
                     ESP_LOGI(TAG, "Received CODE by queue: %s\n", ReceivedData);
@@ -124,7 +123,6 @@ static void Spotify_MainTask(void *pvparameters)
             case AUTHENTICATED:
             {
                 ESP_LOGI(TAG, "AUTHENTICATED");
-
                 if (xQueueReceive(httpToSpotifyDataQueue, ReceivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)              // Waiting for Token to be recieved by queue
                 {
                     if (Spotify_ExtractAccessToken(ReceivedData, sizeof(ReceivedData)) == true)                     // extract all keys from spotify server response
@@ -194,7 +192,7 @@ static void Spotify_MainTask(void *pvparameters)
                 break;
             }
         }
-        vTaskDelay(pdMS_TO_TICKS(100));                                                                             // Task delay at the end of while(1) loop
+        // vTaskDelay(pdMS_TO_TICKS(100));                                                                             // Task delay at the end of while(1) loop
     }
 }
 

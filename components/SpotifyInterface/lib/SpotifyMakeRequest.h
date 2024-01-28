@@ -16,7 +16,7 @@ extern "C" {
 * @param[in]  Token is the access token received from Spotify during authorization progress 
 * @param[in]  Command is the specific player command to be executed (e.g., "next", "previous", "play", "pause").
 */
-void Spotify_GetInfo(int *Command, char *AccessToken);
+void Spotify_GetInfo(int Command, char *AccessToken);
 
 /**
  * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.

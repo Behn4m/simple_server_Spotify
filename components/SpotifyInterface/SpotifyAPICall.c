@@ -299,11 +299,10 @@ void Spotify_ControlPlayback(int Command, char *AccessToken)
 /**
  * @brief This function sends a request to the Spotify API to give Curent playing information
  */
-void Spotify_GetInfo(int *Command, char *AccessToken)
+void Spotify_GetInfo(int Command, char *AccessToken)
 {
     // fill clientPath and clientMethod variables based on the Spotify API document
     char clientPath[50] = {};
-    esp_http_client_method_t method = HTTP_METHOD_POST;
     if (Command == GetNowPlaying)
     {
         sprintf(clientPath, "/v1/me/player/currently-playing");

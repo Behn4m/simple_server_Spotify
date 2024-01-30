@@ -47,7 +47,7 @@ bool Spotify_FindCode(char *Response, uint16_t SizeRes)
  * @param[in] req The HTTP request object.
  * @return Returns ESP_OK if the request is processed successfully.
  */
-static esp_err_t Spotify_RequestDataAccess(httpd_req_t *req)
+static esp_err_t Spotify_RequestDataAccess(httpd_req_t *HttpdRequest)
 {
     char *localURL;
     localURL = (char *)malloc((2 * SMALL_BUF) * sizeof(char));
@@ -58,10 +58,10 @@ static esp_err_t Spotify_RequestDataAccess(httpd_req_t *req)
     memset(localURL, 0x0, SMALL_BUF * 2);
     ESP_LOGI(TAG, "Starting authorization, sending request for TOKEN");
     sprintf(localURL, "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state", ClientId, ReDirectUri);
-    httpd_resp_set_hdr(req, "Location", localURL);
-    httpd_resp_set_type(req, "text/plain");
-    httpd_resp_set_status(req, "302");
-    httpd_resp_send(req, "", HTTPD_RESP_USE_STRLEN);
+    httpd_resp_set_hdr(HttpdRequest, "Location", localURL);
+    httpd_resp_set_type(HttpdRequest, "text/plain");
+    httpd_resp_set_status(HttpdRequest, "302");
+    httpd_resp_send(HttpdRequest, "", HTTPD_RESP_USE_STRLEN);
     free(localURL);
     return ESP_OK;
 }
@@ -71,10 +71,10 @@ static esp_err_t Spotify_RequestDataAccess(httpd_req_t *req)
  * @param[in] req The HTTP request object.
  * @return Returns ESP_OK if the request is processed successfully.
  */
-static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *req)
+static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *HttpdRequest)
 {
     char queryBuffer[SMALL_BUF*2];
-    if (httpd_req_get_url_query_str(req, queryBuffer, sizeof(queryBuffer)) == ESP_OK)
+    if (httpd_req_get_url_query_str(HttpdRequest, queryBuffer, sizeof(queryBuffer)) == ESP_OK)
     {
         if (Spotify_FindCode(queryBuffer, sizeof(queryBuffer)) == true)
         {
@@ -115,15 +115,15 @@ static const httpd_uri_t Spotify_Response_Access_URI = {
     .handler = Spotify_HttpsCallbackHandler};
 
 /**
- * @brief This function starts the web server for handling HTTPS requests.
- * @return Returns the HTTP server handle if it is started successfully, or NULL otherwise.
+ * @brief This function starts the web HttpdServerHandler for handling HTTPS requests.
+ * @return Returns the HTTP HttpdServerHandler handle if it is started successfully, or NULL otherwise.
  */
 httpd_handle_t Spotify_StartWebServer()
 {
     httpd_handle_t httpdHandler = NULL;
     httpd_config_t httpdConfig = HTTPD_DEFAULT_CONFIG();
     httpdConfig.lru_purge_enable = true;
-    ESP_LOGI(TAG, "Starting server on port: '%d'", httpdConfig.server_port);
+    ESP_LOGI(TAG, "Starting HttpdServerHandler on port: '%d'", httpdConfig.server_port);
     if (httpd_start(&httpdHandler, &httpdConfig) == ESP_OK)
     {
         ESP_LOGI(TAG, "Registering URI handlers");
@@ -138,12 +138,12 @@ httpd_handle_t Spotify_StartWebServer()
 }
 
 /**
- * @brief This function stops the web server for handling HTTPS requests.
- * @return Returns the HTTP server handle if it is started successfully, or NULL otherwise.
+ * @brief This function stops the web HttpdServerHandler for handling HTTPS requests.
+ * @return Returns the HTTP HttpdServerHandler handle if it is started successfully, or NULL otherwise.
  */
- esp_err_t Spotify_StopSpotifyWebServer(httpd_handle_t server)
+ esp_err_t Spotify_StopSpotifyWebServer(httpd_handle_t HttpdServerHandler)
 {
-    return httpd_stop(server);
+    return httpd_stop(HttpdServerHandler);
 }
 
 /**

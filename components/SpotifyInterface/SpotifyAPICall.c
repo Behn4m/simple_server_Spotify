@@ -77,11 +77,11 @@ esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
 
 /**
  * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.
- * @param[in] code is parameter that we give it before .
+ * @param[in] Code is parameter that we give it before .
  * @param[in] SizeCode The size of the authorization code.
  * @return This function does not return a value.
  */
-void Spotify_SendTokenRequest(char *code)
+void Spotify_SendTokenRequest(char *Code)
 {  
     esp_http_client_config_t clientConfig = {
         .url = "https://accounts.spotify.com/api/token",                            
@@ -113,7 +113,7 @@ void Spotify_SendTokenRequest(char *code)
 
     // Set the request body (POST data)
     char Grand[MEDIUM_BUF] = {0};
-    sprintf(Grand, "grant_type=authorization_code&redirect_uri=%s&%s", ReDirectUri, code);
+    sprintf(Grand, "grant_type=authorization_code&redirect_uri=%s&%s", ReDirectUri, Code);
     esp_http_client_set_post_field(httpClient, Grand, strlen(Grand));
 
     // Enable detailed logging for debugging
@@ -134,7 +134,6 @@ void Spotify_SendTokenRequest(char *code)
 
 /**
  * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.
- * @param[in] code is parameter that we give it before .
  * @return This function does not return a value.
  */
 void SendRequest_ExchangeTokenWithRefreshToken(char *refreshToken)

@@ -28,7 +28,7 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken_);
 * @param[in] code is parameter recived from Spotify api.
 * @return This function does not return a value.
 */
-void Spotify_SendTokenRequest(char *code);
+void Spotify_SendTokenRequest(char *Code);
 
 /**
 * @brief This function sends a request to the Spotify API to perform a player command.

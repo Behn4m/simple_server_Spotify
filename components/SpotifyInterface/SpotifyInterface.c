@@ -26,7 +26,7 @@ void Spotify_CheckRefreshTokenExistence()
 {
     if (xSemaphoreTake(*(InterfaceHandler->WorkWithStorageInSpotifyComponentSemaphore), 1) == pdTRUE)
     {
-        PrivateHandler.status = EXPIRED;
+        PrivateHandler.Status = EXPIRED;
         SaveExistence = true;
     }
 }
@@ -39,7 +39,7 @@ void Spotify_CheckRefreshTokenExistence()
 bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
 {
     InterfaceHandler = SpotifyInterfaceHandler;
-    PrivateHandler.status = INIT;
+    PrivateHandler.Status = INIT;
     Spotify_CheckRefreshTokenExistence();
     if (InterfaceHandler->ConfigAddressInSpiffs != NULL &&
         InterfaceHandler->HttpsResponseReadySemaphore != NULL &&
@@ -111,13 +111,13 @@ static void Spotify_MainTask(void *pvparameters)
     while (1)
     {
         char receivedData[MEDIUM_BUF];
-        switch (PrivateHandler.status)
+        switch (PrivateHandler.Status)
         {
             case INIT:
             {
                 if (Spotify_HttpServerServiceInit() == true)                                                        // Init the webserver in initialization
                 {
-                    PrivateHandler.status = LOGIN;                                                                   // if webserver and mDNS run successfully, go to LOGIN
+                    PrivateHandler.Status = LOGIN;                                                                   // if webserver and mDNS run successfully, go to LOGIN
                 }
                 else
                 {
@@ -131,7 +131,7 @@ static void Spotify_MainTask(void *pvparameters)
                 {
                     ESP_LOGI(TAG, "Received CODE by queue: %s\n", receivedData);
                     Spotify_SendTokenRequest(receivedData);                                                         // send request for Token
-                    PrivateHandler.status = AUTHENTICATED;                                                          // Code received and checked, so update status to AUTHENTICATED         
+                    PrivateHandler.Status = AUTHENTICATED;                                                          // Code received and checked, so update Status to AUTHENTICATED         
                 }
                 break;
             }
@@ -143,18 +143,18 @@ static void Spotify_MainTask(void *pvparameters)
                     if (Spotify_ExtractAccessToken(receivedData, sizeof(receivedData)) == true)                     // extract all keys from spotify server response
                     {
                         ESP_LOGI(TAG, "Token found!");
-                        PrivateHandler.tokenLastUpdate = xTaskGetTickCount();
-                        PrivateHandler.status = AUTHORIZED;                                                         // Token recieved and checked, so update status to AUTHORIZED
+                        PrivateHandler.TokenLastUpdate = xTaskGetTickCount();
+                        PrivateHandler.Status = AUTHORIZED;                                                         // Token recieved and checked, so update Status to AUTHORIZED
                     }
                     else
                     {
                         ESP_LOGW(TAG, "Token not found!");
-                        PrivateHandler.status = LOGIN;                                                               // the reponse did not include all needed keys, so set status back to LOGIN
+                        PrivateHandler.Status = LOGIN;                                                               // the reponse did not include all needed keys, so set Status back to LOGIN
                     }            
                 }
                 else
                 {
-                    PrivateHandler.status = LOGIN;
+                    PrivateHandler.Status = LOGIN;
                     ESP_LOGW(TAG, "Timeout - Spotify did not respond within the expected time.!");
                 }
                 break;
@@ -167,11 +167,11 @@ static void Spotify_MainTask(void *pvparameters)
                                                                                                                     // and ready for sending commands 
                 if (SaveExistence != 1)
                 {
-                    PrivateHandler.status = SAVE_NEW_TOKEN;
+                    PrivateHandler.Status = SAVE_NEW_TOKEN;
                 }
                 else
                 {
-                    PrivateHandler.status = CHECK_TIME;
+                    PrivateHandler.Status = CHECK_TIME;
                 }
                 break;
             }
@@ -179,7 +179,7 @@ static void Spotify_MainTask(void *pvparameters)
             {
                 if (Spotify_IsTokenExpired() == true)                                                                 // Check if the expiration time has elapsed since the last received token
                 {
-                    PrivateHandler.status = EXPIRED;
+                    PrivateHandler.Status = EXPIRED;
                 }            
                 break;
             }
@@ -190,7 +190,7 @@ static void Spotify_MainTask(void *pvparameters)
                 SaveFileInSpiffsWithTxtFormat(InterfaceHandler->ConfigAddressInSpiffs,                              // Save new file in the directory
                                             "refresh_token", PrivateHandler.token.RefreshToken, 
                                             NULL, NULL);
-                PrivateHandler.status = CHECK_TIME;                                                                 // Set back the status to the CHECK_TIME
+                PrivateHandler.Status = CHECK_TIME;                                                                 // Set back the Status to the CHECK_TIME
                 break;
             }
             case EXPIRED:
@@ -198,11 +198,11 @@ static void Spotify_MainTask(void *pvparameters)
                 ESP_LOGW(TAG, "token is expired");
                 if (Spotify_TokenRenew() == true)                                                                   // Run function to renew the token
                 {
-                    PrivateHandler.status = AUTHORIZED;                                                             // set status to AUTHORIZED if token renewed successfully
+                    PrivateHandler.Status = AUTHORIZED;                                                             // set Status to AUTHORIZED if token renewed successfully
                 }
                 else
                 {
-                    PrivateHandler.status = LOGIN;                                                                   // set status to ILDLE if token renewed unsuccessfully
+                    PrivateHandler.Status = LOGIN;                                                                   // set Status to ILDLE if token renewed unsuccessfully
                 }
                 break;
             }
@@ -218,7 +218,7 @@ static void Spotify_MainTask(void *pvparameters)
 static bool Spotify_IsTokenExpired()
 {
     bool tokenExpired = false;
-    uint32_t elapsedTime = (xTaskGetTickCount() - PrivateHandler.tokenLastUpdate) * portTICK_PERIOD_MS;
+    uint32_t elapsedTime = (xTaskGetTickCount() - PrivateHandler.TokenLastUpdate) * portTICK_PERIOD_MS;
     elapsedTime = elapsedTime / 1000;
     if (elapsedTime > (HOUR - 300))
     {
@@ -244,7 +244,7 @@ static bool Spotify_TokenRenew(void)
         if (Spotify_ExtractAccessToken(receivedData, sizeof(receivedData)) == true)
         {
             ESP_LOGI(TAG, "new Token found!");
-            PrivateHandler.tokenLastUpdate = xTaskGetTickCount();
+            PrivateHandler.TokenLastUpdate = xTaskGetTickCount();
             return true;
         }
         else
@@ -307,7 +307,7 @@ bool Spotify_ExtractAccessToken(char *receivedData, size_t SizeOfReceivedData)
 bool Spotify_SendCommand(int command)
 {
     ESP_LOGI(TAG, "user Command is %d", command);
-    if (PrivateHandler.status == LOGIN || PrivateHandler.status == AUTHENTICATED)
+    if (PrivateHandler.Status == LOGIN || PrivateHandler.Status == AUTHENTICATED)
     {
         ESP_LOGE(TAG, "You are not authorized !");
         return false;

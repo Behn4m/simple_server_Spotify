@@ -136,7 +136,7 @@ void Spotify_SendTokenRequest(char *Code)
  * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.
  * @return This function does not return a value.
  */
-void SendRequest_ExchangeTokenWithRefreshToken(char *refreshToken)
+void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken)
 {
     esp_http_client_config_t clientConfig = {
         .url = "https://accounts.spotify.com/api/token",
@@ -166,7 +166,7 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *refreshToken)
 
     // Set the request body (POST data)
     char Grand[SMALL_BUF] = {0};
-    sprintf(Grand, "grant_type=refresh_token&refresh_token=%s&redirect_uri=%s", refreshToken, ReDirectUri);
+    sprintf(Grand, "grant_type=refresh_token&refresh_token=%s&redirect_uri=%s", RefreshToken, ReDirectUri);
     esp_http_client_set_post_field(httpClient, Grand, strlen(Grand));
 
     // Perform HTTP request

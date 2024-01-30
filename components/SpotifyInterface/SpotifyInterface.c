@@ -1,6 +1,14 @@
 #include <stdio.h>
 #include "SpotifyInterface.h"
 #include "SpiffsManger.h"
+
+// ****************************** Global Variables
+SpotifyInterfaceHandler_t *InterfaceHandler;
+SpotifyPrivateHandler_t PrivateHandler;
+QueueHandle_t SendCodeFromHttpToSpotifyTask = NULL;
+QueueHandle_t httpToSpotifyDataQueue = NULL;
+bool SaveExistence = 0;
+
 // ****************************** Local Variables
 static const char *TAG = "SpotifyTask";
 
@@ -9,13 +17,6 @@ static void Spotify_MainTask(void *pvparameters);
 static bool Spotify_TokenRenew(void);
 static bool Spotify_IsTokenExpired();
 bool Spotify_ExtractAccessToken(char *ReceivedData, size_t SizeOfReceivedData);
-
-// ****************************** Global Variables
-SpotifyInterfaceHandler_t *InterfaceHandler;
-SpotifyPrivateHandler_t PrivateHandler;
-QueueHandle_t SendCodeFromHttpToSpotifyTask = NULL;
-QueueHandle_t httpToSpotifyDataQueue = NULL;
-bool SaveExistence = 0;
 
 // ******************************
 void Spotify_CheckRefreshTokenExistence()

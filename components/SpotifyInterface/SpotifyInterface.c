@@ -130,7 +130,6 @@ static void Spotify_MainTask(void *pvparameters)
                 if (xQueueReceive(SendCodeFromHttpToSpotifyTask, ReceivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)       // Waiting for Code to be recieved by queue
                 {
                     ESP_LOGI(TAG, "Received CODE by queue: %s\n", ReceivedData);
-                    Spotify_StopMDNSService();                                                                      // stop mDNS service after code received
                     Spotify_SendTokenRequest(ReceivedData);                                                         // send request for Token
                     PrivateHandler.status = AUTHENTICATED;                                                          // Code received and checked, so update status to AUTHENTICATED         
                 }

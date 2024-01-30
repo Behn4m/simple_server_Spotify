@@ -25,11 +25,6 @@ esp_err_t Spotify_StopSpotifyWebServer(httpd_handle_t server);
  */
 bool Spotify_StartMDNSService();
 
-/**
- * @brief This function stops the mDNS service
- */
-void Spotify_StopMDNSService();
-
 #endif
 #ifdef __cplusplus
 }

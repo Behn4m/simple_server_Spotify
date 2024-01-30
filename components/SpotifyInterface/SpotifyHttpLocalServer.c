@@ -164,11 +164,3 @@ bool Spotify_StartMDNSService()
         return true;
     }
 }
-
-/**
- * @brief This function stops the mDNS service.
- */
-void Spotify_StopMDNSService()
-{
-    mdns_free();
-}

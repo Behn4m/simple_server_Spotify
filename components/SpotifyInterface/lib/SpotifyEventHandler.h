@@ -7,7 +7,7 @@ extern "C" {
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_event_base.h"
-#include "SpotifyMakeRequest.h"
+#include "SpotifyAPICall.h"
 #include"SpotifyTypedef.h"
 // ****************************************************************
  extern esp_event_loop_handle_t Spotify_EventLoopHandle;

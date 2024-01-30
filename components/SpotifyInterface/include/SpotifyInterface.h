@@ -5,9 +5,8 @@ extern "C"
 #ifndef HTTPS_SPOTIFY_H
 #define HTTPS_SPOTIFY_H
 
-#include "SpotifyMakeRequest.h"
+#include "SpotifyAPICall.h"
 #include "SpotifyEventHandler.h"
-#include "SpotifyMakeRequest.h"
 #include "JsonExtraction.h"
 #include "SpotifyTypedef.h"
 #include "SpotifyHttpLocalServer.h"

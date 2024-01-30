@@ -58,9 +58,9 @@ typedef struct Token_t
 {
     char AccessToken[ACCESS_TOKEN_STR_SIZE];
     char TokenType[TOKEN_TYPE_STR_SIZE];
-    int ExpiresInMS;
     char RefreshToken[REFRESH_TOKEN_STP_SIZE];
     char GrantedScope[GRANTED_SCOP_STR_SIZE];
+    int ExpiresInMS;
 } Token_t;
 
 typedef struct UserInfo_t
@@ -83,7 +83,6 @@ typedef enum
     save_new_token=3,
     expired_user = 4,
     check_time=5
-
 } Status_t;
 
 typedef void (*EventHandlerCallBackPtr)(char *Buffer);
@@ -95,15 +94,8 @@ typedef struct
     TickType_t tokenLastUpdate;     // System Tick of last token update
     UserInfo_t userInfo;            // Nested struct for user information
     Status_t status;                // state machine 
-
 } SpotifyPrivateHandler_t;
-typedef struct
-{
-    EventHandlerCallBackPtr EventHandlerCallBackFunction;
-    Token_t *token;
-    QueueHandle_t *HttpsBufQueue;
-    UserInfo_t UserInfo;
-} EventHandlerDataStruct_t;
+
 typedef struct
 {
     Status_t *status;

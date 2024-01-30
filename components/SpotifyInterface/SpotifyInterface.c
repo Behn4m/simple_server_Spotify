@@ -7,12 +7,11 @@ static const char *TAG = "SpotifyTask";
 // ****************************** Local Functions
 static void Spotify_MainTask(void *pvparameters);
 static bool Spotify_TokenRenew(void);
-static bool Spotify_IsTokenValid();
+static bool Spotify_IsTokenExpired();
 bool Spotify_ExtractAccessToken(char *ReceivedData, size_t SizeOfReceivedData);
 // ******************************
-SpotifyPrivateHandler_t PrivateHandler;
 SpotifyInterfaceHandler_t *InterfaceHandler;
-EventHandlerDataStruct_t EventHandlerData;
+SpotifyPrivateHandler_t PrivateHandler;
 HttpLocalServerParam_t HttpLocalServerParam;
 static httpd_handle_t SpotifyLocalServer = NULL;
 QueueHandle_t SendCodeFromHttpToSpotifyTask = NULL;
@@ -162,7 +161,7 @@ static void Spotify_MainTask(void *pvparameters)
             }
             case CHECK_TIME:
             {
-                if (Spotify_IsTokenValid() == true)                                                                 // Check if the expiration time has elapsed since the last received token
+                if (Spotify_IsTokenExpired() == true)                                                                 // Check if the expiration time has elapsed since the last received token
                 {
                     PrivateHandler.status = EXPIRED;
                 }            
@@ -198,10 +197,9 @@ static void Spotify_MainTask(void *pvparameters)
 
 /**
  * @brief This function check Time for
- * @param[in] bool ExpireFLG , this flag showing token is expire or not
- * @return ExpireFLG
+ * @return true if token expired, false otherwise
  * */
-static bool Spotify_IsTokenValid()
+static bool Spotify_IsTokenExpired()
 {
     bool tokenExpired = false;
     uint32_t ElapsedTime = (xTaskGetTickCount() - PrivateHandler.tokenLastUpdate) * portTICK_PERIOD_MS;

@@ -9,15 +9,15 @@ static void Spotify_MainTask(void *pvparameters);
 static bool Spotify_TokenRenew(void);
 static bool Spotify_IsTokenExpired();
 bool Spotify_ExtractAccessToken(char *ReceivedData, size_t SizeOfReceivedData);
-// ******************************
+
+// ****************************** Global Variables
 SpotifyInterfaceHandler_t *InterfaceHandler;
 SpotifyPrivateHandler_t PrivateHandler;
-static httpd_handle_t SpotifyLocalServer = NULL;
 QueueHandle_t SendCodeFromHttpToSpotifyTask = NULL;
 QueueHandle_t httpToSpotifyDataQueue = NULL;
 bool SaveExistence = 0;
-// ******************************
 
+// ******************************
 void Spotify_CheckRefreshTokenExistence()
 {
     if (xSemaphoreTake(*(InterfaceHandler->WorkWithStorageInSpotifyComponentSemaphore), 1) == pdTRUE)
@@ -81,8 +81,9 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
 void Spotify_HttpServerServiceInit()
 {
     SendCodeFromHttpToSpotifyTask = xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF]));
+    httpd_handle_t SpotifyLocalServer = Spotify_StartWebServer();
+
     Spotify_StartMDNSService();
-    SpotifyLocalServer = Spotify_StartWebServer();
     if (SpotifyLocalServer != NULL)
     {
         ESP_LOGI(TAG, "** Spotify local server created! **");

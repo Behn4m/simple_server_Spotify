@@ -1,6 +1,45 @@
-#include "SpotifyAPICall.h"
+#include "SpotifyHttpLocalServer.h"
+#include "SpotifyInterface.h"
+
 static const char *TAG = "SpotifyTask";
 // ******************************
+
+QueueHandle_t SendCodeFromHttpToSpotifyTask = NULL;
+
+/**
+ * @brief This function searches for specific patterns ('code' and 'state') within a character array and returns a boolean value indicating if either pattern was Found.
+ * @param[in] Response The character array to search within, and Response is response from first stage from spotify athurisiation
+ * @param[in] SizeRes The size of the character array.
+ * @return Returns true if either the 'code' or 'state' pattern was Found, and false otherwise.
+ */
+bool Spotify_FindCode(char *Response, uint16_t SizeRes)
+{
+    char *codeString = {"code"};
+    uint16_t codeLength = strlen(codeString);
+
+    if (Response == NULL || SizeRes < codeLength)
+    {
+        // Invalid input, either null pointer or insufficient buffer size
+        return false;
+    }
+    for (uint16_t i = 0; i <= SizeRes - codeLength; ++i)
+    {
+        bool Found = true;
+        for (uint16_t j = 0; j < codeLength; ++j)
+        {
+            if (Response[i + j] != codeString[j])
+            {
+                Found = false;
+                break;
+            }
+        }
+        if (Found)
+        {
+            return true;    // Found the access token substring
+        }
+    }
+    return false;           // Access token substring not Found
+}
 
 /**
  * @brief This function handles the first HTTPS request to Spotify and redirects the user to the authorization page.

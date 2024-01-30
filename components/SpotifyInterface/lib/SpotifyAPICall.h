@@ -11,12 +11,8 @@ extern "C" {
 #include "SpotifyInterface.h"
 #include"SpotifyTypedef.h"
 
-/**
-* @brief This function sends a request to the Spotify API to give Curent playing information 
-* @param[in]  Token is the access token received from Spotify during authorization progress 
-* @param[in]  Command is the specific player command to be executed (e.g., "next", "previous", "play", "pause").
-*/
-void Spotify_GetInfo(int Command, char *AccessToken);
+extern QueueHandle_t httpToSpotifyDataQueue;
+
 
 /**
  * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.
@@ -26,14 +22,6 @@ void Spotify_GetInfo(int Command, char *AccessToken);
  * @return This function does not return a value.
  */
 void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken_);
-
-/**
-* @brief This function searches for specific patterns ('code' and 'state') within a character array and returns a boolean value indicating if either pattern was found.
-* @param[in] Res The character array to search within, and Res is response from first stage from spotify athurisiation
-* @param[in] SizeRes The size of the character array.
-* @return Returns true if either the 'code' or 'state' pattern was found, and false otherwise.
-*/
-bool Spotify_FindCode(char *Res, uint16_t SizeRes);
 
 /**
 * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.
@@ -49,6 +37,13 @@ void Spotify_SendTokenRequest(char *code);
 * @return This function does not return a value.
 */
 void Spotify_ControlPlayback(int Command, char *AccessToken);
+
+/**
+* @brief This function sends a request to the Spotify API to give Curent playing information 
+* @param[in]  Token is the access token received from Spotify during authorization progress 
+* @param[in]  Command is the specific player command to be executed (e.g., "next", "previous", "play", "pause").
+*/
+void Spotify_GetInfo(int Command, char *AccessToken);
 
 #endif
 #ifdef __cplusplus

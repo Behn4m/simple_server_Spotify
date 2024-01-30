@@ -1,12 +1,14 @@
 #include <stdio.h>
+#include "SpotifyTypedef.h"
 #include "SpotifyInterface.h"
+#include "SpotifyAPICall.h"
+#include "SpotifyHttpLocalServer.h"
 #include "SpiffsManger.h"
+#include "JsonExtraction.h"
 
 // ****************************** Global Variables
 SpotifyInterfaceHandler_t *InterfaceHandler;
 SpotifyPrivateHandler_t PrivateHandler;
-QueueHandle_t SendCodeFromHttpToSpotifyTask = NULL;
-QueueHandle_t httpToSpotifyDataQueue = NULL;
 bool SaveExistence = 0;
 
 // ****************************** Local Variables
@@ -41,7 +43,6 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
     if (InterfaceHandler->ConfigAddressInSpiffs != NULL &&
         InterfaceHandler->HttpsResponseReadySemaphore != NULL &&
         InterfaceHandler->IsSpotifyAuthorizedSemaphore != NULL &&
-        InterfaceHandler->EventHandlerCallBackFunction != NULL &&
         InterfaceHandler->HttpsBufQueue != NULL)
     {
         StaticTask_t *xTaskBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));

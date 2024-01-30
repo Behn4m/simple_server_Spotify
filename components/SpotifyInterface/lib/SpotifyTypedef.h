@@ -96,6 +96,12 @@ typedef struct
     Status_t status;                // state machine 
 } SpotifyPrivateHandler_t;
 
+typedef struct
+{
+    Status_t *status;
+    QueueHandle_t *SendCodeFromHttpToSpotifyTask;
+} HttpLocalServerParam_t;
+
 typedef enum
 {
     NoCommand = 0,

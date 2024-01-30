@@ -1,6 +1,7 @@
 #include "SpotifyAPICall.h"
 
 static const char *TAG = "HTTP";
+QueueHandle_t httpToSpotifyDataQueue = NULL;
 
 // Include the server root certificate data
 extern const uint8_t server_root_cert_pem_start[] asm("_binary_server_root_cert_pem_start");
@@ -11,41 +12,6 @@ extern const uint8_t local_server_cert_pem_start[] asm("_binary_local_server_cer
 extern const uint8_t local_server_cert_pem_end[] asm("_binary_local_server_cert_pem_end");
 extern const uint8_t local_server_key_pem_start[] asm("_binary_local_server_key_pem_start");
 extern const uint8_t local_server_key_pem_end[] asm("_binary_local_server_key_pem_end");
-
-/**
- * @brief This function searches for specific patterns ('code' and 'state') within a character array and returns a boolean value indicating if either pattern was Found.
- * @param[in] Response The character array to search within, and Response is response from first stage from spotify athurisiation
- * @param[in] SizeRes The size of the character array.
- * @return Returns true if either the 'code' or 'state' pattern was Found, and false otherwise.
- */
-bool Spotify_FindCode(char *Response, uint16_t SizeRes)
-{
-    char *codeString = {"code"};
-    uint16_t codeLength = strlen(codeString);
-
-    if (Response == NULL || SizeRes < codeLength)
-    {
-        // Invalid input, either null pointer or insufficient buffer size
-        return false;
-    }
-    for (uint16_t i = 0; i <= SizeRes - codeLength; ++i)
-    {
-        bool Found = true;
-        for (uint16_t j = 0; j < codeLength; ++j)
-        {
-            if (Response[i + j] != codeString[j])
-            {
-                Found = false;
-                break;
-            }
-        }
-        if (Found)
-        {
-            return true;    // Found the access token substring
-        }
-    }
-    return false;           // Access token substring not Found
-}
 
 esp_err_t HttpEventHandler(esp_http_client_event_t *evt) 
 {

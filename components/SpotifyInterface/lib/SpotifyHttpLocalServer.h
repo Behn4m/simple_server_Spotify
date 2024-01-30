@@ -5,7 +5,8 @@ extern "C"
 #ifndef SPOTIFY_HTTP_SERVER
 #define SPOTIFY_HTTP_SERVER
 #include "SpotifyTypedef.h"
-#include "SpotifyAPICall.h"
+
+extern QueueHandle_t SendCodeFromHttpToSpotifyTask;
 
 /**
  * @brief This function starts the web server for handling HTTPS requests.

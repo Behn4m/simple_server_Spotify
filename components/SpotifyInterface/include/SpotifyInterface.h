@@ -5,11 +5,7 @@ extern "C"
 #ifndef HTTPS_SPOTIFY_H
 #define HTTPS_SPOTIFY_H
 
-#include "SpotifyAPICall.h"
-#include "SpotifyEventHandler.h"
-#include "JsonExtraction.h"
 #include "SpotifyTypedef.h"
-#include "SpotifyHttpLocalServer.h"
 
 #define NO_COMMAND 0
 #define PLAY_PAUSE 1
@@ -23,8 +19,6 @@ extern "C"
 #define GET_SONG_IMAGE_URL 9
 #define GET_ARTIST_IMAGE_URL 10
 
-extern QueueHandle_t httpToSpotifyDataQueue;
-extern QueueHandle_t SendCodeFromHttpToSpotifyTask;
 extern SpotifyPrivateHandler_t PrivateHandler;
 
 /**

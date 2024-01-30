@@ -15,15 +15,20 @@ extern QueueHandle_t SendCodeFromHttpToSpotifyTask;
 httpd_handle_t Spotify_StartWebServer();
 
 /**
+ * @brief This function stops the web server for handling HTTPS requests.
+ * @return Returns the HTTP server handle if it is started successfully, or NULL otherwise.
+ */
+esp_err_t Spotify_StopSpotifyWebServer(httpd_handle_t server);
+
+/**
  * @brief This function starts the mDNS service.
  */
 bool Spotify_StartMDNSService();
 
 /**
- * @brief This function stops the web server for handling HTTPS requests.
- * @return Returns the HTTP server handle if it is started successfully, or NULL otherwise.
+ * @brief This function stops the mDNS service
  */
-esp_err_t Spotify_StopSpotifyWebServer(httpd_handle_t server);
+void Spotify_StopMDNSService();
 
 #endif
 #ifdef __cplusplus

@@ -17,7 +17,7 @@ extern "C"
 #include "sdkconfig.h"
 #include "mdns.h"
 #include "freertos/queue.h"
-#include"esp_psram.h"
+#include "esp_psram.h"
 // **************************************************************** URI links
 #define ReDirectUri "http%3A%2F%2Fdeskhub.local%2Fcallback%2f"
 #define ClientId "55bb974a0667481ab0b2a49fd0abea6d"
@@ -26,33 +26,32 @@ extern "C"
 #define SPOTIFY_TASK_STACK_SIZE (uint32_t)(10*1000U)
 #define SPOTIFY_PRIORITY 4
 
-#define SEC 1000
-#define HOUR 3600
-#define LONG_BUF 2500
-#define MEDIUM_BUF 1000
-#define SMALL_BUF 250
+#define SEC                             1000
+#define HOUR                            3600
+#define LONG_BUF                        2500
+#define MEDIUM_BUF                      1000
+#define SMALL_BUF                       250
 
-#define ACCESS_TOKEN_STR_SIZE 512
-#define TOKEN_TYPE_STR_SIZE 20
-#define REFRESH_TOKEN_STP_SIZE 512
-#define GRANTED_SCOP_STR_SIZE 512
+#define ACCESS_TOKEN_STR_SIZE           512
+#define TOKEN_TYPE_STR_SIZE             20
+#define REFRESH_TOKEN_STP_SIZE          512
+#define GRANTED_SCOP_STR_SIZE           512
 
-#define DISPLAY_NAME_STR_SIZE 128
-#define PROFILE_STR_SIZE 256
-#define USER_ID_SIZE 128
-#define IMAGE1_STR_SIZE 256
-#define IMAGE2_STR_SIZE 25
-#define COUNTERY_STR_SIZE 30
-#define PRODUCT_STR_SIZE 30
+#define DISPLAY_NAME_STR_SIZE           128
+#define PROFILE_STR_SIZE                256
+#define USER_ID_SIZE                    128
+#define IMAGE1_STR_SIZE                 256
+#define IMAGE2_STR_SIZE                 25
+#define COUNTERY_STR_SIZE               30
+#define PRODUCT_STR_SIZE                30
 
-#define IDLE 0
-#define AUTHENTICATED 1
-#define AUTHORIZED 2
-#define SAVE_NEW_TOKEN 3
-#define EXPIRED 4
-#define CHECK_TIME 5
-
-#define EVENT_LOOP_QUEUE 5
+#define INIT                            0
+#define LOGIN                           1 
+#define AUTHENTICATED                   2
+#define AUTHORIZED                      3
+#define SAVE_NEW_TOKEN                  4
+#define EXPIRED                         5
+#define CHECK_TIME                      6
 
 typedef struct Token_t
 {
@@ -77,12 +76,13 @@ typedef struct UserInfo_t
 
 typedef enum
 {
-    IDLE_USER = 0,
-    AUTHENTICATED_USER = 1,
-    AUTHORIZED_USER = 2,
-    SAVE_NEW_TOKEN_USER =3 ,
-    EXPIRED_USER = 4,
-    CHECK_TIME_USER = 5
+    INIT_SERVICE = 0,
+    LOGIN_USER = 1,
+    AUTHENTICATED_USER = 2,
+    AUTHORIZED_USER = 3,
+    SAVE_NEW_TOKEN_USER = 4 ,
+    EXPIRED_USER = 5,
+    CHECK_TIME_USER = 6
 } Status_t;
 
 typedef void (*EventHandlerCallBackPtr)(char *Buffer);
@@ -96,37 +96,6 @@ typedef struct
     Status_t status;                // state machine 
 } SpotifyPrivateHandler_t;
 
-typedef struct
-{
-    Status_t *status;
-    QueueHandle_t *SendCodeFromHttpToSpotifyTask;
-} HttpLocalServerParam_t;
-
-typedef enum
-{
-    NoCommand = 0,
-    PlayPause = 1,
-    PlayNext = 2,
-    PlayPrev = 3,
-    Stop = 4,
-    Play = 5,
-    Pause = 6,
-    GetNowPlaying = 7,
-    GetUserInfo = 8,
-    GetSongImageUrl = 9,
-    GetArtisImageUrl = 10,
-    GetUserTopItems = 11
-} Command_t;
-
-typedef struct
-{
-    QueueHandle_t *HttpsBufQueue;
-    SemaphoreHandle_t *HttpsResponseReadySemaphore;
-    SemaphoreHandle_t *IsSpotifyAuthorizedSemaphore;
-    SemaphoreHandle_t *WorkWithStorageInSpotifyComponentSemaphore;
-    char *ConfigAddressInSpiffs;
-    EventHandlerCallBackPtr EventHandlerCallBackFunction;
-} SpotifyInterfaceHandler_t;
 
 #endif
 #ifdef __cplusplus

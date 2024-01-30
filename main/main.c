@@ -34,7 +34,6 @@ void app_main(void)
     SpotifyInterfaceHandler.IsSpotifyAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;
     SpotifyInterfaceHandler.WorkWithStorageInSpotifyComponentSemaphore = &WorkWithStorageInSpotifyComponentSemaphore;
     SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
-    SpotifyInterfaceHandler.EventHandlerCallBackFunction = CallbackTest;
     Spotify_TaskInit(&SpotifyInterfaceHandler);
     // after this semaphore you can use playback command function in every where !
     if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
@@ -48,8 +47,8 @@ void app_main(void)
         Spotify_SendCommand(PlayNext);
         vTaskDelay((pdMS_TO_TICKS(SEC * 3)));        
         Spotify_SendCommand(GetUserInfo);
-        vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
-        Spotify_SendCommand(GetNowPlaying);
+        // vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
+        // Spotify_SendCommand(GetNowPlaying);
     }
 #endif
 }

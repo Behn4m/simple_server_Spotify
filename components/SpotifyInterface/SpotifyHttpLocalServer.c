@@ -1,5 +1,6 @@
 #include "SpotifyHttpLocalServer.h"
 #include "SpotifyInterface.h"
+#include "SpotifyTypedef.h"
 
 static const char *TAG = "SpotifyTask";
 // ******************************
@@ -55,20 +56,12 @@ static esp_err_t Spotify_RequestDataAccess(httpd_req_t *req)
         ESP_LOGI(TAG, "Failed to allocate memory for the array.\n\n");
     }
     memset(LocalURL, 0x0, SMALL_BUF * 2);
-    if ((PrivateHandler.status) == IDLE)
-    {
-
-        ESP_LOGI(TAG, "Starting authorization, sending request for TOKEN");
-        sprintf(LocalURL, "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state", ClientId, ReDirectUri);
-        httpd_resp_set_hdr(req, "Location", LocalURL);
-        httpd_resp_set_type(req, "text/plain");
-        httpd_resp_set_status(req, "302");
-        httpd_resp_send(req, "", HTTPD_RESP_USE_STRLEN);
-    }
-    else
-    {
-        ESP_LOGW(TAG, "Spotify is already initiated");
-    }
+    ESP_LOGI(TAG, "Starting authorization, sending request for TOKEN");
+    sprintf(LocalURL, "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state", ClientId, ReDirectUri);
+    httpd_resp_set_hdr(req, "Location", LocalURL);
+    httpd_resp_set_type(req, "text/plain");
+    httpd_resp_set_status(req, "302");
+    httpd_resp_send(req, "", HTTPD_RESP_USE_STRLEN);
     free(LocalURL);
     return ESP_OK;
 }
@@ -170,4 +163,12 @@ bool Spotify_StartMDNSService()
         mdns_instance_name_set("Spotify");
         return true;
     }
+}
+
+/**
+ * @brief This function stops the mDNS service.
+ */
+void Spotify_StopMDNSService()
+{
+    mdns_free();
 }

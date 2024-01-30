@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include "cJSON.h"
 #include"JsonExtraction.h"
+#include "SpotifyTypedef.h"
 
 static const char *TAG = "JsonExTraction";
 

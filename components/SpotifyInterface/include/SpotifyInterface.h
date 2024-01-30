@@ -5,7 +5,12 @@ extern "C"
 #ifndef HTTPS_SPOTIFY_H
 #define HTTPS_SPOTIFY_H
 
-#include "SpotifyTypedef.h"
+#include <esp_event.h>
+#include <esp_log.h>
+#include <esp_system.h>
+#include <sys/param.h>
+#include "freertos/queue.h"
+#include "esp_psram.h"
 
 #define NO_COMMAND 0
 #define PLAY_PAUSE 1
@@ -19,7 +24,29 @@ extern "C"
 #define GET_SONG_IMAGE_URL 9
 #define GET_ARTIST_IMAGE_URL 10
 
-extern SpotifyPrivateHandler_t PrivateHandler;
+typedef enum
+{
+    NoCommand = 0,
+    PlayPause = 1,
+    PlayNext = 2,
+    PlayPrev = 3,
+    Stop = 4,
+    Play = 5,
+    Pause = 6,
+    GetNowPlaying = 7,
+    GetUserInfo = 8,
+    GetSongImageUrl = 9,
+    GetArtisImageUrl = 10,
+    GetUserTopItems = 11
+} Command_t;
+typedef struct
+{
+    QueueHandle_t *HttpsBufQueue;
+    SemaphoreHandle_t *HttpsResponseReadySemaphore;
+    SemaphoreHandle_t *IsSpotifyAuthorizedSemaphore;
+    SemaphoreHandle_t *WorkWithStorageInSpotifyComponentSemaphore;
+    char *ConfigAddressInSpiffs;
+} SpotifyInterfaceHandler_t;
 
 /**
  * @brief This function initiates the Spotify authorization process.

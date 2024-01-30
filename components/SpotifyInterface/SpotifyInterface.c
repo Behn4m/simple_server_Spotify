@@ -5,6 +5,7 @@
 #include "SpotifyHttpLocalServer.h"
 #include "SpiffsManger.h"
 #include "JsonExtraction.h"
+#include "SpotifyTypedef.h"
 
 // ****************************** Global Variables
 SpotifyInterfaceHandler_t *InterfaceHandler;
@@ -38,7 +39,7 @@ void Spotify_CheckRefreshTokenExistence()
 bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
 {
     InterfaceHandler = SpotifyInterfaceHandler;
-    PrivateHandler.status = IDLE;
+    PrivateHandler.status = INIT;
     Spotify_CheckRefreshTokenExistence();
     if (InterfaceHandler->ConfigAddressInSpiffs != NULL &&
         InterfaceHandler->HttpsResponseReadySemaphore != NULL &&
@@ -80,20 +81,25 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
 /**
  * @brief Run Http local service
  */
-void Spotify_HttpServerServiceInit()
+bool Spotify_HttpServerServiceInit()
 {
     SendCodeFromHttpToSpotifyTask = xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF]));
+    
     httpd_handle_t SpotifyLocalServer = Spotify_StartWebServer();
+    if (SpotifyLocalServer == NULL)
+    {
+        ESP_LOGE(TAG, "Creating Spotify local server failed!");
+        return false;
+    }
+    
+    if (Spotify_StartMDNSService() == false)
+    {
+        ESP_LOGE(TAG, "Running mDNS failed!");
+        return false;
+    };
 
-    Spotify_StartMDNSService();
-    if (SpotifyLocalServer != NULL)
-    {
-        ESP_LOGI(TAG, "** Spotify local server created! **");
-    }
-    else
-    {
-        ESP_LOGW(TAG, "Creating Spotify local server failed!");
-    }
+    ESP_LOGI(TAG, "** Spotify local server created, mDNS is running! **");
+    return true;
 }
 
 /**
@@ -102,17 +108,29 @@ void Spotify_HttpServerServiceInit()
  */
 static void Spotify_MainTask(void *pvparameters)
 {
-    Spotify_HttpServerServiceInit();
     while (1)
     {
         char ReceivedData[MEDIUM_BUF];
         switch (PrivateHandler.status)
         {
-        case IDLE:
+            case INIT:
+            {
+                if (Spotify_HttpServerServiceInit() == true)                                                        // Init the webserver in initialization
+                {
+                    PrivateHandler.status = LOGIN;                                                                   // if webserver and mDNS run successfully, go to LOGIN
+                }
+                else
+                {
+                    ESP_LOGE(TAG, "Authorization initialization failed!");
+                }
+                break;
+            }
+            case LOGIN:
             {
                 if (xQueueReceive(SendCodeFromHttpToSpotifyTask, ReceivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)       // Waiting for Code to be recieved by queue
                 {
                     ESP_LOGI(TAG, "Received CODE by queue: %s\n", ReceivedData);
+                    Spotify_StopMDNSService();                                                                      // stop mDNS service after code received
                     Spotify_SendTokenRequest(ReceivedData);                                                         // send request for Token
                     PrivateHandler.status = AUTHENTICATED;                                                          // Code received and checked, so update status to AUTHENTICATED         
                 }
@@ -132,12 +150,12 @@ static void Spotify_MainTask(void *pvparameters)
                     else
                     {
                         ESP_LOGW(TAG, "Token not found!");
-                        PrivateHandler.status = IDLE;                                                               // the reponse did not include all needed keys, so set status back to IDLE
+                        PrivateHandler.status = LOGIN;                                                               // the reponse did not include all needed keys, so set status back to LOGIN
                     }            
                 }
                 else
                 {
-                    PrivateHandler.status = IDLE;
+                    PrivateHandler.status = LOGIN;
                     ESP_LOGW(TAG, "Timeout - Spotify did not respond within the expected time.!");
                 }
                 break;
@@ -185,12 +203,12 @@ static void Spotify_MainTask(void *pvparameters)
                 }
                 else
                 {
-                    PrivateHandler.status = IDLE;                                                                   // set status to ILDLE if token renewed unsuccessfully
+                    PrivateHandler.status = LOGIN;                                                                   // set status to ILDLE if token renewed unsuccessfully
                 }
                 break;
             }
-        }
-        // vTaskDelay(pdMS_TO_TICKS(100));                                                                             // Task delay at the end of while(1) loop
+        }   
+        vTaskDelay(pdMS_TO_TICKS(100));                                                                             // Task delay at the end of while(1) loop
     }
 }
 
@@ -264,7 +282,7 @@ bool Spotify_ExtractAccessToken(char *ReceivedData, size_t SizeOfReceivedData)
     }
     else
     {
-        ESP_LOGE(TAG, "TOKEN extraction failed, back to IDLE state");
+        ESP_LOGE(TAG, "TOKEN extraction failed, back to LOGIN state");
         return false;
         // TO DO: the handler should reset here
     }
@@ -290,7 +308,7 @@ bool Spotify_ExtractAccessToken(char *ReceivedData, size_t SizeOfReceivedData)
 bool Spotify_SendCommand(int command)
 {
     ESP_LOGI(TAG, "user Command is %d", command);
-    if (PrivateHandler.status == IDLE || PrivateHandler.status == AUTHENTICATED)
+    if (PrivateHandler.status == LOGIN || PrivateHandler.status == AUTHENTICATED)
     {
         ESP_LOGE(TAG, "You are not authorized !");
         return false;

@@ -19,7 +19,7 @@ static const char *TAG = "SpotifyTask";
 static void Spotify_MainTask(void *pvparameters);
 static bool Spotify_TokenRenew(void);
 static bool Spotify_IsTokenExpired();
-bool Spotify_ExtractAccessToken(char *ReceivedData, size_t SizeOfReceivedData);
+bool Spotify_ExtractAccessToken(char *receivedData, size_t SizeOfReceivedData);
 
 // ******************************
 void Spotify_CheckRefreshTokenExistence()
@@ -85,8 +85,8 @@ bool Spotify_HttpServerServiceInit()
 {
     SendCodeFromHttpToSpotifyTask = xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF]));
     
-    httpd_handle_t SpotifyLocalServer = Spotify_StartWebServer();
-    if (SpotifyLocalServer == NULL)
+    httpd_handle_t spotifyLocalServer = Spotify_StartWebServer();
+    if (spotifyLocalServer == NULL)
     {
         ESP_LOGE(TAG, "Creating Spotify local server failed!");
         return false;
@@ -110,7 +110,7 @@ static void Spotify_MainTask(void *pvparameters)
 {
     while (1)
     {
-        char ReceivedData[MEDIUM_BUF];
+        char receivedData[MEDIUM_BUF];
         switch (PrivateHandler.status)
         {
             case INIT:
@@ -127,10 +127,10 @@ static void Spotify_MainTask(void *pvparameters)
             }
             case LOGIN:
             {
-                if (xQueueReceive(SendCodeFromHttpToSpotifyTask, ReceivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)       // Waiting for Code to be recieved by queue
+                if (xQueueReceive(SendCodeFromHttpToSpotifyTask, receivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)       // Waiting for Code to be recieved by queue
                 {
-                    ESP_LOGI(TAG, "Received CODE by queue: %s\n", ReceivedData);
-                    Spotify_SendTokenRequest(ReceivedData);                                                         // send request for Token
+                    ESP_LOGI(TAG, "Received CODE by queue: %s\n", receivedData);
+                    Spotify_SendTokenRequest(receivedData);                                                         // send request for Token
                     PrivateHandler.status = AUTHENTICATED;                                                          // Code received and checked, so update status to AUTHENTICATED         
                 }
                 break;
@@ -138,9 +138,9 @@ static void Spotify_MainTask(void *pvparameters)
             case AUTHENTICATED:
             {
                 ESP_LOGI(TAG, "AUTHENTICATED");
-                if (xQueueReceive(httpToSpotifyDataQueue, ReceivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)              // Waiting for Token to be recieved by queue
+                if (xQueueReceive(httpToSpotifyDataQueue, receivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)              // Waiting for Token to be recieved by queue
                 {
-                    if (Spotify_ExtractAccessToken(ReceivedData, sizeof(ReceivedData)) == true)                     // extract all keys from spotify server response
+                    if (Spotify_ExtractAccessToken(receivedData, sizeof(receivedData)) == true)                     // extract all keys from spotify server response
                     {
                         ESP_LOGI(TAG, "Token found!");
                         PrivateHandler.tokenLastUpdate = xTaskGetTickCount();
@@ -218,9 +218,9 @@ static void Spotify_MainTask(void *pvparameters)
 static bool Spotify_IsTokenExpired()
 {
     bool tokenExpired = false;
-    uint32_t ElapsedTime = (xTaskGetTickCount() - PrivateHandler.tokenLastUpdate) * portTICK_PERIOD_MS;
-    ElapsedTime = ElapsedTime / 1000;
-    if (ElapsedTime > (HOUR - 300))
+    uint32_t elapsedTime = (xTaskGetTickCount() - PrivateHandler.tokenLastUpdate) * portTICK_PERIOD_MS;
+    elapsedTime = elapsedTime / 1000;
+    if (elapsedTime > (HOUR - 300))
     {
         tokenExpired = true;
     }
@@ -233,15 +233,15 @@ static bool Spotify_IsTokenExpired()
  */
 static bool Spotify_TokenRenew(void)
 {
-    char ReceivedData[LONG_BUF];
-    ReadTxtFileFromSpiffs(InterfaceHandler->ConfigAddressInSpiffs, "refresh_token", ReceivedData, NULL, NULL);
-    ESP_LOGI(TAG, "RefreshToken=%s", ReceivedData);
-    SendRequest_ExchangeTokenWithRefreshToken(ReceivedData);
-    memset(ReceivedData, 0x0, LONG_BUF);
+    char receivedData[LONG_BUF];
+    ReadTxtFileFromSpiffs(InterfaceHandler->ConfigAddressInSpiffs, "refresh_token", receivedData, NULL, NULL);
+    ESP_LOGI(TAG, "RefreshToken=%s", receivedData);
+    SendRequest_ExchangeTokenWithRefreshToken(receivedData);
+    memset(receivedData, 0x0, LONG_BUF);
 
-    if (xQueueReceive(httpToSpotifyDataQueue, ReceivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)
+    if (xQueueReceive(httpToSpotifyDataQueue, receivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)
     {
-        if (Spotify_ExtractAccessToken(ReceivedData, sizeof(ReceivedData)) == true)
+        if (Spotify_ExtractAccessToken(receivedData, sizeof(receivedData)) == true)
         {
             ESP_LOGI(TAG, "new Token found!");
             PrivateHandler.tokenLastUpdate = xTaskGetTickCount();
@@ -266,10 +266,10 @@ static bool Spotify_TokenRenew(void)
  *        register
  * @return True if token received and saved, false for otherwise
  */
-bool Spotify_ExtractAccessToken(char *ReceivedData, size_t SizeOfReceivedData)
+bool Spotify_ExtractAccessToken(char *receivedData, size_t SizeOfReceivedData)
 {
     // extract keys from JSON
-    if (ExtractAccessTokenParamsTokenFromJson(ReceivedData, SizeOfReceivedData,
+    if (ExtractAccessTokenParamsTokenFromJson(receivedData, SizeOfReceivedData,
                                               PrivateHandler.token.AccessToken,
                                               PrivateHandler.token.TokenType,
                                               PrivateHandler.token.RefreshToken,

@@ -1,7 +1,6 @@
 #include "SpotifyAPICall.h"
 static const char *TAG = "SpotifyTask";
 // ******************************
-HttpLocalServerParam_t HttpLocalServerLocalParam;
 
 /**
  * @brief This function handles the first HTTPS request to Spotify and redirects the user to the authorization page.
@@ -17,7 +16,7 @@ static esp_err_t Spotify_RequestDataAccess(httpd_req_t *req)
         ESP_LOGI(TAG, "Failed to allocate memory for the array.\n\n");
     }
     memset(LocalURL, 0x0, SMALL_BUF * 2);
-    if (((*HttpLocalServerLocalParam.status) == IDLE))
+    if ((PrivateHandler.status) == IDLE)
     {
 
         ESP_LOGI(TAG, "Starting authorization, sending request for TOKEN");
@@ -47,25 +46,22 @@ static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *req)
     {
         if (Spotify_FindCode(Buf, sizeof(Buf)) == true)
         {
-            if (xQueueSend(*(HttpLocalServerLocalParam.SendCodeFromHttpToSpotifyTask), Buf,  pdMS_TO_TICKS(SEC*15)) != pdTRUE)
+            if (xQueueSend(SendCodeFromHttpToSpotifyTask, Buf,  pdMS_TO_TICKS(SEC*15)) != pdTRUE)
             {
-                ESP_LOGE(TAG, "Sent data with queue failed !");
+                ESP_LOGE(TAG, "Sent data with queue failed!");
             }
             ESP_LOGI(TAG, "the CODE found in response");
-            // (*HttpLocalServerLocalParam.status) = AUTHENTICATED;
         }
         else
         {
             ESP_LOGE(TAG, "response does not include code at the beginning ");
-            (*HttpLocalServerLocalParam.status) = IDLE;
             return ESP_FAIL;
         }
     }
     else
     {
-
         ESP_LOGW(TAG, "bad arguments - the response does not include correct structure");
-        (*HttpLocalServerLocalParam.status) = IDLE;
+        return ESP_FAIL;
     }
     return ESP_OK;
 }
@@ -85,16 +81,6 @@ static const httpd_uri_t Spotify_Response_Access_URI = {
     .uri = "/callback/",
     .method = HTTP_GET,
     .handler = Spotify_HttpsCallbackHandler};
-
-/**
- * @brief Setup parameter for starting Http Local server
- * @param[in] HttpLocalServerParam_t HttpLocalServerParam_t
- */
-void Spotify_SetupHttpLocalServer(HttpLocalServerParam_t HttpLocalServerParam_t)
-{
-    HttpLocalServerLocalParam.SendCodeFromHttpToSpotifyTask = HttpLocalServerParam_t.SendCodeFromHttpToSpotifyTask;
-    HttpLocalServerLocalParam.status = HttpLocalServerParam_t.status;
-}
 
 /**
  * @brief This function starts the web server for handling HTTPS requests.

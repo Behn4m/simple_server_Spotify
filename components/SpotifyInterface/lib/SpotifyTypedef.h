@@ -77,12 +77,12 @@ typedef struct UserInfo_t
 
 typedef enum
 {
-    idle = 0,
-    authorized = 1,
-    active_user = 2,
-    save_new_token=3,
-    expired_user = 4,
-    check_time=5
+    IDLE_USER = 0,
+    AUTHENTICATED_USER = 1,
+    AUTHORIZED_USER = 2,
+    SAVE_NEW_TOKEN_USER =3 ,
+    EXPIRED_USER = 4,
+    CHECK_TIME_USER = 5
 } Status_t;
 
 typedef void (*EventHandlerCallBackPtr)(char *Buffer);
@@ -95,12 +95,6 @@ typedef struct
     UserInfo_t userInfo;            // Nested struct for user information
     Status_t status;                // state machine 
 } SpotifyPrivateHandler_t;
-
-typedef struct
-{
-    Status_t *status;
-    QueueHandle_t *SendCodeFromHttpToSpotifyTask;
-} HttpLocalServerParam_t;
 
 typedef enum
 {

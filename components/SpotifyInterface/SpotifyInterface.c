@@ -12,7 +12,6 @@ bool Spotify_ExtractAccessToken(char *ReceivedData, size_t SizeOfReceivedData);
 // ******************************
 SpotifyInterfaceHandler_t *InterfaceHandler;
 SpotifyPrivateHandler_t PrivateHandler;
-HttpLocalServerParam_t HttpLocalServerParam;
 static httpd_handle_t SpotifyLocalServer = NULL;
 QueueHandle_t SendCodeFromHttpToSpotifyTask = NULL;
 QueueHandle_t httpToSpotifyDataQueue = NULL;
@@ -82,9 +81,6 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
 void Spotify_HttpServerServiceInit()
 {
     SendCodeFromHttpToSpotifyTask = xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF]));
-    HttpLocalServerParam.SendCodeFromHttpToSpotifyTask = &SendCodeFromHttpToSpotifyTask;
-    HttpLocalServerParam.status = &(PrivateHandler.status);
-    Spotify_SetupHttpLocalServer(HttpLocalServerParam);
     Spotify_StartMDNSService();
     SpotifyLocalServer = Spotify_StartWebServer();
     if (SpotifyLocalServer != NULL)

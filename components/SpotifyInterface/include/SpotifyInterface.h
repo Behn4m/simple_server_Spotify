@@ -24,6 +24,8 @@ extern "C"
 #define GET_ARTIST_IMAGE_URL 10
 
 extern QueueHandle_t httpToSpotifyDataQueue;
+extern QueueHandle_t SendCodeFromHttpToSpotifyTask;
+extern SpotifyPrivateHandler_t PrivateHandler;
 
 /**
  * @brief This function initiates the Spotify authorization process.

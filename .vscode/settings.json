@@ -2,7 +2,6 @@
     "idf.adapterTargetName": "esp32s3",
     "idf.openOcdConfigs": [
         "board/esp32s3-builtin.cfg",
-        "target/esp32s3.cfg"
     ],
     "idf.flashType": "UART",
     "idf.port": "/dev/ttyACM0",

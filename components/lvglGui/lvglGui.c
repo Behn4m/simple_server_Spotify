@@ -32,10 +32,7 @@ static void lv_tick_task(void *arg)
 #include "lvgl.h"
 #include "lvgl/src/font/lv_font.h"
 #include "image_test.h"
-uint16_t ColorConvertor(uint16_t InputColor)
-{
 
-}
 void lv_example_style_11111(void)
 {
     /*A base style*/
@@ -100,8 +97,8 @@ static void create_demo_application(void)
     // lv_obj_set_width(label2, 500);
     // lv_label_set_text(label2, "It is a circularly scrolling text. ");
     // lv_obj_align(label2, LV_ALIGN_CENTER, 0, 40);
-    lv_example_style_11111();
-    // lv_demo_music();
+    // lv_example_style_11111();
+    lv_demo_music();
 }
 
 /**

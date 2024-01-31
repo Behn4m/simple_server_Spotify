@@ -266,10 +266,10 @@ static bool Spotify_TokenRenew(void)
  *        register
  * @return True if token received and saved, false for otherwise
  */
-bool Spotify_ExtractAccessToken(char *receivedData, size_t SizeOfReceivedData)
+bool Spotify_ExtractAccessToken(char *ReceivedData, size_t SizeOfReceivedData)
 {
     // extract keys from JSON
-    if (ExtractAccessTokenParamsTokenFromJson(receivedData, SizeOfReceivedData,
+    if (ExtractAccessTokenParamsTokenFromJson(ReceivedData, SizeOfReceivedData,
                                               PrivateHandler.token.AccessToken,
                                               PrivateHandler.token.TokenType,
                                               PrivateHandler.token.RefreshToken,
@@ -304,27 +304,27 @@ bool Spotify_ExtractAccessToken(char *receivedData, size_t SizeOfReceivedData)
  * - GET_SONG_IMAGE_URL: Sends the GET_SONG_IMAGE_URL command to Spotify.
  * - GET_ARTIST_IMAGE_URL: Sends the GET_ARTIST_IMAGE_URL command to Spotify.
  */
-bool Spotify_SendCommand(int command)
+bool Spotify_SendCommand(int Command)
 {
-    ESP_LOGI(TAG, "user Command is %d", command);
+    ESP_LOGI(TAG, "user Command is %d", Command);
     if (PrivateHandler.Status == LOGIN || PrivateHandler.Status == AUTHENTICATED)
     {
         ESP_LOGE(TAG, "You are not authorized !");
         return false;
     }
-    switch (command)
+    switch (CCOMPARE_1)
     {
         case Play:
         case Pause:
         case PlayNext:
         case PlayPrev:
-            Spotify_ControlPlayback(command, PrivateHandler.token.AccessToken);
+            Spotify_ControlPlayback(Command, PrivateHandler.token.AccessToken);
             // TO DO: process and store Spotify api service response
             break;
         case GetNowPlaying:
         case GetUserInfo:
         case GetUserTopItems:
-            Spotify_GetInfo(command, PrivateHandler.token.AccessToken);
+            Spotify_GetInfo(Command, PrivateHandler.token.AccessToken);
             // TO DO: process and store Spotify api service response 
             break;
         case GetSongImageUrl:

@@ -1,11 +1,15 @@
 {
-    "idf.adapterTargetName": "esp32s3",
+    "idf.espIdfPath": "/home/mj/esp/esp-idf",
+    "idf.customExtraPaths": "UPDATED_PATH",
+    "idf.customExtraVars": {
+        "OPENOCD_SCRIPTS": "/home/mj/.espressif/tools/openocd-esp32/v0.12.0-esp32-20230921/share/openocd/scripts"
+    },
+    "idf.pythonBinPath": "PYTHON_INTERPRETER",
     "idf.openOcdConfigs": [
-        "interface/ftdi/esp32_devkitj_v1.cfg",
+        "board/esp32s3-builtin.cfg",
         "target/esp32s3.cfg"
     ],
-    "idf.flashType": "UART",
-    "idf.port": "/dev/ttyACM0",
+    "idf.port": "DEVICE_PORT",
     "files.associations": {
         "mdns.h": "c",
         "typeinfo": "c",
@@ -45,20 +49,16 @@
         "projdefs.h": "c",
         "cstdio": "c",
         "esp_tls.h": "c",
-        "param.h": "c",
-        "gpio.h": "c",
-        "rm67162.h": "c",
-        "rm67162lilygo.h": "c",
-        "lvgl_helpers.h": "c",
+        "*.tcc": "c",
+        "esp_system.h": "c",
         "esp_timer.h": "c",
-        "lv_examples.h": "c",
-        "lv_example_libs.h": "c",
-        "lvglgui.h": "c",
-        "lv_example_event.h": "c",
-        "lv_example_style.h": "c",
         "string.h": "c",
-        "lv_font.h": "c",
-        "lv_example_get_started.h": "c"
+        "time.h": "c",
+        "esp_sntp.h": "c",
+        "sys.h": "c",
+        "esp_http_client.h": "c",
+        "esp_eth.h": "c",
+        "spotifyapicall.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",
@@ -84,5 +84,5 @@
         "titleBar.inactiveForeground": "#15202b99"
     },
     "peacock.color": "#61dafb",
-    "C_Cpp.dimInactiveRegions": false
+    "idf.adapterTargetName": "esp32s3"
 }

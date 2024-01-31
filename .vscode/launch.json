@@ -4,7 +4,22 @@
         {
             "type": "espidf",
             "name": "Launch",
-            "request": "launch"
+            "request": "launch",
+            "debugPort": 9998,
+            "logLevel": 2,
+            "mode": "manual",
+            "verifyAppBinBeforeDebug": false,
+            "tmoScaleFactor": 1,
+            "initGdbCommands": [
+                "target remote :3333",
+                "/home/mj/esp/project1/simple_server_Spotify/build/https_server.elf",
+                "mon reset halt",
+                "flushregs",
+                "thb main"
+            ],
+            "env": {
+                "CUSTOM_ENV_VAR": "SOME_VALUE"
+            }
         },
         {
             "name": "C/C++: gcc build and debug active file",

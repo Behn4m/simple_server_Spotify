@@ -34,100 +34,70 @@ static void lv_tick_task(void *arg)
 #include "image_test.h"
 uint16_t ColorConvertor(uint16_t InputColor)
 {
-    struct Color_t
-    {
-        uint16_t Green;
-        uint16_t Red;
-        uint16_t Blue;
-    } Color;
-    Color.Red = InputColor & 0xf800;
-    Color.Green = InputColor & 0x0c70;
-    Color.Blue = InputColor & 0x003f;
-    uint16_t ConvertedColor = 0;
-    ConvertedColor |= (Color.Blue << 11);
-    ConvertedColor |= (Color.Red >> 5);
-    ConvertedColor |= (Color.Green >> 4);
-    return ConvertedColor;
+
 }
-/*
- * * * * * * *  * * * * *
- *                      *
- * * * * * * *  * * * * *
- *                      *
- * * * * * * *  * * * * *
- *                      *
- * * * * * * *  * * * * *
- */
 void lv_example_style_11111(void)
 {
     /*A base style*/
-    static lv_style_t MusicBox;
-    lv_style_init(&MusicBox);
-    lv_style_set_bg_color(&MusicBox, lv_color_make(0x00, 0x00, 0xff));
-    lv_style_set_text_color(&MusicBox, lv_color_white());
-    lv_style_set_width(&MusicBox, 100);
-    lv_style_set_height(&MusicBox, LV_SIZE_CONTENT);
+    static lv_style_t style_base;
+    lv_style_init(&style_base);
+    lv_style_set_bg_color(&style_base, lv_color_make(0x00, 0x0, 0xff));
+    lv_style_set_text_color(&style_base, lv_color_white());
+    lv_style_set_width(&style_base, 100);
+    lv_style_set_height(&style_base, LV_SIZE_CONTENT);
 
     /*Set only the properties that should be different*/
-    static lv_style_t TitelBox;
-    lv_style_init(&TitelBox);
-    lv_style_set_bg_color(&TitelBox, lv_color_make(0xff, 0x0, 0x00));
-    lv_style_set_text_color(&TitelBox, lv_color_white());
-    lv_style_set_text_font(&TitelBox, &lv_font_montserrat_18); // Set the font
+    static lv_style_t style_warning;
+    lv_style_init(&style_warning);
+    lv_style_set_bg_color(&style_warning, lv_color_make(0xff, 0x0, 0x00));
+    // lv_style_set_text_color(&style_warning, lv_color_white());
 
     /*Create an object with the base style only*/
     lv_obj_t *obj_base = lv_obj_create(lv_scr_act());
-    lv_obj_add_style(obj_base, &MusicBox, 0);
+    lv_obj_add_style(obj_base, &style_base, 0);
     lv_obj_align(obj_base, LV_ALIGN_BOTTOM_MID, 0, 0);
-    lv_obj_set_size(obj_base, LV_HOR_RES, LV_VER_RES / 2); // Set size to cover entire horizontal, half vertical
+    lv_obj_set_size(obj_base, LV_HOR_RES, LV_VER_RES /2); // Set size to cover entire horizontal, half vertic
     lv_obj_t *label = lv_label_create(obj_base);
-    lv_obj_add_style(label, label, &TitelBox);
-    lv_style_set_text_font(&MusicBox, &lv_font_montserrat_18); // Set the font
-    lv_label_set_text(label, "");
-    /*Create another object with the base style and earnings style too*/
-    lv_obj_t *obj_txt = lv_obj_create(lv_scr_act());
-    lv_obj_add_style(obj_txt, &MusicBox, 0);
-    lv_obj_add_style(obj_txt, &TitelBox, 0);
-    lv_obj_align(obj_txt, LV_ALIGN_BOTTOM_MID, 0, -100);  //  shift it in Y axis
-    lv_obj_set_size(obj_txt, LV_HOR_RES, LV_VER_RES / 4); // Set size to cover entire horizontal, 0.25 vertical
 
-    // lv_label_set_long_mode(obj_txt, LV_LABEL_LONG_SCROLL_CIRCULAR); /*Circular scroll*/
-    // label = lv_label_create(obj_txt);
-    // lv_label_set_long_mode(label, LV_LABEL_LONG_SCROLL_CIRCULAR); /*Circular scroll*/
-    // lv_label_set_text(label, "Tardid  kdfbgk slkgous lsdg");
+    // lv_style_set_text_font(&style_warning, &lv_font_montserrat_18); // Set the font
+    lv_style_set_text_font(&style_base, &lv_font_montserrat_18);    // Set the font
+
+    // lv_obj_add_style(label, label, &style_warning);
+
+    // lv_label_set_text(label, "Shadmehr");
     // lv_obj_center(label);
-    static lv_style_t bib;
-    lv_style_init(&bib);
-    // lv_style_set_bg_color(&bib, lv_color_make(0xff, 0x0, 0x00));
-    lv_style_set_text_color(&bib, lv_color_white());
-    lv_style_set_text_font(&bib, &lv_font_montserrat_18); // Set the font
-    lv_obj_t *label2 = lv_label_create(lv_scr_act());
-    lv_obj_add_style(label2, &bib, 0);
-    lv_label_set_long_mode(label2, LV_LABEL_LONG_SCROLL_CIRCULAR); /*Circular scroll*/
-    lv_obj_set_width(label2, 150);
-    lv_obj_get_style_text_font(label2, );
-    lv_label_set_text(label2, "It is a circularly scrolling text. ");
-    lv_obj_align(label2, LV_ALIGN_CENTER, 0, 40);
 
-    /* show a picture of music bottom*/
+    /*Create another object with the base style and earnings style too*/
+    lv_obj_t *obj_warning = lv_obj_create(lv_scr_act());
+    lv_obj_add_style(obj_warning, &style_base, 0);
+    lv_obj_add_style(obj_warning, &style_warning, 0);
+    lv_obj_align(obj_warning, LV_ALIGN_BOTTOM_MID, 0, -100);
+    lv_obj_set_size(obj_warning, LV_HOR_RES, LV_VER_RES / 4); // Set size to cover entire horizontal, half vertical
+
+    label = lv_label_create(obj_warning);
+    lv_label_set_text(label, "Tardid");
+    lv_obj_center(label);
+
+
     lv_obj_t *img1 = lv_img_create(lv_scr_act());
     lv_img_set_src(img1, &music);
-    lv_obj_align(img1, LV_ALIGN_BOTTOM_MID, 0, -10);
+    lv_obj_align(img1, LV_ALIGN_BOTTOM_MID, 0, 0);
+
 }
 static void create_demo_application(void)
 {
     // lv_obj_t *label1 = lv_label_create(lv_scr_act());
     // lv_label_set_long_mode(label1, LV_LABEL_LONG_WRAP);     /*Break the long lines*/
     // lv_label_set_recolor(label1, true);                      /*Enable re-coloring by commands in the text*/
-    // lv_label_set_text(label1, "#0000ff Re-color# #ff00ff words# #ff0000 of a# label, align the lines to the center "
-    //                   "and wrap long text automatically.");
-    // lv_obj_set_width(label1, 150);  /*Set smaller width to make the lines wrap*/
+    // lv_label_set_text(label1, "#0000ff Shadmehr Aghili #"
+    //                   "#ff00ff Tardid#");
+    // lv_obj_set_width(label1, 1000);  /*Set smaller width to make the lines wrap*/
     // lv_obj_set_style_text_align(label1, LV_TEXT_ALIGN_CENTER, 0);
     // lv_obj_align(label1, LV_ALIGN_CENTER, 0, -40);
 
     // lv_obj_t *label2 = lv_label_create(lv_scr_act());
     // lv_label_set_long_mode(label2, LV_LABEL_LONG_SCROLL_CIRCULAR);     /*Circular scroll*/
-    // lv_obj_set_width(label2, 150);
+    // lv_obj_set_width(label2, 500);
     // lv_label_set_text(label2, "It is a circularly scrolling text. ");
     // lv_obj_align(label2, LV_ALIGN_CENTER, 0, 40);
     lv_example_style_11111();
@@ -215,11 +185,11 @@ static void guiTask(void *pvParameter)
 
 void lvglGui(void)
 {
-    // unsigned int freeHeapSize;
-    // freeHeapSize = xPortGetFreeHeapSize();
-    // size_t free_heap = esp_get_free_heap_size();
-    // ESP_LOGW(TAG, "Free external Heap Size: %d bytes\n", free_heap);
-    // ESP_LOGW(TAG, " Free Local Heap Size: %u bytes\n", freeHeapSize);
+    unsigned int freeHeapSize;
+    freeHeapSize = xPortGetFreeHeapSize();
+    size_t free_heap = esp_get_free_heap_size();
+    ESP_LOGW(TAG, "Free external Heap Size: %d bytes\n", free_heap);
+    ESP_LOGW(TAG, " Free Local Heap Size: %u bytes\n", freeHeapSize);
     StaticTask_t *xTaskLVgLBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
     StackType_t *xLVGLStack = (StackType_t *)malloc(2000 * 8 * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
     if (xTaskLVgLBuffer == NULL || xLVGLStack == NULL)
@@ -238,6 +208,6 @@ void lvglGui(void)
         xLVGLStack,           // Stack buffer
         xTaskLVgLBuffer       // Task control block
     );
-    // free_heap = esp_get_free_heap_size();
-    //     ESP_LOGW(TAG, "Free external Heap Size: %d bytes\n", free_heap);
+    free_heap = esp_get_free_heap_size();
+    ESP_LOGW(TAG, "Free external Heap Size: %d bytes\n", free_heap);
 }

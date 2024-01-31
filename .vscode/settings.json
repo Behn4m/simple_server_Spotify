@@ -1,7 +1,7 @@
 {
     "idf.adapterTargetName": "esp32s3",
     "idf.openOcdConfigs": [
-        "interface/ftdi/esp32_devkitj_v1.cfg",
+        "board/esp32s3-builtin.cfg",
         "target/esp32s3.cfg"
     ],
     "idf.flashType": "UART",
@@ -44,7 +44,17 @@
         "semphr.h": "c",
         "projdefs.h": "c",
         "cstdio": "c",
-        "esp_tls.h": "c"
+        "esp_tls.h": "c",
+        "*.tcc": "c",
+        "esp_system.h": "c",
+        "esp_timer.h": "c",
+        "string.h": "c",
+        "time.h": "c",
+        "esp_sntp.h": "c",
+        "sys.h": "c",
+        "esp_http_client.h": "c",
+        "esp_eth.h": "c",
+        "spotifyapicall.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

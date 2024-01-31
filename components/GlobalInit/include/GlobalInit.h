@@ -27,10 +27,10 @@ extern "C" {
 // **************************************************************** constant macros
 #define HTTPS_PRIORITY 4
 
-#define SEC 1000
-#define HOUR 3600
-#define LONG_BUF 2500
-#define MEDIUM_BUF 1000
+#define SEC         1000
+#define HOUR        3600
+#define LONG_BUF    2500
+#define MEDIUM_BUF  1000
 #define SMALL_BUF   250
 
 #define HTTPS_TASK_STACK_SIZE   (uint16_t)(9*1000U)
@@ -45,7 +45,7 @@ extern SemaphoreHandle_t WorkWithStorageInSpotifyComponentSemaphore ;
 /**
  * timeout definition part 
 */
-#define SPOTIFY_RESPONSE_TIMEOUT (30*1000)/portTICK_PERIOD_MS
+#define SPOTIFY_RESPONSE_TIMEOUT (10*1000)/portTICK_PERIOD_MS
 #endif
 
 // **************************************************************** initilization functions

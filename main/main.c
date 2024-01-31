@@ -47,8 +47,8 @@ void app_main(void)
         Spotify_SendCommand(PlayNext);
         vTaskDelay((pdMS_TO_TICKS(SEC * 3)));        
         Spotify_SendCommand(GetUserInfo);
-        // vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
-        // Spotify_SendCommand(GetNowPlaying);
+        vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
+        Spotify_SendCommand(GetNowPlaying);
     }
 #endif
 }

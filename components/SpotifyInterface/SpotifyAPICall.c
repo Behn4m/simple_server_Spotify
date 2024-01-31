@@ -24,16 +24,12 @@ esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
     switch (evt->event_id) 
     {
         case HTTP_EVENT_ERROR:
-            ESP_LOGE(TAG, "HTTP_EVENT_ERROR");
             break;
         case HTTP_EVENT_ON_CONNECTED:
-            ESP_LOGI(TAG, "HTTP_EVENT_ON_CONNECTED");
             break;
         case HTTP_EVENT_HEADER_SENT:
-            ESP_LOGI(TAG, "HTTP_EVENT_HEADER_SENT");
             break;
         case HTTP_EVENT_ON_HEADER:
-            ESP_LOGI(TAG, "HTTP_EVENT_ON_HEADER, key=%s, value=%s", evt->header_key, evt->header_value);
             // Handle HTTP header received, if needed
             break;
         case HTTP_EVENT_ON_DATA:
@@ -47,10 +43,8 @@ esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
             break;
         case HTTP_EVENT_ON_FINISH:
             receivedData[totalLen] = '\0';                                                  // write 0 to the end of string
-            ESP_LOGI(TAG, "HTTP_EVENT_ON_FINISH");
             break;
         case HTTP_EVENT_DISCONNECTED:
-            ESP_LOGI(TAG, "HTTP_EVENT_DISCONNECTED");
             ESP_LOGI(TAG, "##> %s <##", receivedData); 
             ESP_LOGW(TAG, "received content length = %d\r\n", totalLen);
             // if any data received, send a queue so other tasks can receive and process it

@@ -32,17 +32,7 @@ static void lv_tick_task(void *arg)
 #include "lvgl.h"
 #include "lvgl/src/font/lv_font.h"
 #include "image_test.h"
-<<<<<<< HEAD
 
-=======
-uint16_t ColorConvertor(uint16_t InputColor)
-{
-
-}
-<<<<<<< HEAD
->>>>>>> parent of d5b92c0 (make map for color)
-=======
->>>>>>> parent of d5b92c0 (make map for color)
 void lv_example_style_11111(void)
 {
     /*A base style*/
@@ -175,19 +165,19 @@ static void guiTask(void *pvParameter)
 
     while (1)
     {
-        /* Delay 1 tick (assumes FreeRTOS tick is 10ms */
-        vTaskDelay(pdMS_TO_TICKS(10));
+    //     /* Delay 1 tick (assumes FreeRTOS tick is 10ms */
+        vTaskDelay(pdMS_TO_TICKS(1));
 
-        /* Try to take the semaphore, call lvgl related function on success */
-        if (pdTRUE == xSemaphoreTake(xGuiSemaphore, portMAX_DELAY))
-        {
+    //     /* Try to take the semaphore, call lvgl related function on success */
+    //     if (pdTRUE == xSemaphoreTake(xGuiSemaphore, portMAX_DELAY))
+    //     {
             lv_task_handler();
-            xSemaphoreGive(xGuiSemaphore);
-        }
+    //         xSemaphoreGive(xGuiSemaphore);
+    //     }
     }
 
     /* A task should NEVER return */
-    vTaskDelete(NULL);
+    // vTaskDelete(NULL);
 }
 
 void lvglGui(void)
@@ -195,13 +185,13 @@ void lvglGui(void)
     unsigned int freeHeapSize;
     freeHeapSize = xPortGetFreeHeapSize();
     size_t free_heap = esp_get_free_heap_size();
-    ESP_LOGW(TAG, "Free external Heap Size: %d bytes\n", free_heap);
-    ESP_LOGW(TAG, " Free Local Heap Size: %u bytes\n", freeHeapSize);
+    ESP_LOGW(TAG, "Free external Heap Size: %d bytes", free_heap);
+    ESP_LOGW(TAG, " Free Local Heap Size: %u bytes", freeHeapSize);
     StaticTask_t *xTaskLVgLBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
     StackType_t *xLVGLStack = (StackType_t *)malloc(2000 * 8 * sizeof(StackType_t)); // Assuming a stack size of 400 words (adjust as needed)
     if (xTaskLVgLBuffer == NULL || xLVGLStack == NULL)
     {
-        // ESP_LOGE("TAG", "Memory allocation failed!\n");
+        // ESP_LOGE("TAG", "Memory allocation failed!");
         free(xTaskLVgLBuffer);
         free(xLVGLStack);
         return; // Exit with an error code
@@ -216,5 +206,5 @@ void lvglGui(void)
         xTaskLVgLBuffer       // Task control block
     );
     free_heap = esp_get_free_heap_size();
-    ESP_LOGW(TAG, "Free external Heap Size: %d bytes\n", free_heap);
+    ESP_LOGW(TAG, "Free external Heap Size: %d bytes", free_heap);
 }

@@ -19,7 +19,7 @@ static const char *TAG = "SpotifyTask";
 static void Spotify_MainTask(void *pvparameters);
 static bool Spotify_TokenRenew(void);
 static bool Spotify_IsTokenExpired();
-bool Spotify_ExtractAccessToken(char *receivedData, size_t SizeOfReceivedData);
+bool Spotify_ExtractAccessToken(char *ReceivedData, size_t SizeOfReceivedData);
 
 // ******************************
 void Spotify_CheckRefreshTokenExistence()
@@ -312,7 +312,7 @@ bool Spotify_SendCommand(int Command)
         ESP_LOGE(TAG, "You are not authorized !");
         return false;
     }
-    switch (CCOMPARE_1)
+    switch (Command)
     {
         case Play:
         case Pause:

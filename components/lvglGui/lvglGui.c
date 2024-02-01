@@ -39,6 +39,9 @@ uint16_t ColorConvertor(uint16_t InputColor)
 {
 
 }
+<<<<<<< HEAD
+>>>>>>> parent of d5b92c0 (make map for color)
+=======
 >>>>>>> parent of d5b92c0 (make map for color)
 void lv_example_style_11111(void)
 {

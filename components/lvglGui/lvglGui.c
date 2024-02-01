@@ -32,7 +32,14 @@ static void lv_tick_task(void *arg)
 #include "lvgl.h"
 #include "lvgl/src/font/lv_font.h"
 #include "image_test.h"
+<<<<<<< HEAD
 
+=======
+uint16_t ColorConvertor(uint16_t InputColor)
+{
+
+}
+>>>>>>> parent of d5b92c0 (make map for color)
 void lv_example_style_11111(void)
 {
     /*A base style*/

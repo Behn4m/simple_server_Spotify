@@ -16,16 +16,17 @@ void CallbackTest(char *buffer)
 }
 void app_main(void)
 {
+    lvglGui();
     GlobalInit();
     nvsFlashInit();
     SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
-    // WifiStationMode("Hardware10", "87654321");
-    WifiStationMode("BELL789", "167271A164A9");
+    WifiStationMode("Hardware", "87654321"); 
+    // WifiStationMode("BELL789", "167271A164A9");
 #else
     wifiConnectionModule();
 #endif
-    // lvglGui();
+    
 #ifdef SpotifyEnable
     SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 

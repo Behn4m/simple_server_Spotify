@@ -188,4 +188,6 @@ void LVGL_TaskInit(void)
         xLVGLStack,           // Stack buffer
         xTaskLVGLBuffer       // Task control block
     );
+    // this delay so important
+    vTaskDelay(500);
 }

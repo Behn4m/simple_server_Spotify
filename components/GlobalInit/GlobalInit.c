@@ -8,7 +8,6 @@ SemaphoreHandle_t FinishWifiConfig = NULL;
 #ifdef SpotifyEnable
 SemaphoreHandle_t WifiParamExistenceCheckerSemaphore = NULL;
 SemaphoreHandle_t IsSpotifyAuthorizedSemaphore = NULL;
-SemaphoreHandle_t WorkWithStorageInSpotifyComponentSemaphore = NULL;
 
 #endif
 /**
@@ -21,7 +20,6 @@ void GlobalInit()
     BufQueue1 = xQueueCreate(1, sizeof(char) * sizeof(char[2500]));
     FinishWifiConfig = xSemaphoreCreateBinary();
     WifiParamExistenceCheckerSemaphore = xSemaphoreCreateBinary();
-    WorkWithStorageInSpotifyComponentSemaphore = xSemaphoreCreateBinary();
 #ifdef SpotifyEnable
     IsSpotifyAuthorizedSemaphore = xSemaphoreCreateBinary();
 #endif

@@ -62,7 +62,7 @@ void SaveFileInSpiffsWithTxtFormat(char *addressInSpiffs, char *key, char *value
  *@param[out] ... The variable arguments to store the retrieved values. The last argument must be NULL.
  *@return Returns true if the file is successfully read and key-value pairs are retrieved, and false otherwise.
  */
-void ReadTxtFileFromSpiffs(char *addressInSpiffs, char *key, char *value, ...);
+bool ReadTxtFileFromSpiffs(char *addressInSpiffs, char *key, char *value, ...);
 
 /**
  *@brief Check if a file exists in the SPIFFS file system.

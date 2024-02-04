@@ -31,7 +31,6 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
     InterfaceHandler = SpotifyInterfaceHandler;
     PrivateHandler.Status = INIT;
     if (InterfaceHandler->ConfigAddressInSpiffs != NULL &&
-        InterfaceHandler->HttpsResponseReadySemaphore != NULL &&
         InterfaceHandler->IsSpotifyAuthorizedSemaphore != NULL &&
         InterfaceHandler->HttpsBufQueue != NULL)
     {

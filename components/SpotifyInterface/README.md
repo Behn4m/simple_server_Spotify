@@ -76,7 +76,6 @@ SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 
 ```c
 SpotifyInterfaceHandler.HttpsBufQueue = QueueSharedWithHttpsModule;
-SpotifyInterfaceHandler.HttpsResponseReadySemaphore = SemaphoreSharedWithHttpsModule;
 SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
 SpotifyInterfaceHandler.ReadTxtFileFromSpiffs = &SpiffsWritefunction;
 SpotifyInterfaceHandler.WriteTxtFileToSpiffs = &SpiffsReadfunction;

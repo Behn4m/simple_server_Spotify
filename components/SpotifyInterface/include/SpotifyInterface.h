@@ -42,7 +42,6 @@ typedef enum
 typedef struct
 {
     QueueHandle_t *HttpsBufQueue;
-    SemaphoreHandle_t *HttpsResponseReadySemaphore;
     SemaphoreHandle_t *IsSpotifyAuthorizedSemaphore;
     char *ConfigAddressInSpiffs;
 } SpotifyInterfaceHandler_t;

@@ -1,21 +1,5 @@
-#include <stdio.h>
 #include "lvglGui.h"
-#include "styles/lv_example_style.h"
-#include "get_started/lv_example_get_started.h"
-#include "widgets/lv_example_widgets.h"
-#include "layouts/lv_example_layout.h"
-#include "scroll/lv_example_scroll.h"
-#include "anim/lv_example_anim.h"
-#include "event/lv_example_event.h"
-#include "styles/lv_example_style.h"
-#include "others/lv_example_others.h"
-#include "libs/lv_example_libs.h"
-#include "lvgl.h"
-#include "lvgl/src/font/lv_font.h"
 #include "image_test.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/timers.h"
 
 #define LV_TICK_PERIOD_MS 1
 #define LVGL_STACK 2500
@@ -40,7 +24,7 @@ static void lv_tick_task(void *arg)
 /**
  * @brief Function to change colors based on a timer callback
  */
-void changeColors(TimerHandle_t xTimer)
+void LVGL_ChangeColors(TimerHandle_t xTimer)
 {
     // Define colors for MusicBox and TitleBox
     lv_color_t musicBoxColor;
@@ -111,7 +95,7 @@ void LVGL_Timer()
     ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000));
 
     // Create and start a timer for color change
-    TimerHandle_t xTimer = xTimerCreate("ColorTimer", pdMS_TO_TICKS(10000), pdTRUE, NULL, changeColors);
+    TimerHandle_t xTimer = xTimerCreate("ColorTimer", pdMS_TO_TICKS(10000), pdTRUE, NULL, LVGL_ChangeColors);
     xTimerStart(xTimer, 0);
     if (xTimer != NULL)
     {
@@ -125,7 +109,7 @@ void LVGL_Timer()
 /**
  * @brief main LVGL gui TASK
  */
-static void GUI_mainTask(void *pvParameter)
+static void LVGL_mainTask(void *pvParameter)
 {
     // Allocate memory for LVGL display buffers
     lv_color_t *LVGL_BigBuf1 = (lv_color_t *)malloc(LV_HOR_RES_MAX * 100 * sizeof(lv_color_t));
@@ -153,7 +137,7 @@ static void GUI_mainTask(void *pvParameter)
     disp_drv.ver_res = LV_VER_RES_MAX;
     disp_drv.flush_cb = disp_driver_flush;
     disp_drv.draw_buf = &disp_draw_buf;
-    lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
+    lv_disp_drv_register(&disp_drv);
 
     // Start LVGL timer and create UI
     LVGL_Timer();
@@ -180,8 +164,8 @@ void LVGL_TaskInit(void)
         return; // Exit with an error code
     }
     xTaskCreateStatic(
-        GUI_mainTask,         // Task function
-        "GUI_mainTask",       // Task name (for debugging)
+        LVGL_mainTask,        // Task function
+        "LVGL_mainTask",      // Task name (for debugging)
         LVGL_STACK * 8,       // Stack size (in words)
         NULL,                 // Task parameters (passed to the task function)
         tskIDLE_PRIORITY + 1, // Task priority (adjust as needed)

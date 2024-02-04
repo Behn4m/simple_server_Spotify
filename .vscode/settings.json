@@ -55,7 +55,11 @@
         "esp_http_client.h": "c",
         "esp_eth.h": "c",
         "spotifyapicall.h": "c",
-        "timers.h": "c"
+        "timers.h": "c",
+        "lv_font.h": "c",
+        "lvglgui.h": "c",
+        "lv_example_get_started.h": "c",
+        "image_test.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

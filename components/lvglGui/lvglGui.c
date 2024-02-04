@@ -30,88 +30,78 @@ lv_color_t *LVGL_BigBuf1;
 lv_color_t *LVGL_BigBuf2;
 
 /**
- * @brief       timer handler for scheduling gui (for refreshing display we need it !)
+ * @brief timer handler for scheduling gui (for refreshing display we need it !)
  */
 static void lv_tick_task(void *arg)
 {
     lv_tick_inc(LV_TICK_PERIOD_MS);
 }
 
-// void changeColors()
+/**
+ * @brief Function to change colors based on a timer callback
+ */
 void changeColors(TimerHandle_t xTimer)
 {
+    // Define colors for MusicBox and TitleBox
     lv_color_t musicBoxColor;
     musicBoxColor.full = 0x39e9;
+    // Apply colors to MusicBox and TitleBox styles
     lv_color_t titleBoxColor = lv_color_make(0x0, 0x0, 0x00);
     lv_style_set_bg_color(&MusicBox, musicBoxColor);
     lv_style_set_bg_color(&TitleBox, titleBoxColor);
 }
 
-/*
- * * * * * * *  * * * * *
- *                      *
- * * * * * * *  * * * * *
- *                      *
- * * * * * * *  * * * * *
- *                      *
- * * * * * * *  * * * * *
+/**
+ * @brief Function to create the main LVGL user interface
  */
 static void LVGL_MyUI(void)
 {
-    /*A base style*/
+    // Base style for MusicBox
     lv_style_init(&MusicBox);
     lv_style_set_bg_color(&MusicBox, lv_color_make(17, 39, 28));
-    lv_style_set_text_color(&MusicBox, lv_color_make(0, 0, 0));
-    lv_style_set_width(&MusicBox, 100);
-    lv_style_set_height(&MusicBox, LV_SIZE_CONTENT);
+    // Create an object for the music display with the MusicBox style
+    lv_obj_t *musicObject = lv_obj_create(lv_scr_act());
+    lv_obj_add_style(musicObject, &MusicBox, 0);
+    lv_obj_align(musicObject, LV_ALIGN_BOTTOM_MID, 0, 0);
+    lv_obj_set_size(musicObject, LV_HOR_RES, LV_VER_RES / 2); // Set size to cover entire horizontal, half vertical
 
-    /*Set only the properties that should be different*/
+    // Base style for TitleBox
     lv_style_init(&TitleBox);
     lv_style_set_bg_color(&TitleBox, lv_color_make(0xff, 0x0, 0x00));
-    lv_style_set_text_color(&TitleBox, lv_color_make(0xff, 0x0, 0x00));
-    lv_style_set_text_font(&TitleBox, &lv_font_montserrat_18); // Set the font
-
-    /*Create an object with the base style only*/
-    lv_obj_t *obj_base = lv_obj_create(lv_scr_act());
-    lv_obj_add_style(obj_base, &MusicBox, 0);
-    lv_obj_align(obj_base, LV_ALIGN_BOTTOM_MID, 0, 0);
-    lv_obj_set_size(obj_base, LV_HOR_RES, LV_VER_RES / 2); // Set size to cover entire horizontal, half vertical
-
-    /*graphical object used for displaying text*/
-    lv_obj_t *label = lv_label_create(obj_base);
-    lv_obj_add_style(label, label, &TitleBox);
-    lv_style_set_text_font(&MusicBox, &lv_font_montserrat_18); // Set the font
-    lv_label_set_text(label, "");
 
     /*Create another object with the base style and earnings style too*/
-    lv_obj_t *obj_txt = lv_obj_create(lv_scr_act());
-    lv_obj_add_style(obj_txt, &MusicBox, 0);
-    lv_obj_add_style(obj_txt, &TitleBox, 0);
-    lv_obj_align(obj_txt, LV_ALIGN_BOTTOM_MID, 0, -100);  //  shift it in Y axis
-    lv_obj_set_size(obj_txt, LV_HOR_RES, LV_VER_RES / 4); // Set size to cover entire horizontal, 0.25 vertical
+    lv_obj_t *textObject = lv_obj_create(lv_scr_act());
+    lv_obj_add_style(textObject, &TitleBox, 0);
+    lv_obj_align(textObject, LV_ALIGN_BOTTOM_MID, 0, -100);  //  shift it in Y axis
+    lv_obj_set_size(textObject, LV_HOR_RES, LV_VER_RES / 4); // Set size to cover entire horizontal, 0.25 vertical
 
+    /*Circular scroll style*/
     static lv_style_t circular;
     lv_style_init(&circular);
     lv_style_set_bg_color(&circular, lv_color_make(0xff, 0x0, 0x00));
     lv_style_set_text_color(&circular, lv_color_white());
     lv_style_set_text_font(&circular, &lv_font_montserrat_18); // Set the font
 
-    lv_obj_t *label2 = lv_label_create(lv_scr_act());
-    lv_obj_add_style(label2, &circular, 0);
-    lv_label_set_long_mode(label2, LV_LABEL_LONG_SCROLL_CIRCULAR); /*Circular scroll*/
-    lv_obj_set_width(label2, 150);
-    lv_label_set_text(label2, "It is a circularly scrolling text. ");
-    lv_obj_align(label2, LV_ALIGN_CENTER, 0, 0);
+    // Create a circular scrolling text object
+    lv_obj_t *circularObject = lv_label_create(lv_scr_act());
+    lv_obj_add_style(circularObject, &circular, 0);
+    lv_label_set_long_mode(circularObject, LV_LABEL_LONG_SCROLL_CIRCULAR);
+    lv_obj_set_width(circularObject, 150);
+    lv_label_set_text(circularObject, "It is a circularly scrolling text. ");
+    lv_obj_align(circularObject, LV_ALIGN_CENTER, 0, 0);
 
-    /* show a picture of music bottom*/
-    lv_obj_t *img1 = lv_img_create(lv_scr_act());
-    lv_img_set_src(img1, &music);
-    lv_obj_align(img1, LV_ALIGN_BOTTOM_MID, 0, -10);
-    // lv_demo_music();
+    /* Create an image object for a music bottom picture*/
+    lv_obj_t *imageObject = lv_img_create(lv_scr_act());
+    lv_img_set_src(imageObject, &music);
+    lv_obj_align(imageObject, LV_ALIGN_BOTTOM_MID, 0, -10);
 }
-void LVGL_HardwareTimer()
+
+/**
+ * @brief Function to initialize and start LVGL timer
+ */
+void LVGL_Timer()
 {
-    /* Create and start a periodic timer interrupt to call lv_tick_inc */
+    // Create and start a periodic timer interrupt to call lv_tick_inc
     const esp_timer_create_args_t periodic_timer_args = {
         .callback = &lv_tick_task,
         .name = "periodic_gui"};
@@ -120,6 +110,7 @@ void LVGL_HardwareTimer()
     ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
     ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000));
 
+    // Create and start a timer for color change
     TimerHandle_t xTimer = xTimerCreate("ColorTimer", pdMS_TO_TICKS(10000), pdTRUE, NULL, changeColors);
     xTimerStart(xTimer, 0);
     if (xTimer != NULL)
@@ -136,9 +127,11 @@ void LVGL_HardwareTimer()
  */
 static void GUI_mainTask(void *pvParameter)
 {
-
+    // Allocate memory for LVGL display buffers
     lv_color_t *LVGL_BigBuf1 = (lv_color_t *)malloc(LV_HOR_RES_MAX * 100 * sizeof(lv_color_t));
     lv_color_t *LVGL_BigBuf2 = (lv_color_t *)malloc(LV_HOR_RES_MAX * 100 * sizeof(lv_color_t));
+
+    // Check memory allocation
     if (LVGL_BigBuf2 == NULL || LVGL_BigBuf2 == NULL)
     {
         ESP_LOGE("TAG", "Memory allocation failed!");
@@ -146,9 +139,14 @@ static void GUI_mainTask(void *pvParameter)
         free(LVGL_BigBuf2);
         vTaskDelete(NULL);
     }
+    // Initialize LVGL and display driver
     lv_init();
     lvgl_driver_init();
-    lv_disp_draw_buf_init(&disp_draw_buf, LVGL_BigBuf1, LVGL_BigBuf2, LV_HOR_RES_MAX * 100); // Lilygo
+
+    // Initialize display buffer
+    lv_disp_draw_buf_init(&disp_draw_buf, LVGL_BigBuf1, LVGL_BigBuf2, LV_HOR_RES_MAX * 100);
+
+    // Initialize display driver
     lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);
     disp_drv.hor_res = LV_HOR_RES_MAX;
@@ -156,16 +154,20 @@ static void GUI_mainTask(void *pvParameter)
     disp_drv.flush_cb = disp_driver_flush;
     disp_drv.draw_buf = &disp_draw_buf;
     lv_disp_t *disp = lv_disp_drv_register(&disp_drv);
-    LVGL_HardwareTimer();
+
+    // Start LVGL timer and create UI
+    LVGL_Timer();
     LVGL_MyUI();
     while (1)
     {
-        /* Delay 1 tick (assumes FreeRTOS tick is 1ms )*/
         vTaskDelay(pdMS_TO_TICKS(10));
         lv_task_handler();
     }
 }
 
+/**
+ * @brief Function to initialize LVGL task
+ */
 void LVGL_TaskInit(void)
 {
     StaticTask_t *xTaskLVGLBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));

@@ -16,7 +16,8 @@ void CallbackTest(char *buffer)
 }
 void app_main(void)
 {
-    lvglGui();
+    LVGL_TaskInit();
+    vTaskDelay(2000);
     GlobalInit();
     nvsFlashInit();
     SpiffsGlobalConfig();

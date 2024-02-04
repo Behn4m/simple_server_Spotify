@@ -30,7 +30,7 @@ extern "C" {
  * @brief      create guiTask and its global method
  */
 
-void lvglGui(void);
+void LVGL_TaskInit(void);
 
 #ifdef __cplusplus
 }

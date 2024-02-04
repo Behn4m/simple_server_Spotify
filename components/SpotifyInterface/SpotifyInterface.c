@@ -177,10 +177,6 @@ static void Spotify_MainTask(void *pvparameters)
                 }            
                 break;
             }
-            case SAVE_NEW_TOKEN:
-            {
-                break;
-            }
             case EXPIRED:
             {
                 ESP_LOGW(TAG, "token is expired");

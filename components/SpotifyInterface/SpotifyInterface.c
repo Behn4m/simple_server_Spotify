@@ -140,7 +140,7 @@ static void Spotify_MainTask(void *pvparameters)
                     if (Spotify_ExtractAccessToken(receivedData, sizeof(receivedData)) == true)                     // extract all keys from spotify server response
                     {
                         ESP_LOGI(TAG, "Token found!");
-                        PrivateHandler.TokenLastUpdate = xTaskGetTickCount();
+                        PrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                      // Save the time when the token was received
                         PrivateHandler.Status = AUTHORIZED;                                                         // Token recieved and checked, so update Status to AUTHORIZED
                     }
                     else
@@ -165,13 +165,12 @@ static void Spotify_MainTask(void *pvparameters)
                 SaveFileInSpiffsWithTxtFormat(InterfaceHandler->ConfigAddressInSpiffs,                              // Save new file in the directory
                                               "refresh_token", PrivateHandler.token.RefreshToken, 
                                               NULL, NULL);
+                xSemaphoreGive((*InterfaceHandler->IsSpotifyAuthorizedSemaphore));                                  // give IsSpotifyAuthorizedSemaphore semaphore in the IntefaceHandler                
                 PrivateHandler.Status = CHECK_TIME;                                                                 // set Status to CHECK_TIME     
                 break;
             }
             case CHECK_TIME:
             {
-                xSemaphoreGive((*InterfaceHandler->IsSpotifyAuthorizedSemaphore));                                  // give IsSpotifyAuthorizedSemaphore semaphore in the IntefaceHandler
-
                 if (Spotify_IsTokenExpired() == true)                                                               // Check if the expiration time has elapsed since the last received token
                 {
                     PrivateHandler.Status = EXPIRED;                                                                // set Status to EXPIRED if token expired
@@ -187,6 +186,8 @@ static void Spotify_MainTask(void *pvparameters)
                 ESP_LOGW(TAG, "token is expired");
                 if (Spotify_TokenRenew() == true)                                                                   // Run function to renew the token
                 {
+                    xSemaphoreGive((*InterfaceHandler->IsSpotifyAuthorizedSemaphore));                              // give IsSpotifyAuthorizedSemaphore semaphore in the IntefaceHandler
+                    PrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                           // Save the time when the token was received
                     PrivateHandler.Status = CHECK_TIME;                                                             // set Status to CHECK_TIME if token renewed successfully
                 }
                 else
@@ -211,7 +212,8 @@ static bool Spotify_IsTokenExpired()
     elapsedTime = elapsedTime / 1000;                                                                               // Convert the elapsed time to seconds                                             
     if (elapsedTime > (HOUR - 300))
     {
-        tokenExpired = true;                                                                                        // If the elapsed time is greater than the expiration time, set tokenExpired to true
+        tokenExpired = true;  
+        ESP_LOGW(TAG , "Spotify Token is Expired");                                                                                      // If the elapsed time is greater than the expiration time, set tokenExpired to true
     }
     return tokenExpired;
 }

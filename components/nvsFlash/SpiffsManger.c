@@ -93,19 +93,19 @@ void SpiffsInit()
  */
 bool SpiffsExistenceCheck(char *addressInSpiffs)
 {
+    bool retValue;
     FILE *file;
     file = fopen(addressInSpiffs, "r");
     if (file)
     {
-        // ESP_LOGI(TAG, "File exists.");
-        fclose(file);
-        return true;
+        retValue = true;
     }
     else
     {
-        // ESP_LOGI(TAG, "File does not exist.");
-        return false;
+        retValue = false;
     }
+    fclose(file);
+    return retValue;
 }
 /**
  *@brief Write data to a new file or append to existing file
@@ -114,7 +114,7 @@ bool SpiffsExistenceCheck(char *addressInSpiffs)
  */
 void SpiffsWrite(char *addressInSpiffs, char *data)
 {
-    if (SpiffsExistenceCheck(addressInSpiffs) == 0)
+    if (SpiffsExistenceCheck(addressInSpiffs) == false)
     {
         ESP_LOGI(TAG, "Opening file for writing");
         FILE *file = fopen(addressInSpiffs, "w");

@@ -49,9 +49,8 @@ extern "C"
 #define LOGIN                           1 
 #define AUTHENTICATED                   2
 #define AUTHORIZED                      3
-#define SAVE_NEW_TOKEN                  4
-#define EXPIRED                         5
-#define CHECK_TIME                      6
+#define EXPIRED                         4
+#define CHECK_TIME                      5
 
 typedef struct Token_t
 {
@@ -80,9 +79,8 @@ typedef enum
     LOGIN_USER = 1,
     AUTHENTICATED_USER = 2,
     AUTHORIZED_USER = 3,
-    SAVE_NEW_TOKEN_USER = 4 ,
-    EXPIRED_USER = 5,
-    CHECK_TIME_USER = 6
+    EXPIRED_USER = 4,
+    CHECK_TIME_USER = 5
 } Status_t;
 
 typedef void (*EventHandlerCallBackPtr)(char *Buffer);

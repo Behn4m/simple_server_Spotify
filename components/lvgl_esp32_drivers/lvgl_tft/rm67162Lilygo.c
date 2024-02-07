@@ -1,5 +1,5 @@
 #include "rm67162Lilygo.h"
-//#include "SPI.h"
+// #include "SPI.h"
 #include "driver/spi_master.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
@@ -50,22 +50,25 @@ static void lcd_send_cmd(uint32_t cmd, uint8_t *dat, uint32_t len)
     t.flags = (SPI_TRANS_MULTILINE_CMD | SPI_TRANS_MULTILINE_ADDR);
     t.cmd = 0x02;
     t.addr = cmd << 8;
-    
-    if (len != 0) {
+
+    if (len != 0)
+    {
         t.tx_buffer = dat;
         t.length = 8 * len;
-    } else {
+    }
+    else
+    {
         t.tx_buffer = NULL;
         t.length = 0;
     }
 
     spi_device_polling_transmit(spi, &t);
-    gpio_set_level(TFT_QSPI_CS, 1);    
+    gpio_set_level(TFT_QSPI_CS, 1);
 }
 
 /**
  * @brief       rotation of lcd
- * @param[in]   rotation   0:portrait 1:landscape 
+ * @param[in]   rotation   0:portrait 1:landscape
  *                         2:inverted portrait 3:inverted landscape
  * @return nothing
  */
@@ -73,7 +76,8 @@ static void lcd_setRotation(uint8_t rotation)
 {
     uint8_t gbr = TFT_MAD_RGB;
 
-    switch (rotation) {
+    switch (rotation)
+    {
     case 0: // Portrait
         break;
     case 1: // Landscape (Portrait + 90)
@@ -101,12 +105,13 @@ static void lcd_setRotation(uint8_t rotation)
 static void lcd_address_set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
 {
     lcd_cmd_t t[3] = {
-        {0x2a, {(uint8_t)(x1 >> 8), (uint8_t)x1, (uint8_t)(x2 >> 8), (uint8_t) x2}, 0x04},
-        {0x2b, {(uint8_t)(y1 >> 8), (uint8_t)y1, (uint8_t)(y2 >> 8), (uint8_t) y2}, 0x04},
+        {0x2a, {(uint8_t)(x1 >> 8), (uint8_t)x1, (uint8_t)(x2 >> 8), (uint8_t)x2}, 0x04},
+        {0x2b, {(uint8_t)(y1 >> 8), (uint8_t)y1, (uint8_t)(y2 >> 8), (uint8_t)y2}, 0x04},
         {0x2c, {0x00}, 0x00},
     };
 
-    for (uint32_t i = 0; i < 3; i++) {
+    for (uint32_t i = 0; i < 3; i++)
+    {
         lcd_send_cmd(t[i].cmd, t[i].data, t[i].len);
     }
 }
@@ -120,11 +125,11 @@ static void lcd_address_set(uint16_t x1, uint16_t y1, uint16_t x2, uint16_t y2)
  * @param[in]  data   ponter to data buffer
  * @return nothing
  */
-static void lcd_PushColor (uint16_t x,
-                    uint16_t y,
-                    uint16_t width,
-                    uint16_t high,
-                    uint16_t *data)
+static void lcd_PushColor(uint16_t x,
+                          uint16_t y,
+                          uint16_t width,
+                          uint16_t high,
+                          uint16_t *data)
 {
     bool first_send = 1;
     size_t len = width * high;
@@ -132,30 +137,33 @@ static void lcd_PushColor (uint16_t x,
 
     lcd_address_set(x, y, x + width - 1, y + high - 1);
     gpio_set_level(TFT_QSPI_CS, 0);
-    do {
+    do
+    {
         size_t chunk_size = len;
         spi_transaction_ext_t t = {0};
         memset(&t, 0, sizeof(t));
-        if (first_send) {
+        if (first_send)
+        {
             t.base.flags =
                 SPI_TRANS_MODE_QIO /* | SPI_TRANS_MODE_DIOQIO_ADDR */;
             t.base.cmd = 0x32 /* 0x12 */;
             t.base.addr = 0x002C00;
             first_send = 0;
-        } else {
+        }
+        else
+        {
             t.base.flags = SPI_TRANS_MODE_QIO | SPI_TRANS_VARIABLE_CMD |
                            SPI_TRANS_VARIABLE_ADDR | SPI_TRANS_VARIABLE_DUMMY;
             t.command_bits = 0;
             t.address_bits = 0;
             t.dummy_bits = 0;
         }
-        if (chunk_size > SEND_BUF_SIZE) {
+        if (chunk_size > SEND_BUF_SIZE)
+        {
             chunk_size = SEND_BUF_SIZE;
         }
         t.base.tx_buffer = p;
         t.base.length = chunk_size * 16;
-
-        // spi_device_queue_trans(spi, (spi_transaction_t *)&t, portMAX_DELAY);
         spi_device_polling_transmit(spi, (spi_transaction_t *)&t);
         len -= chunk_size;
         p += chunk_size;
@@ -166,16 +174,16 @@ static void lcd_PushColor (uint16_t x,
 void lcd_init(void)
 {
     esp_rom_gpio_pad_select_gpio(TFT_QSPI_RST);
-	gpio_set_direction(TFT_QSPI_RST, GPIO_MODE_OUTPUT);
+    gpio_set_direction(TFT_QSPI_RST, GPIO_MODE_OUTPUT);
 
     esp_rom_gpio_pad_select_gpio(TFT_QSPI_CS);
-	gpio_set_direction(TFT_QSPI_CS, GPIO_MODE_OUTPUT);
+    gpio_set_direction(TFT_QSPI_CS, GPIO_MODE_OUTPUT);
 
-    //Reset the display
-	gpio_set_level(TFT_QSPI_RST, 0);
-	vTaskDelay(300 / portTICK_PERIOD_MS);//default 100ms
-	gpio_set_level(TFT_QSPI_RST, 1);
-	vTaskDelay(300 / portTICK_PERIOD_MS);//default 100ms
+    // Reset the display
+    gpio_set_level(TFT_QSPI_RST, 0);
+    vTaskDelay(300 / portTICK_PERIOD_MS); // default 100ms
+    gpio_set_level(TFT_QSPI_RST, 1);
+    vTaskDelay(300 / portTICK_PERIOD_MS); // default 100ms
 
     esp_err_t ret;
 
@@ -187,10 +195,10 @@ void lcd_init(void)
     //     .data3_io_num = TFT_QSPI_D3,
     //     .max_transfer_sz = (SEND_BUF_SIZE * 16) + 8,
     //     .flags = SPICOMMON_BUSFLAG_MASTER | SPICOMMON_BUSFLAG_GPIO_PINS  |
-    //              SPICOMMON_BUSFLAG_QUAD 
+    //              SPICOMMON_BUSFLAG_QUAD
     //     ,
     // };
-    
+
     spi_device_interface_config_t devcfg = {
         .command_bits = 8,
         .address_bits = 24,
@@ -207,29 +215,41 @@ void lcd_init(void)
     ESP_ERROR_CHECK(ret);
 
     // Initialize the screen multiple times to prevent initialization failure
-    //int i = 3;
-    //while (i--) {
-        const lcd_cmd_t *lcd_init = rm67162_qspi_init;
-        for (int i = 0; i < sizeof(rm67162_qspi_init) / sizeof(lcd_cmd_t); i++)
-        {
-            lcd_send_cmd(lcd_init[i].cmd,
-                         (uint8_t *)lcd_init[i].data,
-                         lcd_init[i].len & 0x7f);
+    // int i = 3;
+    // while (i--) {
+    const lcd_cmd_t *lcd_init = rm67162_qspi_init;
+    for (int i = 0; i < sizeof(rm67162_qspi_init) / sizeof(lcd_cmd_t); i++)
+    {
+        lcd_send_cmd(lcd_init[i].cmd,
+                     (uint8_t *)lcd_init[i].data,
+                     lcd_init[i].len & 0x7f);
 
-            if (lcd_init[i].len & 0x80)
-                vTaskDelay(120 / portTICK_PERIOD_MS);
-        }
+        if (lcd_init[i].len & 0x80)
+            vTaskDelay(120 / portTICK_PERIOD_MS);
+    }
     //}
 
-    lcd_setRotation(1); //Landscape
+    lcd_setRotation(1); // Landscape
 }
-
-void lcd_flush( lv_disp_drv_t *disp,
-                const lv_area_t *area,
-                lv_color_t *color_p)
+#include "esp_log.h"
+void lcd_flush(lv_disp_drv_t *disp,
+               const lv_area_t *area,
+               lv_color_t *color_p)
 {
     uint32_t w = (area->x2 - area->x1 + 1);
     uint32_t h = (area->y2 - area->y1 + 1);
+    uint16_t temp = 0;
+    //     temp=color_p->full;
+    //    color_p->full<<=5;
+    //     temp=temp&0xf800;
+    //     color_p->full|=temp;
+    // for (int i = 0; i < sizeof((uint16_t *)&color_p->full); i++)
+    // {
+    //     ESP_LOGE("debug", "Element %d:", (color_p->full));
+    //     i++;
+    // }
+    // ESP_LOGE("debug", "Element %d:", (color_p->full));
+
     lcd_PushColor(area->x1, area->y1, w, h, (uint16_t *)&color_p->full);
     lv_disp_flush_ready(disp);
 }

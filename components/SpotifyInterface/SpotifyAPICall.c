@@ -1,18 +1,9 @@
 #include "SpotifyAPICall.h"
 #include "SpotifyTypedef.h"
+#include "esp_crt_bundle.h"
 
 static const char *TAG = "HTTP";
 QueueHandle_t httpToSpotifyDataQueue = NULL;
-
-// Include the server root certificate data
-extern const uint8_t server_root_cert_pem_start[] asm("_binary_server_root_cert_pem_start");
-extern const uint8_t server_root_cert_pem_end[] asm("_binary_server_root_cert_pem_end");
-
-// Include the local server certificate and private key data
-extern const uint8_t local_server_cert_pem_start[] asm("_binary_local_server_cert_pem_start");
-extern const uint8_t local_server_cert_pem_end[] asm("_binary_local_server_cert_pem_end");
-extern const uint8_t local_server_key_pem_start[] asm("_binary_local_server_key_pem_start");
-extern const uint8_t local_server_key_pem_end[] asm("_binary_local_server_key_pem_end");
 
 esp_err_t HttpEventHandler(esp_http_client_event_t *evt) 
 {
@@ -33,10 +24,9 @@ esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
             // Handle HTTP header received, if needed
             break;
         case HTTP_EVENT_ON_DATA:
-            ESP_LOGI(TAG, "HTTP_EVENT_ON_DATA, len=%d", evt->data_len);
-            dataToRead = true;
             if (totalLen + evt->data_len < LONG_BUF)                                        // check if receved data is not larger than buffer size 
-            {                                                                               // set flag true if server set some data
+            {
+            dataToRead = true;                                                              // set flag true if server set some data
                 memcpy(receivedData + totalLen, evt->data, evt->data_len);                  // copy received data to the end of previous received data
                 totalLen += evt->data_len;                                                  // update pointer to the end of copied data
             }
@@ -84,13 +74,8 @@ void Spotify_SendTokenRequest(char *Code)
         .method = HTTP_METHOD_POST,
         .event_handler = HttpEventHandler,
         .disable_auto_redirect = false,
-        .cert_pem = (const char *)server_root_cert_pem_start,                               // Server root certificate
-        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,                  // Length of server root certification
-        .client_cert_pem = (const char *)local_server_cert_pem_start,                       // Local server certificate
-        .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start,         // Length of local server certificate
-        .client_key_pem = (const char *)local_server_key_pem_start,                         // Local server private key
-        .client_key_len = local_server_key_pem_end - local_server_key_pem_start,            // Length of local server private key
-    };
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        };
 
     // Initialize HTTP client with custom configuration
     esp_http_client_handle_t httpClient = esp_http_client_init(&clientConfig);
@@ -139,12 +124,7 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken)
         .method = HTTP_METHOD_POST,
         .event_handler = HttpEventHandler,
         .disable_auto_redirect = false,
-        .cert_pem = (const char *)server_root_cert_pem_start,                               // Server root certificate
-        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,                  // Length of server root certification
-        .client_cert_pem = (const char *)local_server_cert_pem_start,                       // Local server certificate
-        .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start,         // Length of local server certificate
-        .client_key_pem = (const char *)local_server_key_pem_start,                         // Local server private key
-        .client_key_len = local_server_key_pem_end - local_server_key_pem_start,            // Length of local server private key
+        .crt_bundle_attach = esp_crt_bundle_attach,
     };
 
     // Initialize HTTP client with custom configuration
@@ -217,12 +197,7 @@ void Spotify_ControlPlayback(int Command, char *AccessToken)
         .method = clientMethod,                                                             // method variable already filled based on API 
         .event_handler = HttpEventHandler,                                                  // Event handler function
         .disable_auto_redirect = false,
-        .cert_pem = (const char *)server_root_cert_pem_start,                               // Server root certificate
-        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,                  // Length of server root certification
-        .client_cert_pem = (const char *)local_server_cert_pem_start,                       // Local server certificate
-        .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start,         // Length of local server certificate
-        .client_key_pem = (const char *)local_server_key_pem_start,                         // Local server private key
-        .client_key_len = local_server_key_pem_end - local_server_key_pem_start,            // Length of local server private key
+        .crt_bundle_attach = esp_crt_bundle_attach,
     };
 
     // Initialize HTTP client with custom configuration
@@ -286,13 +261,8 @@ void Spotify_GetInfo(int Command, char *AccessToken)
         .path = clientPath,                                                                 // clientPath already filled based in API
         .method = HTTP_METHOD_GET,                                                          // Get for all of this category requests  
         .event_handler = HttpEventHandler,                                                  // Event handler function
-        .disable_auto_redirect = false,
-        .cert_pem = (const char *)server_root_cert_pem_start,                               // Server root certificate
-        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,                  // Length of server root certification
-        .client_cert_pem = (const char *)local_server_cert_pem_start,                       // Local server certificate
-        .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start,         // Length of local server certificate
-        .client_key_pem = (const char *)local_server_key_pem_start,                         // Local server private key
-        .client_key_len = local_server_key_pem_end - local_server_key_pem_start,            // Length of local server private key
+        .use_global_ca_store = true,
+        .crt_bundle_attach = esp_crt_bundle_attach,
     };
 
     // Initialize HTTP client with custom configuration

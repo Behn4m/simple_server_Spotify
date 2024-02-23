@@ -45,12 +45,13 @@ esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
             receivedData[totalLen] = '\0';                                                  // write 0 to the end of string
             break;
         case HTTP_EVENT_DISCONNECTED:
-            ESP_LOGI(TAG, "##> %s <##", receivedData); 
-            ESP_LOGW(TAG, "received content length = %d\r\n", totalLen);
+
             // if any data received, send a queue so other tasks can receive and process it
             if (dataToRead == true)                             
             {
-                if (xQueueSend(httpToSpotifyDataQueue, receivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)
+            ESP_LOGI(TAG, "##> %s <##", receivedData); 
+            ESP_LOGW(TAG, "received content length = %d\r\n", totalLen);
+            if (xQueueSend(httpToSpotifyDataQueue, receivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)
                 {
                     ESP_LOGI(TAG, "Data sent from HTTP to Spotify Interface Handler");
                 }
@@ -78,14 +79,12 @@ esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
 void Spotify_SendTokenRequest(char *Code)
 {  
     esp_http_client_config_t clientConfig = {
-        .url = "https://accounts.spotify.com/api/token",                            
+        .url = "https://accounts.spotify.com/api/token/",                            
         .host = "accounts.spotify.com",
         .path = "/api/token",
         .method = HTTP_METHOD_POST,
         .event_handler = HttpEventHandler,
         .disable_auto_redirect = false,
-        .cert_pem = (const char *)server_root_cert_pem_start,                               // Server root certificate
-        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,                  // Length of server root certification
         .client_cert_pem = (const char *)local_server_cert_pem_start,                       // Local server certificate
         .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start,         // Length of local server certificate
         .client_key_pem = (const char *)local_server_key_pem_start,                         // Local server private key
@@ -133,14 +132,12 @@ void Spotify_SendTokenRequest(char *Code)
 void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken)
 {
     esp_http_client_config_t clientConfig = {
-        .url = "https://accounts.spotify.com/api/token",
+        .url = "https://accounts.spotify.com/api/token/",
         .host = "accounts.spotify.com",
         .path = "/api/token",
         .method = HTTP_METHOD_POST,
         .event_handler = HttpEventHandler,
         .disable_auto_redirect = false,
-        .cert_pem = (const char *)server_root_cert_pem_start,                               // Server root certificate
-        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,                  // Length of server root certification
         .client_cert_pem = (const char *)local_server_cert_pem_start,                       // Local server certificate
         .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start,         // Length of local server certificate
         .client_key_pem = (const char *)local_server_key_pem_start,                         // Local server private key
@@ -217,8 +214,6 @@ void Spotify_ControlPlayback(int Command, char *AccessToken)
         .method = clientMethod,                                                             // method variable already filled based on API 
         .event_handler = HttpEventHandler,                                                  // Event handler function
         .disable_auto_redirect = false,
-        .cert_pem = (const char *)server_root_cert_pem_start,                               // Server root certificate
-        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,                  // Length of server root certification
         .client_cert_pem = (const char *)local_server_cert_pem_start,                       // Local server certificate
         .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start,         // Length of local server certificate
         .client_key_pem = (const char *)local_server_key_pem_start,                         // Local server private key
@@ -287,8 +282,6 @@ void Spotify_GetInfo(int Command, char *AccessToken)
         .method = HTTP_METHOD_GET,                                                          // Get for all of this category requests  
         .event_handler = HttpEventHandler,                                                  // Event handler function
         .disable_auto_redirect = false,
-        .cert_pem = (const char *)server_root_cert_pem_start,                               // Server root certificate
-        .cert_len = server_root_cert_pem_end - server_root_cert_pem_start,                  // Length of server root certification
         .client_cert_pem = (const char *)local_server_cert_pem_start,                       // Local server certificate
         .client_cert_len = local_server_cert_pem_end - local_server_cert_pem_start,         // Length of local server certificate
         .client_key_pem = (const char *)local_server_key_pem_start,                         // Local server private key

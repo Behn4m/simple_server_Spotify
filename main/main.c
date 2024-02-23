@@ -9,10 +9,6 @@
 QueueHandle_t BufQueue1 = NULL;
 
 // ****************************** GLobal Functions ****************************** //
-void CallbackTest(char *buffer)
-{
-    ESP_LOGW("Spotify_callback_test ", "%s", buffer);
-}
 void app_main(void)
 {
     LVGL_TaskInit();
@@ -20,8 +16,8 @@ void app_main(void)
     nvsFlashInit();
     SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
-    WifiStationMode("Hardware", "87654321");
-    // WifiStationMode("BELL789", "167271A164A9");
+    // WifiStationMode("Hardware", "87654321");
+    WifiStationMode("BELL789", "167271A164A9");
 #else
     wifiConnectionModule();
 #endif

@@ -162,7 +162,7 @@ bool Spotify_StartMDNSService()
         mdns_hostname_set("deskhub");
         mdns_instance_name_set("Spotify");
         // Register first service
-        // mdns_service_add("deskhub", "_http", "_tcp", 80, NULL, 0);
+        mdns_service_add("deskhub", "_http", "_tcp", 80, NULL, 0);
 
         // Register second service
         // mdns_service_add("test_main", "_http", "_tcp", 8080, NULL, 0);

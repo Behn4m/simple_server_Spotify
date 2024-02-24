@@ -66,7 +66,7 @@ static void scroll_event_cb(lv_event_t *e)
 /**
  * Translate the object as they scroll
  */
-void lv_example_scroll_6(void)
+void LV_UI3(void)
 {
     lv_style_init(&PanelStyle);
     lv_style_set_bg_color(&PanelStyle, lv_color_black());
@@ -84,7 +84,7 @@ void lv_example_scroll_6(void)
     for (i = 0; i < 10; i++)
     {
         lv_obj_t *btn = lv_btn_create(cont);
-        lv_obj_set_width(btn, LV_VER_RES *2/ 3);
+        lv_obj_set_width(btn, LV_VER_RES * 3 / 4);
 
         lv_obj_t *label = lv_label_create(btn);
         lv_label_set_text_fmt(label, "Button %" LV_PRIu32, i);
@@ -115,10 +115,31 @@ static void sw_event_cb(lv_event_t *e)
     }
 }
 
+
+#define GPIO_INPUT_IO_0     CONFIG_GPIO_INPUT_0
+#define GPIO_INPUT_IO_1     CONFIG_GPIO_INPUT_1
+#define GPIO_INPUT_PIN_SEL  ((1ULL<<GPIO_INPUT_IO_0) | (1ULL<<GPIO_INPUT_IO_1))
+/*
+ * Let's say, GPIO_INPUT_IO_0=4, GPIO_INPUT_IO_1=5
+ * In binary representation,
+ * 1ULL<<GPIO_INPUT_IO_0 is equal to 0000000000000000000000000000000000010000 and
+ * 1ULL<<GPIO_INPUT_IO_1 is equal to 0000000000000000000000000000000000100000
+ * GPIO_INPUT_PIN_SEL                0000000000000000000000000000000000110000
+ * */
+void gpio_setup()
+{
+    gpio_config_t io_conf = {};
+    io_conf.intr_type = GPIO_INTR_NEGEDGE;
+    io_conf.pin_bit_mask = GPIO_INPUT_PIN_SEL;
+    io_conf.mode = GPIO_MODE_INPUT;
+    io_conf.pull_up_en = 1;
+    gpio_config(&io_conf);
+    gpio_set_intr_type(GPIO_INPUT_IO_0, GPIO_INTR_ANYEDGE);
+}
 /**
  * Show an example to scroll snap
  */
-void lv_example_scroll_2(void)
+void LV_UI2(void)
 {
     // Base style for MusicBox
     lv_style_init(&PanelStyle);
@@ -134,7 +155,7 @@ void lv_example_scroll_2(void)
     for (i = 0; i < 10; i++)
     {
         lv_obj_t *btn = lv_btn_create(panel);
-        lv_obj_set_size(btn, 150, LV_VER_RES *2/ 3);
+        lv_obj_set_size(btn, 150, LV_VER_RES * 2 / 3);
         lv_obj_center(btn);
         lv_obj_t *label = lv_label_create(btn);
         if (i == 3)
@@ -280,8 +301,8 @@ static void LVGL_mainTask(void *pvParameter)
     // Start LVGL timer and create UI
     LVGL_Timer();
     // LVGL_MyUI();
-    // lv_example_scroll_2();
-    lv_example_scroll_6();
+    // LV_UI2();
+    LV_UI3();
     while (1)
     {
         vTaskDelay(pdMS_TO_TICKS(10));

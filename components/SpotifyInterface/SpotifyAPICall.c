@@ -1,6 +1,5 @@
 #include "SpotifyAPICall.h"
 #include "SpotifyTypedef.h"
-#include "esp_crt_bundle.h"
 
 static const char *TAG = "HTTP";
 QueueHandle_t httpToSpotifyDataQueue = NULL;

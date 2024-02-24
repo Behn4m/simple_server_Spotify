@@ -209,7 +209,7 @@ void Spotify_ControlPlayback(int Command, char *AccessToken)
     }
 
     // Set headers for authentication
-    char authorizationHeader[MEDIUM_BUF];
+    char authorizationHeader[SMALL_BUF];
     snprintf(authorizationHeader, sizeof(authorizationHeader), "Bearer %s", AccessToken);
     esp_http_client_set_header(httpClient, "Authorization", authorizationHeader);               // authorization set based on Spotify API
     esp_http_client_set_header(httpClient, "Content-Length", "0");                              // thess requests are not going to send any data to the host
@@ -273,7 +273,7 @@ void Spotify_GetInfo(int Command, char *AccessToken)
     }
 
     // Set headers for authentication
-    char authorizationHeader[MEDIUM_BUF];
+    char authorizationHeader[SMALL_BUF];
     snprintf(authorizationHeader, sizeof(authorizationHeader), "Bearer %s", AccessToken);
     esp_http_client_set_header(httpClient, "Authorization", authorizationHeader);               // authorization set based on Spotify API
     esp_http_client_set_header(httpClient, "Content-Length", "0");                              // thess requests are not going to send any data to the host

@@ -39,8 +39,8 @@ extern "C" {
 #include "styles/lv_example_style.h"
 #include "others/lv_example_others.h"
 #include "libs/lv_example_libs.h"
-#include "lvgl.h"
-#include "lvgl/src/font/lv_font.h"
+#include "lvgl__lvgl/src/font/lv_font.h"
+#include "lvgl__lvgl/examples/scroll/lv_example_scroll.h"
 
 /**
  * @brief      create guiTask and its global method

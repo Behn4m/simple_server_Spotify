@@ -10,8 +10,146 @@ static const char *TAG = "LVGL_GUI";
 static lv_disp_draw_buf_t disp_draw_buf;
 static lv_style_t TitleBox;
 static lv_style_t MusicBox;
+static lv_style_t PanelStyle;
 lv_color_t *LVGL_BigBuf1;
 lv_color_t *LVGL_BigBuf2;
+
+#if LV_USE_FLEX
+
+static void scroll_event_cb(lv_event_t *e)
+{
+    lv_obj_t *cont = lv_event_get_target(e);
+
+    lv_area_t cont_a;
+    lv_obj_get_coords(cont, &cont_a);
+    lv_coord_t cont_y_center = cont_a.y1 + lv_area_get_height(&cont_a) / 2;
+
+    lv_coord_t r = lv_obj_get_height(cont) * 7 / 10;
+    uint32_t i;
+    uint32_t child_cnt = lv_obj_get_child_cnt(cont);
+    for (i = 0; i < child_cnt; i++)
+    {
+        lv_obj_t *child = lv_obj_get_child(cont, i);
+        lv_area_t child_a;
+        lv_obj_get_coords(child, &child_a);
+
+        lv_coord_t child_y_center = child_a.y1 + lv_area_get_height(&child_a) / 2;
+
+        lv_coord_t diff_y = child_y_center - cont_y_center;
+        diff_y = LV_ABS(diff_y);
+
+        /*Get the x of diff_y on a circle.*/
+        lv_coord_t x;
+        /*If diff_y is out of the circle use the last point of the circle (the radius)*/
+        if (diff_y >= r)
+        {
+            x = r;
+        }
+        else
+        {
+            /*Use Pythagoras theorem to get x from radius and y*/
+            uint32_t x_sqr = r * r - diff_y * diff_y;
+            lv_sqrt_res_t res;
+            lv_sqrt(x_sqr, &res, 0x8000); /*Use lvgl's built in sqrt root function*/
+            x = r - res.i;
+        }
+
+        /*Translate the item by the calculated X coordinate*/
+        lv_obj_set_style_translate_x(child, x, 0);
+
+        /*Use some opacity with larger translations*/
+        lv_opa_t opa = lv_map(x, 0, r, LV_OPA_TRANSP, LV_OPA_COVER);
+        lv_obj_set_style_opa(child, LV_OPA_COVER - opa, 0);
+    }
+}
+
+/**
+ * Translate the object as they scroll
+ */
+void lv_example_scroll_6(void)
+{
+    lv_style_init(&PanelStyle);
+    lv_style_set_bg_color(&PanelStyle, lv_color_black());
+    lv_obj_t *cont = lv_obj_create(lv_scr_act());
+    lv_obj_add_style(cont, &PanelStyle, 0);
+    lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES); // Set size to cover entire horizontal, half vertical
+    lv_obj_center(cont);
+    lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_COLUMN);
+    lv_obj_add_event_cb(cont, scroll_event_cb, LV_EVENT_SCROLL, NULL);
+    lv_obj_set_scroll_dir(cont, LV_DIR_VER);
+    lv_obj_set_scroll_snap_y(cont, LV_SCROLL_SNAP_CENTER);
+    lv_obj_set_scrollbar_mode(cont, LV_SCROLLBAR_MODE_OFF);
+
+    uint32_t i;
+    for (i = 0; i < 10; i++)
+    {
+        lv_obj_t *btn = lv_btn_create(cont);
+        lv_obj_set_width(btn, LV_VER_RES *2/ 3);
+
+        lv_obj_t *label = lv_label_create(btn);
+        lv_label_set_text_fmt(label, "Button %" LV_PRIu32, i);
+    }
+
+    /*Update the buttons position manually for first*/
+    lv_event_send(cont, LV_EVENT_SCROLL, NULL);
+
+    /*Be sure the fist button is in the middle*/
+    lv_obj_scroll_to_view(lv_obj_get_child(cont, 0), LV_ANIM_OFF);
+}
+
+#endif
+
+static void sw_event_cb(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *sw = lv_event_get_target(e);
+
+    if (code == LV_EVENT_VALUE_CHANGED)
+    {
+        lv_obj_t *list = lv_event_get_user_data(e);
+
+        if (lv_obj_has_state(sw, LV_STATE_CHECKED))
+            lv_obj_add_flag(list, LV_OBJ_FLAG_SCROLL_ONE);
+        else
+            lv_obj_clear_flag(list, LV_OBJ_FLAG_SCROLL_ONE);
+    }
+}
+
+/**
+ * Show an example to scroll snap
+ */
+void lv_example_scroll_2(void)
+{
+    // Base style for MusicBox
+    lv_style_init(&PanelStyle);
+    lv_style_set_bg_color(&PanelStyle, lv_color_black());
+    lv_obj_t *panel = lv_obj_create(lv_scr_act());
+    lv_obj_add_style(panel, &PanelStyle, 0);
+    lv_obj_set_size(panel, LV_HOR_RES, LV_VER_RES); // Set size to cover entire horizontal, half vertical
+    lv_obj_set_scroll_snap_x(panel, LV_SCROLL_SNAP_CENTER);
+    lv_obj_set_flex_flow(panel, LV_FLEX_FLOW_COLUMN);
+    lv_obj_align(panel, LV_ALIGN_CENTER, 0, 0);
+
+    uint32_t i;
+    for (i = 0; i < 10; i++)
+    {
+        lv_obj_t *btn = lv_btn_create(panel);
+        lv_obj_set_size(btn, 150, LV_VER_RES *2/ 3);
+        lv_obj_center(btn);
+        lv_obj_t *label = lv_label_create(btn);
+        if (i == 3)
+        {
+            lv_label_set_text_fmt(label, "Panel %" LV_PRIu32 "\nno snap", i);
+            lv_obj_clear_flag(btn, LV_OBJ_FLAG_SNAPPABLE);
+        }
+        else
+        {
+            lv_label_set_text_fmt(label, "Panel %" LV_PRIu32, i);
+        }
+        lv_obj_center(label);
+    }
+    lv_obj_update_snap(panel, LV_ANIM_ON);
+}
 
 /**
  * @brief timer handler for scheduling gui (for refreshing display we need it !)
@@ -141,7 +279,9 @@ static void LVGL_mainTask(void *pvParameter)
 
     // Start LVGL timer and create UI
     LVGL_Timer();
-    LVGL_MyUI();
+    // LVGL_MyUI();
+    // lv_example_scroll_2();
+    lv_example_scroll_6();
     while (1)
     {
         vTaskDelay(pdMS_TO_TICKS(10));

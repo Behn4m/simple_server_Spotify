@@ -36,10 +36,10 @@ bool Spotify_FindCode(char *Response, uint16_t SizeRes)
         }
         if (Found)
         {
-            return true;    // Found the access token substring
+            return true; // Found the access token substring
         }
     }
-    return false;           // Access token substring not Found
+    return false; // Access token substring not Found
 }
 
 /**
@@ -73,12 +73,12 @@ static esp_err_t Spotify_RequestDataAccess(httpd_req_t *HttpdRequest)
  */
 static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *HttpdRequest)
 {
-    char queryBuffer[SMALL_BUF*2];
+    char queryBuffer[SMALL_BUF * 2];
     if (httpd_req_get_url_query_str(HttpdRequest, queryBuffer, sizeof(queryBuffer)) == ESP_OK)
     {
         if (Spotify_FindCode(queryBuffer, sizeof(queryBuffer)) == true)
         {
-            if (xQueueSend(SendCodeFromHttpToSpotifyTask, queryBuffer,  pdMS_TO_TICKS(SEC*15)) != pdTRUE)
+            if (xQueueSend(SendCodeFromHttpToSpotifyTask, queryBuffer, pdMS_TO_TICKS(SEC * 15)) != pdTRUE)
             {
                 ESP_LOGE(TAG, "Sent data with queue failed!");
             }
@@ -141,7 +141,7 @@ httpd_handle_t Spotify_StartWebServer()
  * @brief This function stops the web HttpdServerHandler for handling HTTPS requests.
  * @return Returns the HTTP HttpdServerHandler handle if it is started successfully, or NULL otherwise.
  */
- esp_err_t Spotify_StopSpotifyWebServer(httpd_handle_t HttpdServerHandler)
+esp_err_t Spotify_StopSpotifyWebServer(httpd_handle_t HttpdServerHandler)
 {
     return httpd_stop(HttpdServerHandler);
 }
@@ -161,6 +161,14 @@ bool Spotify_StartMDNSService()
     {
         mdns_hostname_set("deskhub");
         mdns_instance_name_set("Spotify");
+        // Register first service
+        // mdns_service_add("deskhub", "_http", "_tcp", 80, NULL, 0);
+
+        // Register second service
+        // mdns_service_add("test_main", "_http", "_tcp", 8080, NULL, 0);
+
+        // Start mDNS
+        // mdns_service_start();
         return true;
     }
 }

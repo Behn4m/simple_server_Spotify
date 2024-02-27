@@ -57,7 +57,9 @@
         "spotifyapicall.h": "c",
         "image_test.h": "c",
         "lvglgui.h": "c",
-        "lvgl.h": "c"
+        "lvgl.h": "c",
+        "gpio.h": "c",
+        "lv_obj.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

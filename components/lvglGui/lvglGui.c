@@ -1,10 +1,21 @@
 #include "lvglGui.h"
 #include "image_test.h"
+#include <inttypes.h>
+#include "driver/gpio.h"
+#include "esp_pm.h"
+#include "iot_button.h"
+#include "lvgl__lvgl/src/core/lv_obj.h"
+
+#define BUTTON_UP_GPIO GPIO_NUM_21
+#define BOOT_BUTTON_NUM 0
+#define BUTTON_ACTIVE_LEVEL 0
 
 #define LV_TICK_PERIOD_MS 1
 #define LVGL_STACK 2500
 #define TIMER_CALLBACK_TIME 10 * 1000 /* in milliseconds */
-
+lv_obj_t *Cont;
+lv_obj_t *lvglButtomObject;
+lv_obj_t *lvglLableUI3;
 static const char *TAG = "LVGL_GUI";
 
 static lv_disp_draw_buf_t disp_draw_buf;
@@ -13,12 +24,55 @@ static lv_style_t MusicBox;
 static lv_style_t PanelStyle;
 lv_color_t *LVGL_BigBuf1;
 lv_color_t *LVGL_BigBuf2;
+static void scroll_event_cb(lv_event_t *e);
+static void IRAM_ATTR button_event_cb(void *arg, void *data)
+{
+    ESP_LOGE(TAG, "Buttom callback");
+    // lv_event_t *aa;
+    // scroll_event_cb(LV_EVENT_CLICKED);
+    int i = 1;
+    if (LV_RES_OK == lv_event_send(Cont, LV_EVENT_SCROLL, NULL))
+    {
+        ESP_LOGE(TAG, "i=%d", i);
+        lv_obj_scroll_to_view(lv_obj_get_child(Cont, i), LV_ANIM_ON);
+        i++;
+        if (i == 9)
+        {
+            i = 0;
+        }
+    }
+    else
+        ESP_LOGE(TAG, "lv_event_send have problem");
+}
+
+void button_init(uint32_t button_num)
+{
+    button_config_t btn_cfg = {
+        .type = BUTTON_TYPE_GPIO,
+        .gpio_button_config = {
+            .gpio_num = button_num,
+            .active_level = BUTTON_ACTIVE_LEVEL,
+        },
+    };
+    button_handle_t btn = iot_button_create(&btn_cfg);
+    assert(btn);
+    esp_err_t err = iot_button_register_cb(btn, BUTTON_PRESS_DOWN, button_event_cb, NULL);
+    ESP_ERROR_CHECK(err);
+}
+
+void gpio_test()
+{
+    button_init(BOOT_BUTTON_NUM);
+}
 
 #if LV_USE_FLEX
 
 static void scroll_event_cb(lv_event_t *e)
 {
     lv_obj_t *cont = lv_event_get_target(e);
+    // lv_obj_t *cont;
+    // cont=lvglLableUI3;
+    ESP_LOGW(TAG, "we are in scroll callback");
 
     lv_area_t cont_a;
     lv_obj_get_coords(cont, &cont_a);
@@ -27,17 +81,15 @@ static void scroll_event_cb(lv_event_t *e)
     lv_coord_t r = lv_obj_get_height(cont) * 7 / 10;
     uint32_t i;
     uint32_t child_cnt = lv_obj_get_child_cnt(cont);
+    ESP_LOGI(TAG,"lv_obj_get_child_cnt=%d",(int)child_cnt);
     for (i = 0; i < child_cnt; i++)
     {
         lv_obj_t *child = lv_obj_get_child(cont, i);
         lv_area_t child_a;
         lv_obj_get_coords(child, &child_a);
-
         lv_coord_t child_y_center = child_a.y1 + lv_area_get_height(&child_a) / 2;
-
         lv_coord_t diff_y = child_y_center - cont_y_center;
         diff_y = LV_ABS(diff_y);
-
         /*Get the x of diff_y on a circle.*/
         lv_coord_t x;
         /*If diff_y is out of the circle use the last point of the circle (the radius)*/
@@ -53,7 +105,6 @@ static void scroll_event_cb(lv_event_t *e)
             lv_sqrt(x_sqr, &res, 0x8000); /*Use lvgl's built in sqrt root function*/
             x = r - res.i;
         }
-
         /*Translate the item by the calculated X coordinate*/
         lv_obj_set_style_translate_x(child, x, 0);
 
@@ -66,35 +117,36 @@ static void scroll_event_cb(lv_event_t *e)
 /**
  * Translate the object as they scroll
  */
+
 void LV_UI3(void)
 {
     lv_style_init(&PanelStyle);
     lv_style_set_bg_color(&PanelStyle, lv_color_black());
-    lv_obj_t *cont = lv_obj_create(lv_scr_act());
-    lv_obj_add_style(cont, &PanelStyle, 0);
-    lv_obj_set_size(cont, LV_HOR_RES, LV_VER_RES); // Set size to cover entire horizontal, half vertical
-    lv_obj_center(cont);
-    lv_obj_set_flex_flow(cont, LV_FLEX_FLOW_COLUMN);
-    lv_obj_add_event_cb(cont, scroll_event_cb, LV_EVENT_SCROLL, NULL);
-    lv_obj_set_scroll_dir(cont, LV_DIR_VER);
-    lv_obj_set_scroll_snap_y(cont, LV_SCROLL_SNAP_CENTER);
-    lv_obj_set_scrollbar_mode(cont, LV_SCROLLBAR_MODE_OFF);
+    Cont = lv_obj_create(lv_scr_act());
+    lv_obj_add_style(Cont, &PanelStyle, 0);
+    lv_obj_set_size(Cont, LV_HOR_RES, LV_VER_RES); // Set size to cover entire horizontal, half vertical
+    lv_obj_center(Cont);
+    lv_obj_set_flex_flow(Cont, LV_FLEX_FLOW_COLUMN);
+    lv_obj_add_event_cb(Cont, scroll_event_cb, LV_EVENT_SCROLL, NULL);
+    lv_obj_set_scroll_dir(Cont, LV_DIR_VER);
+    lv_obj_set_scroll_snap_y(Cont, LV_SCROLL_SNAP_CENTER);
+    lv_obj_set_scrollbar_mode(Cont, LV_SCROLLBAR_MODE_OFF);
 
     uint32_t i;
     for (i = 0; i < 10; i++)
     {
-        lv_obj_t *btn = lv_btn_create(cont);
-        lv_obj_set_width(btn, LV_VER_RES * 3 / 4);
+        lvglButtomObject = lv_btn_create(Cont);
+        lv_obj_set_width(lvglButtomObject, LV_VER_RES * 3 / 4);
 
-        lv_obj_t *label = lv_label_create(btn);
-        lv_label_set_text_fmt(label, "Button %" LV_PRIu32, i);
+        lvglLableUI3 = lv_label_create(lvglButtomObject);
+        lv_label_set_text_fmt(lvglLableUI3, "Button %" LV_PRIu32, i);
     }
 
     /*Update the buttons position manually for first*/
-    lv_event_send(cont, LV_EVENT_SCROLL, NULL);
+    lv_event_send(Cont, LV_EVENT_SCROLL, NULL);
 
     /*Be sure the fist button is in the middle*/
-    lv_obj_scroll_to_view(lv_obj_get_child(cont, 0), LV_ANIM_OFF);
+    lv_obj_scroll_to_view(lv_obj_get_child(Cont, 0), LV_ANIM_ON);
 }
 
 #endif
@@ -115,27 +167,6 @@ static void sw_event_cb(lv_event_t *e)
     }
 }
 
-
-#define GPIO_INPUT_IO_0     CONFIG_GPIO_INPUT_0
-#define GPIO_INPUT_IO_1     CONFIG_GPIO_INPUT_1
-#define GPIO_INPUT_PIN_SEL  ((1ULL<<GPIO_INPUT_IO_0) | (1ULL<<GPIO_INPUT_IO_1))
-/*
- * Let's say, GPIO_INPUT_IO_0=4, GPIO_INPUT_IO_1=5
- * In binary representation,
- * 1ULL<<GPIO_INPUT_IO_0 is equal to 0000000000000000000000000000000000010000 and
- * 1ULL<<GPIO_INPUT_IO_1 is equal to 0000000000000000000000000000000000100000
- * GPIO_INPUT_PIN_SEL                0000000000000000000000000000000000110000
- * */
-void gpio_setup()
-{
-    gpio_config_t io_conf = {};
-    io_conf.intr_type = GPIO_INTR_NEGEDGE;
-    io_conf.pin_bit_mask = GPIO_INPUT_PIN_SEL;
-    io_conf.mode = GPIO_MODE_INPUT;
-    io_conf.pull_up_en = 1;
-    gpio_config(&io_conf);
-    gpio_set_intr_type(GPIO_INPUT_IO_0, GPIO_INTR_ANYEDGE);
-}
 /**
  * Show an example to scroll snap
  */
@@ -297,7 +328,7 @@ static void LVGL_mainTask(void *pvParameter)
     disp_drv.flush_cb = disp_driver_flush;
     disp_drv.draw_buf = &disp_draw_buf;
     lv_disp_drv_register(&disp_drv);
-
+    gpio_test();
     // Start LVGL timer and create UI
     LVGL_Timer();
     // LVGL_MyUI();

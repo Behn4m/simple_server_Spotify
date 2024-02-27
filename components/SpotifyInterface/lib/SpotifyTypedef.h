@@ -91,7 +91,9 @@ typedef struct
     Token_t token;                  // Nested struct for token information
     TickType_t TokenLastUpdate;     // System Tick of last token update
     UserInfo_t UserInfo;            // Nested struct for user information
-    Status_t Status;                // state machine 
+    Status_t Status;                // state machine
+    char *SpotifyBuffer;             // Buffer for https request
+    bool IsResponseReady;           // Flag for response ready 
 } SpotifyPrivateHandler_t;
 
 

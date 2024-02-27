@@ -14,7 +14,22 @@ extern "C" {
 
 
 extern QueueHandle_t httpToSpotifyDataQueue;
+extern char SpotifyResponse[10000];
+extern bool SpotifyResponseFlag;
 
+typedef struct
+{
+    char *MessageBuffer;
+    bool *IsResponseReady;
+}SpotifyAPIBuffer_t;
+
+/**
+ * @brief This function sends a request to the Spotify login API to authorize the user.
+ * @param[in,out] Buf The character buffer to store the request and receive the response.
+ * @param[in] SizeBuf The size of the character buffer.
+ * @return This function does not return a value.
+ */
+void SpotifyAPICallInit(char *messageBuffer, bool *isResponseReady);
 
 /**
  * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.

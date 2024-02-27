@@ -3,10 +3,16 @@
 
 static const char *TAG = "HTTP";
 QueueHandle_t httpToSpotifyDataQueue = NULL;
+SpotifyAPIBuffer_t SpotifyAPIBuffer;
+
+void SpotifyAPICallInit(char *messageBuffer, bool *isResponseReady)
+{
+    SpotifyAPIBuffer.MessageBuffer = messageBuffer;
+    SpotifyAPIBuffer.IsResponseReady = isResponseReady;
+}
 
 esp_err_t HttpEventHandler(esp_http_client_event_t *evt) 
 {
-    static char receivedData[LONG_BUF] = {};
     static int totalLen = 0;
     static bool dataToRead = false;
     // Create the queue and semaphore
@@ -23,30 +29,24 @@ esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
             // Handle HTTP header received, if needed
             break;
         case HTTP_EVENT_ON_DATA:
+            *SpotifyAPIBuffer.IsResponseReady = false;
             if (totalLen + evt->data_len < LONG_BUF)                                        // check if receved data is not larger than buffer size 
-            {
+            {   
             dataToRead = true;                                                              // set flag true if server set some data
-                memcpy(receivedData + totalLen, evt->data, evt->data_len);                  // copy received data to the end of previous received data
+                memcpy(SpotifyAPIBuffer.MessageBuffer + totalLen, evt->data, evt->data_len);// copy received data to the end of previous received data
                 totalLen += evt->data_len;                                                  // update pointer to the end of copied data
             }
             break;
         case HTTP_EVENT_ON_FINISH:
-            receivedData[totalLen] = '\0';                                                  // write 0 to the end of string
+            SpotifyAPIBuffer.MessageBuffer[totalLen] = '\0';                                                  // write 0 to the end of string
             break;
         case HTTP_EVENT_DISCONNECTED:
-            ESP_LOGI(TAG, "##> %s <##", receivedData); 
+            ESP_LOGI(TAG, "##> %s <##", SpotifyAPIBuffer.MessageBuffer); 
             ESP_LOGW(TAG, "received content length = %d\r\n", totalLen);
             // if any data received, send a queue so other tasks can receive and process it
             if (dataToRead == true)                             
             {
-                if (xQueueSend(httpToSpotifyDataQueue, receivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)
-                {
-                    ESP_LOGI(TAG, "Data sent from HTTP to Spotify Interface Handler");
-                }
-                else
-                {
-                    ESP_LOGE(TAG, "Sending Received Data by Queue failed"); 
-                }
+                *SpotifyAPIBuffer.IsResponseReady = true; 
             }
             dataToRead = false;     // reset flag tp prepare it for next packets
             totalLen = 0;           // reset contect length counter

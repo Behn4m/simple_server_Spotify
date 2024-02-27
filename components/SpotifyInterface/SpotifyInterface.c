@@ -20,7 +20,6 @@ static bool Spotify_TokenRenew(void);
 static bool Spotify_IsTokenExpired();
 bool Spotify_ExtractAccessToken(char *ReceivedData, size_t SizeOfReceivedData);
 
-
 /**
  * @brief This function initiates the Spotify authorization process.
  * @param SpotifyInterfaceHandler as the handler
@@ -52,6 +51,10 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
             xStack,                              // Stack buffer
             xTaskBuffer                          // Task control block
         );
+
+        PrivateHandler.SpotifyBuffer = (char *)malloc(LONG_BUF * sizeof(char));
+
+        SpotifyAPICallInit(PrivateHandler.SpotifyBuffer, &PrivateHandler.IsResponseReady);                           // Initiate the Spotify API call
 
         // create queue to transfer data between the http and interface tasks
         httpToSpotifyDataQueue = xQueueCreate(1, sizeof(char) * sizeof(char[LONG_BUF]));
@@ -96,6 +99,7 @@ bool Spotify_HttpServerServiceInit()
  */
 static void Spotify_MainTask(void *pvparameters)
 {
+    static uint8_t timoutCounter = 0;
     while (1)
     {
         char receivedData[MEDIUM_BUF];
@@ -135,9 +139,11 @@ static void Spotify_MainTask(void *pvparameters)
             case AUTHENTICATED:
             {
                 ESP_LOGI(TAG, "AUTHENTICATED");
-                if (xQueueReceive(httpToSpotifyDataQueue, receivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)              // Waiting for Token to be recieved by queue
+                ESP_LOGE(TAG, "%d", PrivateHandler.IsResponseReady);
+                timoutCounter++;
+                if (PrivateHandler.IsResponseReady == true)              // Waiting for Token to be recieved by queue
                 {
-                    if (Spotify_ExtractAccessToken(receivedData, sizeof(receivedData)) == true)                     // extract all keys from spotify server response
+                    if (Spotify_ExtractAccessToken(PrivateHandler.SpotifyBuffer, sizeof(receivedData)) == true)                     // extract all keys from spotify server response
                     {
                         ESP_LOGI(TAG, "Token found!");
                         PrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                      // Save the time when the token was received
@@ -149,10 +155,11 @@ static void Spotify_MainTask(void *pvparameters)
                         PrivateHandler.Status = LOGIN;                                                               // the reponse did not include all needed keys, so set Status back to LOGIN
                     }            
                 }
-                else
+                else if (timoutCounter > 10)
                 {
                     PrivateHandler.Status = LOGIN;                                                                  // if the response did not come within the expected time, set Status back to LOGIN
                     ESP_LOGW(TAG, "Timeout - Spotify did not respond within the expected time.!");
+                    timoutCounter = 0;
                 }
                 break;
             }
@@ -321,5 +328,15 @@ bool Spotify_SendCommand(int Command)
             break;
             // TO DO: Implement this feature
     }
+    // if (SpotifyResponseFlag == true)
+    // {
+    //     ESP_LOGW(TAG, "SpotifyResponse = %s",  SpotifyResponse);
+    //     return true;
+    // }
+    // else
+    // {
+    //     ESP_LOGE(TAG, "SpotifyResponseFlag is false");
+    //     return false;
+    // }
     return true;
 }

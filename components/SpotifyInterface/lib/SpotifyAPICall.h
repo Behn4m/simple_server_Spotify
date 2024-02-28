@@ -12,11 +12,7 @@ extern "C" {
 #include"SpotifyTypedef.h"
 #include "esp_crt_bundle.h"
 
-
 extern QueueHandle_t httpToSpotifyDataQueue;
-extern char SpotifyResponse[10000];
-extern bool SpotifyResponseFlag;
-
 typedef struct
 {
     char *MessageBuffer;

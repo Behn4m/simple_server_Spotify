@@ -52,7 +52,7 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
             xTaskBuffer                          // Task control block
         );
 
-        PrivateHandler.SpotifyBuffer = (char *)malloc(LONG_BUF * sizeof(char));
+        PrivateHandler.SpotifyBuffer = (char *)malloc(SUPER_BUF * sizeof(char));
 
         SpotifyAPICallInit(PrivateHandler.SpotifyBuffer, &PrivateHandler.IsResponseReady);                           // Initiate the Spotify API call
 
@@ -143,7 +143,7 @@ static void Spotify_MainTask(void *pvparameters)
                 timoutCounter++;
                 if (PrivateHandler.IsResponseReady == true)              // Waiting for Token to be recieved by queue
                 {
-                    if (Spotify_ExtractAccessToken(PrivateHandler.SpotifyBuffer, sizeof(receivedData)) == true)                     // extract all keys from spotify server response
+                    if (Spotify_ExtractAccessToken(PrivateHandler.SpotifyBuffer, sizeof(PrivateHandler.SpotifyBuffer)) == true)                     // extract all keys from spotify server response
                     {
                         ESP_LOGI(TAG, "Token found!");
                         PrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                      // Save the time when the token was received
@@ -216,7 +216,7 @@ static bool Spotify_IsTokenExpired()
     if (elapsedTime > (HOUR - 300))
     {
         tokenExpired = true;  
-        ESP_LOGW(TAG , "Spotify Token is Expired");                                                                                      // If the elapsed time is greater than the expiration time, set tokenExpired to true
+        ESP_LOGW(TAG , "Spotify Token is Expired");                                                                 // If the elapsed time is greater than the expiration time, set tokenExpired to true
     }
     return tokenExpired;
 }
@@ -233,9 +233,9 @@ static bool Spotify_TokenRenew(void)
     SendRequest_ExchangeTokenWithRefreshToken(receivedData);
     memset(receivedData, 0x0, LONG_BUF);
     
-    if (xQueueReceive(httpToSpotifyDataQueue, receivedData, pdMS_TO_TICKS(SEC)) == pdTRUE) 
+    if (PrivateHandler.IsResponseReady == true) 
     {
-        if (Spotify_ExtractAccessToken(receivedData, sizeof(receivedData)) == true)
+        if (Spotify_ExtractAccessToken(PrivateHandler.SpotifyBuffer, sizeof(PrivateHandler.SpotifyBuffer)) == true)
         {
             ESP_LOGI(TAG, "new Token found!");
             PrivateHandler.TokenLastUpdate = xTaskGetTickCount();
@@ -328,15 +328,16 @@ bool Spotify_SendCommand(int Command)
             break;
             // TO DO: Implement this feature
     }
-    // if (SpotifyResponseFlag == true)
-    // {
-    //     ESP_LOGW(TAG, "SpotifyResponse = %s",  SpotifyResponse);
-    //     return true;
-    // }
-    // else
-    // {
-    //     ESP_LOGE(TAG, "SpotifyResponseFlag is false");
-    //     return false;
-    // }
+    if (PrivateHandler.IsResponseReady == true)
+    {
+        ESP_LOGW(TAG, "SpotifyResponse = %s",  PrivateHandler.SpotifyBuffer);
+
+        return true;
+    }
+    else
+    {
+        ESP_LOGE(TAG, "SpotifyResponseFlag is false");
+        return false;
+    }
     return true;
 }

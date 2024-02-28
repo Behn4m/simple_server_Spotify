@@ -52,12 +52,9 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
             xTaskBuffer                          // Task control block
         );
 
-        PrivateHandler.SpotifyBuffer = (char *)malloc(SUPER_BUF * sizeof(char));
-
-        SpotifyAPICallInit(PrivateHandler.SpotifyBuffer, &PrivateHandler.IsResponseReady);                           // Initiate the Spotify API call
-
-        // create queue to transfer data between the http and interface tasks
-        httpToSpotifyDataQueue = xQueueCreate(1, sizeof(char) * sizeof(char[LONG_BUF]));
+        // Allocate buffer and Initialize the Spotify API call
+        PrivateHandler.SpotifyBuffer = (char *)malloc(SUPER_BUF * sizeof(char));    
+        SpotifyAPICallInit(PrivateHandler.SpotifyBuffer, &PrivateHandler.IsResponseReady);
 
         ESP_LOGI(TAG, "Spotify app initiated successfully");
     }
@@ -143,7 +140,7 @@ static void Spotify_MainTask(void *pvparameters)
                 timoutCounter++;
                 if (PrivateHandler.IsResponseReady == true)              // Waiting for Token to be recieved by queue
                 {
-                    if (Spotify_ExtractAccessToken(PrivateHandler.SpotifyBuffer, sizeof(PrivateHandler.SpotifyBuffer)) == true)                     // extract all keys from spotify server response
+                    if (Spotify_ExtractAccessToken(PrivateHandler.SpotifyBuffer, sizeof(PrivateHandler.SpotifyBuffer)) == true)     // extract all keys from spotify server response
                     {
                         ESP_LOGI(TAG, "Token found!");
                         PrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                      // Save the time when the token was received

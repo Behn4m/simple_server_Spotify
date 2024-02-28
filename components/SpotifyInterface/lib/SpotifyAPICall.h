@@ -12,7 +12,6 @@ extern "C" {
 #include"SpotifyTypedef.h"
 #include "esp_crt_bundle.h"
 
-extern QueueHandle_t httpToSpotifyDataQueue;
 typedef struct
 {
     char *MessageBuffer;

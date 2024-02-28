@@ -2,7 +2,6 @@
 #include "SpotifyTypedef.h"
 
 static const char *TAG = "HTTP";
-QueueHandle_t httpToSpotifyDataQueue = NULL;
 SpotifyAPIBuffer_t SpotifyAPIBuffer;
 
 void SpotifyAPICallInit(char *messageBuffer, bool *isResponseReady)

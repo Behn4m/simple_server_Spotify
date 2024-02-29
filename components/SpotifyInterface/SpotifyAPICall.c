@@ -89,9 +89,6 @@ void Spotify_SendTokenRequest(char *Code)
     sprintf(Grand, "grant_type=authorization_code&redirect_uri=%s&%s", ReDirectUri, Code);
     esp_http_client_set_post_field(httpClient, Grand, strlen(Grand));
 
-    // Enable detailed logging for debugging
-    // esp_http_client_set_debug(client, true);
-
     // Perform HTTP request
     esp_err_t err = esp_http_client_perform(httpClient);
 
@@ -204,7 +201,6 @@ void Spotify_ControlPlayback(int Command, char *AccessToken)
 
     // Set headers for authentication
     char authorizationHeader[SMALL_BUF];
-    snprintf(authorizationHeader, sizeof(authorizationHeader), "Bearer %s", AccessToken);
     esp_http_client_set_header(httpClient, "Authorization", authorizationHeader);               // authorization set based on Spotify API
     esp_http_client_set_header(httpClient, "Content-Length", "0");                              // thess requests are not going to send any data to the host
 

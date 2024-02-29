@@ -114,7 +114,7 @@ static void Spotify_MainTask(void *pvparameters)
                     }
                     else
                     {
-                        ESP_LOGW(TAG, "RefreshToken not found!");
+                        ESP_LOGE(TAG, "Spotify autorization is needed");
                         PrivateHandler.Status = LOGIN;                                                              // If the refresh token does not exist, set the status to LOGIN 
                     }
                 }
@@ -224,7 +224,6 @@ static bool Spotify_TokenRenew(void)
 {
     char receivedData[LONG_BUF];
     ReadTxtFileFromSpiffs(InterfaceHandler->ConfigAddressInSpiffs, "refresh_token", receivedData, NULL, NULL);
-    ESP_LOGI(TAG, "RefreshToken=%s", receivedData);
     SendRequest_ExchangeTokenWithRefreshToken(receivedData);
     memset(receivedData, 0x0, LONG_BUF);
     
@@ -265,7 +264,6 @@ bool Spotify_ExtractAccessToken(char *ReceivedData, size_t SizeOfReceivedData)
                                               PrivateHandler.token.GrantedScope,
                                               PrivateHandler.token.ExpiresInMS) == true)
     {
-        ESP_LOGW(TAG, "%s", PrivateHandler.token.AccessToken );
         return true;
     }
     else

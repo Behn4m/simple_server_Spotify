@@ -124,7 +124,6 @@ void SpiffsWrite(char *addressInSpiffs, char *data)
             return;
         }
         fprintf(file, data);
-        ESP_LOGI(TAG, "data is =%s", data);
         ESP_LOGI(TAG, "File written");
         fclose(file);
     }
@@ -138,7 +137,6 @@ void SpiffsWrite(char *addressInSpiffs, char *data)
             return;
         }
         fprintf(file, "$%s", data);
-        ESP_LOGI(TAG, "data is =%s", data);
         ESP_LOGI(TAG, "File appended");
         fclose(file);
     }
@@ -248,7 +246,6 @@ void SaveFileInSpiffsWithTxtFormat(char *addressInSpiffs, char *key, char *value
     }
     va_end(args);
     char *jsonStr = cJSON_Print(root);
-    printf("%s", jsonStr);
     cJSON_Delete(root);
     SpiffsWrite(addressInSpiffs, jsonStr);
     free(jsonStr);

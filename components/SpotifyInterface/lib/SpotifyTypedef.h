@@ -59,7 +59,7 @@ typedef struct Token_t
     char TokenType[TOKEN_TYPE_STR_SIZE];
     char RefreshToken[REFRESH_TOKEN_STP_SIZE];
     char GrantedScope[GRANTED_SCOP_STR_SIZE];
-    int ExpiresInMS;
+    int *ExpiresInMS;
 } Token_t;
 
 typedef struct UserInfo_t

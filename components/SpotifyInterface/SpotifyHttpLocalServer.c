@@ -73,7 +73,8 @@ static esp_err_t Spotify_RequestDataAccess(httpd_req_t *HttpdRequest)
  */
 static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *HttpdRequest)
 {
-    char queryBuffer[SMALL_BUF*2];
+    int bufferSize = httpd_req_get_url_query_len(HttpdRequest) + 1;     // +1 for null terminator
+    char queryBuffer[bufferSize];                                       // Buffer to store the query string
     if (httpd_req_get_url_query_str(HttpdRequest, queryBuffer, sizeof(queryBuffer)) == ESP_OK)
     {
         if (Spotify_FindCode(queryBuffer, sizeof(queryBuffer)) == true)

@@ -54,7 +54,8 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
 
         // Allocate buffer and Initialize the Spotify API call
         PrivateHandler.SpotifyBuffer = (char *)malloc(SUPER_BUF * sizeof(char));    
-        SpotifyAPICallInit(PrivateHandler.SpotifyBuffer, &PrivateHandler.IsResponseReady);
+        PrivateHandler.SpotifyResponseReadyFlag = xSemaphoreCreateBinary();    
+        SpotifyAPICallInit(PrivateHandler.SpotifyBuffer, PrivateHandler.SpotifyResponseReadyFlag);
 
         ESP_LOGI(TAG, "Spotify app initiated successfully");
     }
@@ -136,9 +137,7 @@ static void Spotify_MainTask(void *pvparameters)
             case AUTHENTICATED:
             {
                 ESP_LOGI(TAG, "AUTHENTICATED");
-                ESP_LOGE(TAG, "%d", PrivateHandler.IsResponseReady);
-                timoutCounter++;
-                if (PrivateHandler.IsResponseReady == true)              // Waiting for Token to be recieved by queue
+                if (xSemaphoreTake(PrivateHandler.SpotifyResponseReadyFlag, pdMS_TO_TICKS(SEC)) == pdTRUE)              // Waiting for Token to be recieved by queue
                 {
                     if (Spotify_ExtractAccessToken(PrivateHandler.SpotifyBuffer, sizeof(PrivateHandler.SpotifyBuffer)) == true)     // extract all keys from spotify server response
                     {
@@ -152,11 +151,10 @@ static void Spotify_MainTask(void *pvparameters)
                         PrivateHandler.Status = LOGIN;                                                               // the reponse did not include all needed keys, so set Status back to LOGIN
                     }            
                 }
-                else if (timoutCounter > 10)
+                else
                 {
                     PrivateHandler.Status = LOGIN;                                                                  // if the response did not come within the expected time, set Status back to LOGIN
                     ESP_LOGW(TAG, "Timeout - Spotify did not respond within the expected time.!");
-                    timoutCounter = 0;
                 }
                 break;
             }
@@ -230,7 +228,7 @@ static bool Spotify_TokenRenew(void)
     SendRequest_ExchangeTokenWithRefreshToken(receivedData);
     memset(receivedData, 0x0, LONG_BUF);
     
-    if (PrivateHandler.IsResponseReady == true) 
+    if (xSemaphoreTake(PrivateHandler.SpotifyResponseReadyFlag, pdMS_TO_TICKS(SEC)) == pdTRUE) 
     {
         if (Spotify_ExtractAccessToken(PrivateHandler.SpotifyBuffer, sizeof(PrivateHandler.SpotifyBuffer)) == true)
         {
@@ -324,17 +322,6 @@ bool Spotify_SendCommand(int Command)
         case GetArtisImageUrl:
             break;
             // TO DO: Implement this feature
-    }
-    if (PrivateHandler.IsResponseReady == true)
-    {
-        ESP_LOGW(TAG, "SpotifyResponse = %s",  PrivateHandler.SpotifyBuffer);
-
-        return true;
-    }
-    else
-    {
-        ESP_LOGE(TAG, "SpotifyResponseFlag is false");
-        return false;
     }
     return true;
 }

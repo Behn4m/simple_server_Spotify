@@ -4,10 +4,10 @@
 static const char *TAG = "HTTP";
 SpotifyAPIBuffer_t SpotifyAPIBuffer;
 
-void SpotifyAPICallInit(char *messageBuffer, bool *isResponseReady)
+void SpotifyAPICallInit(char *messageBuffer,SemaphoreHandle_t spotifyResponseReady)
 {
     SpotifyAPIBuffer.MessageBuffer = messageBuffer;
-    SpotifyAPIBuffer.IsResponseReady = isResponseReady;
+    SpotifyAPIBuffer.SpotifyResponseReadyFlag = spotifyResponseReady;
 }
 
 esp_err_t HttpEventHandler(esp_http_client_event_t *evt) 
@@ -28,7 +28,6 @@ esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
             // Handle HTTP header received, if needed
             break;
         case HTTP_EVENT_ON_DATA:
-            *SpotifyAPIBuffer.IsResponseReady = false;
             if (totalLen + evt->data_len < SUPER_BUF)                                       // check if receved data is not larger than buffer size 
             {   
             dataToRead = true;                                                              // set flag true if server set some data
@@ -42,9 +41,9 @@ esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
         case HTTP_EVENT_DISCONNECTED:
             if (dataToRead == true)                             
             {
-                *SpotifyAPIBuffer.IsResponseReady = true; 
+                xSemaphoreGive(SpotifyAPIBuffer.SpotifyResponseReadyFlag);                    // give semaphore to notify that data is ready   
             }
-            dataToRead = false;     // reset flag tp prepare it for next packets
+            dataToRead = false;                                                             // reset flag tp prepare it for next packets
             totalLen = 0;           // reset contect length counter
             break;
         case HTTP_EVENT_REDIRECT:

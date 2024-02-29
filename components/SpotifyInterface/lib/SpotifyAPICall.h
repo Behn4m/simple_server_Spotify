@@ -15,8 +15,9 @@ extern "C" {
 typedef struct
 {
     char *MessageBuffer;
-    bool *IsResponseReady;
+    SemaphoreHandle_t SpotifyResponseReadyFlag;
 }SpotifyAPIBuffer_t;
+
 
 /**
  * @brief This function sends a request to the Spotify login API to authorize the user.
@@ -24,7 +25,7 @@ typedef struct
  * @param[in] SizeBuf The size of the character buffer.
  * @return This function does not return a value.
  */
-void SpotifyAPICallInit(char *messageBuffer, bool *isResponseReady);
+void SpotifyAPICallInit(char *messageBuffer, SemaphoreHandle_t spotifyResponseReady);
 
 /**
  * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.

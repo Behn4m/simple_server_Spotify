@@ -80,48 +80,64 @@ int ExtractUserInfoParamsfromJson(char *JsonUSerInfo, UserInfo_t *userInfo)
         ESP_LOGI(TAG,"Failed to parse JSON: %s\n", cJSON_GetErrorPtr());
         return 1;
     }
+    cJSON_Delete(J_UsserInfo);
+
     cJSON *displayNameItem = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "DisplayName");
     if (cJSON_IsString(displayNameItem) && (displayNameItem->valuestring != NULL))
     {
         strncpy(userInfo->DisplayName, displayNameItem->valuestring, DISPLAY_NAME_STR_SIZE - 1);
         userInfo->DisplayName[DISPLAY_NAME_STR_SIZE - 1] = '\0';
     }
+    cJSON_Delete(displayNameItem);
+
     cJSON *spotifyProfileURLItem = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "ProfileURL");
     if (cJSON_IsString(spotifyProfileURLItem) && (spotifyProfileURLItem->valuestring != NULL))
     {
         strncpy(userInfo->ProfileURL, spotifyProfileURLItem->valuestring, PROFILE_STR_SIZE - 1);
         userInfo->ProfileURL[PROFILE_STR_SIZE - 1] = '\0';
     }
+    cJSON_Delete(spotifyProfileURLItem);
+
     cJSON *UserInfoIDItem = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "UserID");
     if (cJSON_IsString(UserInfoIDItem) && (UserInfoIDItem->valuestring != NULL))
     {
         strncpy(userInfo->UserID, UserInfoIDItem->valuestring, USER_ID_SIZE - 1);
         userInfo->UserID[USER_ID_SIZE - 1] = '\0';
     }
+    cJSON_Delete(UserInfoIDItem);
+
     cJSON *image1Item = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "Image1");
     if (cJSON_IsString(image1Item) && (image1Item->valuestring != NULL))
     {
         strncpy(userInfo->Image1, image1Item->valuestring, IMAGE1_STR_SIZE - 1);
         userInfo->Image1[IMAGE1_STR_SIZE - 1] = '\0';
     }
+    cJSON_Delete(image1Item);
+
     cJSON *image2Item = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "Image2");
     if (cJSON_IsString(image2Item) && (image2Item->valuestring != NULL))
     {
         strncpy(userInfo->Image2, image2Item->valuestring, IMAGE2_STR_SIZE - 1);
         userInfo->Image2[IMAGE2_STR_SIZE - 1] = '\0';
     }
+    cJSON_Delete(image2Item);
+
     cJSON *countryItem = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "Country");
     if (cJSON_IsString(countryItem) && (countryItem->valuestring != NULL))
     {
         strncpy(userInfo->Country, countryItem->valuestring, COUNTERY_STR_SIZE - 1);
         userInfo->Country[COUNTERY_STR_SIZE - 1] = '\0';
     }
+    cJSON_Delete(countryItem);
+
     cJSON *productItem = cJSON_GetObjectItemCaseSensitive(J_UsserInfo, "Product");
     if (cJSON_IsString(productItem) && (productItem->valuestring != NULL))
     {
         strncpy(userInfo->Product, productItem->valuestring, PRODUCT_STR_SIZE - 1);
         userInfo->Product[PRODUCT_STR_SIZE - 1] = '\0';
     }
+    cJSON_Delete(productItem);
+
     cJSON_Delete(J_UsserInfo);
     // ESP_LOGI(TAG,"DisplayName: %s\n", userInfo->DisplayName);
     // ESP_LOGI(TAG,"ProfileURL: %s\n", userInfo->ProfileURL);
@@ -147,12 +163,14 @@ int ExtractPlaybackInfoParamsfromJson(char *JsonPlaybackInfo, PlaybackInfo_t *pl
         ESP_LOGI(TAG,"Failed to parse JSON: %s\n", cJSON_GetErrorPtr());
         return 1;
     }
+
     cJSON *displayNameItem = cJSON_GetObjectItemCaseSensitive(J_PlaybackInfo, "DisplayName");
     if (cJSON_IsString(displayNameItem) && (displayNameItem->valuestring != NULL))
     {
         strncpy(playbackInfo->AlbumName, displayNameItem->valuestring, DISPLAY_NAME_STR_SIZE - 1);
         playbackInfo->AlbumName[DISPLAY_NAME_STR_SIZE - 1] = '\0';
     }
+    cJSON_Delete(displayNameItem);
  
     cJSON_Delete(J_PlaybackInfo);
     ESP_LOGI(TAG,"DisplayName: %s\n", playbackInfo->AlbumName);

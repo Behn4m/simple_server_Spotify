@@ -17,7 +17,7 @@ bool ExtractAccessTokenParamsTokenFromJson(char *Json, Token_t *token) ;
  * @param[in] all Json parameters has a @param to write on
  * @return Returns 0 if the JSON is parsed successfully, or 1 otherwise.
  */
-int ExtractUserInfoParamsfromJson(char *JsonUSerInfo, UserInfo_t *userInfo);
+int ExtractUserInfoParamsfromJson(char *JsonUserInfo, UserInfo_t *userInfo);
 
 /**
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a PlaybackInfo structure.

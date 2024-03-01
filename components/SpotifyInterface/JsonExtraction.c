@@ -26,35 +26,43 @@ bool ExtractAccessTokenParamsTokenFromJson(char *Json, Token_t *token)
     }
 
     cJSON *accessTokenObj = cJSON_GetObjectItem(J_Token, "access_token");
-    cJSON *tokenTypeObj = cJSON_GetObjectItem(J_Token, "token_type");
-    cJSON *expiresInObj = cJSON_GetObjectItem(J_Token, "expires_in");
-    cJSON *refreshTokenObj = cJSON_GetObjectItem(J_Token, "refresh_token");
-    cJSON *scopeObj = cJSON_GetObjectItem(J_Token, "scope");
-
     if (accessTokenObj != NULL && accessTokenObj->type == cJSON_String) 
     {
         strncpy(token->AccessToken, accessTokenObj->valuestring, ACCESS_TOKEN_STR_SIZE - 1);
         token->AccessToken[ACCESS_TOKEN_STR_SIZE - 1] = '\0';
     }
+    cJSON_Delete(accessTokenObj);
+
+    cJSON *tokenTypeObj = cJSON_GetObjectItem(J_Token, "token_type");
     if (tokenTypeObj != NULL && tokenTypeObj->type == cJSON_String) 
     {
         strncpy(token->TokenType, tokenTypeObj->valuestring, TOKEN_TYPE_STR_SIZE - 1);
         token->TokenType[TOKEN_TYPE_STR_SIZE - 1] = '\0';
     }
+    cJSON_Delete(tokenTypeObj);
+
+    cJSON *expiresInObj = cJSON_GetObjectItem(J_Token, "expires_in");
     if (expiresInObj->type == cJSON_Number) 
     {
         token->ExpiresInMS = expiresInObj->valueint;
     }
+    cJSON_Delete(expiresInObj);
+
+    cJSON *refreshTokenObj = cJSON_GetObjectItem(J_Token, "refresh_token");
     if (refreshTokenObj != NULL && refreshTokenObj->type == cJSON_String) 
     {
         strncpy(token->RefreshToken, refreshTokenObj->valuestring, REFRESH_TOKEN_STP_SIZE - 1);
         token->RefreshToken[REFRESH_TOKEN_STP_SIZE - 1] = '\0';
     }
+    cJSON_Delete(refreshTokenObj);
+
+    cJSON *scopeObj = cJSON_GetObjectItem(J_Token, "scope");
     if (scopeObj != NULL && scopeObj->type == cJSON_String) 
     {
         strncpy(token->GrantedScope, scopeObj->valuestring, GRANTED_SCOP_STR_SIZE - 1);
         token->GrantedScope[GRANTED_SCOP_STR_SIZE - 1] = '\0';
     }
+    cJSON_Delete(scopeObj);
 
     // ESP_LOGI(TAG, "Access Token: %s", AccessToken);
     // ESP_LOGI(TAG, "Token Type: %s", TokenType);
@@ -68,13 +76,13 @@ bool ExtractAccessTokenParamsTokenFromJson(char *Json, Token_t *token)
 
 /**
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a UserInfo structure.
- * @param[in] JsonUSerInfo The input JSON string containing user information.
+ * @param[in] JsonUserInfo The input JSON string containing user information.
  * @param[in] userInfo The object needed to be filled with extarcted data
  * @return Returns 0 if the JSON is parsed successfully, or 1 otherwise.
  */
-int ExtractUserInfoParamsfromJson(char *JsonUSerInfo, UserInfo_t *userInfo)
+int ExtractUserInfoParamsfromJson(char *JsonUserInfo, UserInfo_t *userInfo)
 {
-    cJSON *J_UsserInfo = cJSON_Parse(JsonUSerInfo);
+    cJSON *J_UsserInfo = cJSON_Parse(JsonUserInfo);
     if (J_UsserInfo == NULL)
     {
         ESP_LOGI(TAG,"Failed to parse JSON: %s\n", cJSON_GetErrorPtr());

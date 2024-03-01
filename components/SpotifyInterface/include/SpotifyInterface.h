@@ -24,6 +24,18 @@ extern "C"
 #define GET_SONG_IMAGE_URL 9
 #define GET_ARTIST_IMAGE_URL 10
 
+#define DISPLAY_NAME_STR_SIZE 100
+#define PROFILE_STR_SIZE 100
+#define USER_ID_SIZE 100
+#define IMAGE1_STR_SIZE 100
+#define IMAGE2_STR_SIZE 100
+#define COUNTERY_STR_SIZE 100
+#define PRODUCT_STR_SIZE 100
+#define DISPLAY_NAME_STR_SIZE 100
+#define IMAGE1_STR_SIZE 100
+#define IMAGE2_STR_SIZE 100
+
+
 typedef enum
 {
     NoCommand = 0,
@@ -39,11 +51,40 @@ typedef enum
     GetArtisImageUrl = 10,
     GetUserTopItems = 11
 } Command_t;
+
+typedef struct UserInfo_t
+{
+    char DisplayName[DISPLAY_NAME_STR_SIZE];
+    char ProfileURL[PROFILE_STR_SIZE];
+    char UserID[USER_ID_SIZE];
+    char Image1[IMAGE1_STR_SIZE];
+    char Image2[IMAGE2_STR_SIZE];
+    int Follower;
+    char Country[COUNTERY_STR_SIZE];
+    char Product[PRODUCT_STR_SIZE];
+    TickType_t LastUpdate;
+
+} UserInfo_t;
+
+typedef struct NowPlaying_t
+{
+    char SongName[DISPLAY_NAME_STR_SIZE];
+    char ArtistName[DISPLAY_NAME_STR_SIZE];
+    char AlbumName[DISPLAY_NAME_STR_SIZE];
+    char SongImageURL[IMAGE1_STR_SIZE];
+    char ArtistImageURL[IMAGE1_STR_SIZE];
+    int Duration;
+    int Progress;
+    int IsPlaying;
+    TickType_t LastUpdate;
+} NowPlaying_t;
 typedef struct
 {
     QueueHandle_t *HttpsBufQueue;
     SemaphoreHandle_t *IsSpotifyAuthorizedSemaphore;
     char *ConfigAddressInSpiffs;
+    UserInfo_t *UserInfo;            // Nested struct for user information
+    NowPlaying_t *NowPlaying;        // Nested struct for now playing song information
 } SpotifyInterfaceHandler_t;
 
 /**
@@ -65,7 +106,7 @@ bool Spotify_IsConnected(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler);
  * @param command could be play, pause, stop, next, previous, user_info, song_img, artist_img, etc.
  * @return true if function successfully sent the command to Spotify
  */
-bool Spotify_SendCommand(int command);
+bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int Command);
 #endif
 
 #ifdef __cplusplus

@@ -6,6 +6,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 // ****************************** GLobal Variables ****************************** //
+static const char *TAG = "Main";
 QueueHandle_t BufQueue1 = NULL;
 
 // ****************************** GLobal Functions ****************************** //
@@ -36,17 +37,27 @@ void app_main(void)
     // after this semaphore you can use playback command function in every where !
     if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
     {
-        Spotify_SendCommand(Pause);
+        bool CommandResult = false;
+        // int64_t BufferSize = 0;
+        char *Buffer = NULL; // Initialize Buffer variable
+        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, Pause);
         vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
-        Spotify_SendCommand(Play);
+        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, Play);
         vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
-        Spotify_SendCommand(PlayPrev);
+        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, PlayPrev);
         vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
-        Spotify_SendCommand(PlayNext);
+        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, PlayNext);
         vTaskDelay((pdMS_TO_TICKS(SEC * 3)));        
-        Spotify_SendCommand(GetUserInfo);
+        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetUserInfo);
+        if (CommandResult == true)
+        {
+        }
         vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
-        Spotify_SendCommand(GetNowPlaying);
+        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying);
+        if (CommandResult == true)
+        {
+            ESP_LOGI(TAG, "NowPlaying updated");
+        }
     }
 #endif
 }

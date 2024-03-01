@@ -2,12 +2,11 @@
 #include "SpotifyTypedef.h"
 
 static const char *TAG = "HTTP";
-SpotifyAPIBuffer_t SpotifyAPIBuffer;
+SpotifyAPIBuffer_t *SpotifyBuffer;
 
-void SpotifyAPICallInit(char *messageBuffer,SemaphoreHandle_t spotifyResponseReady)
+void SpotifyAPICallInit(SpotifyAPIBuffer_t *SpotifyAPIBuffer)
 {
-    SpotifyAPIBuffer.MessageBuffer = messageBuffer;
-    SpotifyAPIBuffer.SpotifyResponseReadyFlag = spotifyResponseReady;
+    SpotifyBuffer = SpotifyAPIBuffer;
 }
 
 esp_err_t HttpEventHandler(esp_http_client_event_t *evt) 
@@ -31,20 +30,18 @@ esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
             if (totalLen + evt->data_len < SUPER_BUF)                                       // check if receved data is not larger than buffer size 
             {   
             dataToRead = true;                                                              // set flag true if server set some data
-                memcpy(SpotifyAPIBuffer.MessageBuffer+totalLen, evt->data, evt->data_len);  // copy received data to the end of previous received data
+                memcpy(SpotifyBuffer->MessageBuffer + totalLen, evt->data, evt->data_len);  // copy received data to the end of previous received data
                 totalLen += evt->data_len;                                                  // update pointer to the end of copied data
             }
             break;
         case HTTP_EVENT_ON_FINISH:
-            SpotifyAPIBuffer.MessageBuffer[totalLen] = '\0';                                // write 0 to the end of string
+            SpotifyBuffer->MessageBuffer[totalLen] = '\0';
+                                            // write 0 to the end of string
             break;
         case HTTP_EVENT_DISCONNECTED:
-            if (dataToRead == true)                             
-            {
-                xSemaphoreGive(SpotifyAPIBuffer.SpotifyResponseReadyFlag);                    // give semaphore to notify that data is ready   
-            }
+            xSemaphoreGive(SpotifyBuffer->SpotifyResponseReadyFlag);                  // give semaphore to notify that data is ready  
             dataToRead = false;                                                             // reset flag tp prepare it for next packets
-            totalLen = 0;           // reset contect length counter
+            totalLen = 0;                                                                   // reset contect length counter
             break;
         case HTTP_EVENT_REDIRECT:
             ESP_LOGI(TAG, "redirected");
@@ -212,9 +209,11 @@ void Spotify_ControlPlayback(int Command, char *AccessToken)
     esp_err_t err = esp_http_client_perform(httpClient);                                        // perform http request
     if (err == ESP_OK) 
     {
-        ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %lld",
-                esp_http_client_get_status_code(httpClient),
-                esp_http_client_get_content_length(httpClient));
+        SpotifyBuffer->status = esp_http_client_get_status_code(httpClient);
+        SpotifyBuffer->ContentLength = esp_http_client_get_content_length(httpClient);
+        ESP_LOGI(TAG, "HTTP GET Status = %lld, content_length = %lld",
+                SpotifyBuffer->status,
+                SpotifyBuffer->ContentLength);
     } 
     else 
     {
@@ -255,7 +254,6 @@ void Spotify_GetInfo(int Command, char *AccessToken)
         .path = clientPath,                                                                 // clientPath already filled based in API
         .method = HTTP_METHOD_GET,                                                          // Get for all of this category requests  
         .event_handler = HttpEventHandler,                                                  // Event handler function
-        .use_global_ca_store = true,
         .crt_bundle_attach = esp_crt_bundle_attach,
     };
 
@@ -276,9 +274,11 @@ void Spotify_GetInfo(int Command, char *AccessToken)
     esp_err_t err = esp_http_client_perform(httpClient);                                        // perform http request
     if (err == ESP_OK) 
     {
-        ESP_LOGI(TAG, "HTTP GET Status = %d, content_length = %lld",
-                esp_http_client_get_status_code(httpClient),
-                esp_http_client_get_content_length(httpClient));
+        SpotifyBuffer->status = esp_http_client_get_status_code(httpClient);
+        SpotifyBuffer->ContentLength = esp_http_client_get_content_length(httpClient);
+        ESP_LOGI(TAG, "HTTP GET Status = %lld, content_length = %lld",
+                SpotifyBuffer->status,
+                SpotifyBuffer->ContentLength);
     } 
     else 
     {

@@ -53,9 +53,9 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
         );
 
         // Allocate buffer and Initialize the Spotify API call
-        PrivateHandler.SpotifyBuffer = (char *)malloc(SUPER_BUF * sizeof(char));    
-        PrivateHandler.SpotifyResponseReadyFlag = xSemaphoreCreateBinary();    
-        SpotifyAPICallInit(PrivateHandler.SpotifyBuffer, PrivateHandler.SpotifyResponseReadyFlag);
+        PrivateHandler.SpotifyBuffer.MessageBuffer = (char *)malloc(SUPER_BUF * sizeof(char));    
+        PrivateHandler.SpotifyBuffer.SpotifyResponseReadyFlag = xSemaphoreCreateBinary();    
+        SpotifyAPICallInit(&PrivateHandler.SpotifyBuffer);
 
         ESP_LOGI(TAG, "Spotify app initiated successfully");
     }
@@ -97,7 +97,6 @@ bool Spotify_HttpServerServiceInit()
  */
 static void Spotify_MainTask(void *pvparameters)
 {
-    static uint8_t timoutCounter = 0;
     while (1)
     {
         char receivedData[MEDIUM_BUF];
@@ -137,9 +136,9 @@ static void Spotify_MainTask(void *pvparameters)
             case AUTHENTICATED:
             {
                 ESP_LOGI(TAG, "AUTHENTICATED");
-                if (xSemaphoreTake(PrivateHandler.SpotifyResponseReadyFlag, pdMS_TO_TICKS(SEC)) == pdTRUE)              // Waiting for Token to be recieved by queue
+                if (xSemaphoreTake(PrivateHandler.SpotifyBuffer.SpotifyResponseReadyFlag, pdMS_TO_TICKS(SEC)) == pdTRUE)              // Waiting for Token to be recieved by queue
                 {
-                    if (Spotify_ExtractAccessToken(PrivateHandler.SpotifyBuffer, sizeof(PrivateHandler.SpotifyBuffer)) == true)     // extract all keys from spotify server response
+                    if (Spotify_ExtractAccessToken(PrivateHandler.SpotifyBuffer.MessageBuffer, sizeof(PrivateHandler.SpotifyBuffer.MessageBuffer)) == true)     // extract all keys from spotify server response
                     {
                         ESP_LOGI(TAG, "Token found!");
                         PrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                      // Save the time when the token was received
@@ -227,9 +226,9 @@ static bool Spotify_TokenRenew(void)
     SendRequest_ExchangeTokenWithRefreshToken(receivedData);
     memset(receivedData, 0x0, LONG_BUF);
     
-    if (xSemaphoreTake(PrivateHandler.SpotifyResponseReadyFlag, pdMS_TO_TICKS(SEC)) == pdTRUE) 
+    if (xSemaphoreTake(PrivateHandler.SpotifyBuffer.SpotifyResponseReadyFlag, pdMS_TO_TICKS(SEC)) == pdTRUE) 
     {
-        if (Spotify_ExtractAccessToken(PrivateHandler.SpotifyBuffer, sizeof(PrivateHandler.SpotifyBuffer)) == true)
+        if (Spotify_ExtractAccessToken(PrivateHandler.SpotifyBuffer.MessageBuffer, sizeof(PrivateHandler.SpotifyBuffer.MessageBuffer)) == true)
         {
             ESP_LOGI(TAG, "new Token found!");
             PrivateHandler.TokenLastUpdate = xTaskGetTickCount();
@@ -291,8 +290,13 @@ bool Spotify_ExtractAccessToken(char *ReceivedData, size_t SizeOfReceivedData)
  * - GET_SONG_IMAGE_URL: Sends the GET_SONG_IMAGE_URL command to Spotify.
  * - GET_ARTIST_IMAGE_URL: Sends the GET_ARTIST_IMAGE_URL command to Spotify.
  */
-bool Spotify_SendCommand(int Command)
+bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int Command)
 {
+    bool retValue = false;
+
+    // DataBuffer = PrivateHandler.SpotifyBuffer.MessageBuffer;
+    // DataBufferSize = PrivateHandler.SpotifyBuffer.ContentLength;
+
     ESP_LOGI(TAG, "user Command is %d", Command);
     if (PrivateHandler.Status == LOGIN || PrivateHandler.Status == AUTHENTICATED)
     {
@@ -306,13 +310,23 @@ bool Spotify_SendCommand(int Command)
         case PlayNext:
         case PlayPrev:
             Spotify_ControlPlayback(Command, PrivateHandler.token.AccessToken);
-            // TO DO: process and store Spotify api service response
+            if(PrivateHandler.SpotifyBuffer.status == 204)
+            {
+                retValue = true;
+            }
             break;
         case GetNowPlaying:
         case GetUserInfo:
         case GetUserTopItems:
             Spotify_GetInfo(Command, PrivateHandler.token.AccessToken);
-            // TO DO: process and store Spotify api service response 
+            if(PrivateHandler.SpotifyBuffer.status == 200)
+            {
+                retValue = true;
+            }
+            else if (PrivateHandler.SpotifyBuffer.status == 204)
+            {
+                retValue = false;
+            }
             break;
         case GetSongImageUrl:
             // TO DO: Implement this feature
@@ -321,5 +335,12 @@ bool Spotify_SendCommand(int Command)
             break;
             // TO DO: Implement this feature
     }
-    return true;
+
+
+
+    if (PrivateHandler.SpotifyBuffer.ContentLength > 0)
+    {
+        ESP_LOGI(TAG, "Spotify response: %s", PrivateHandler.SpotifyBuffer.MessageBuffer);
+    }
+    return retValue;
 }

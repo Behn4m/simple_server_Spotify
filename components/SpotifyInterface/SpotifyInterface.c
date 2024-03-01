@@ -18,7 +18,6 @@ static const char *TAG = "SpotifyTask";
 static void Spotify_MainTask(void *pvparameters);
 static bool Spotify_TokenRenew(void);
 static bool Spotify_IsTokenExpired();
-bool Spotify_ExtractAccessToken(char *ReceivedData, size_t SizeOfReceivedData);
 
 /**
  * @brief This function initiates the Spotify authorization process.
@@ -138,7 +137,7 @@ static void Spotify_MainTask(void *pvparameters)
                 ESP_LOGI(TAG, "AUTHENTICATED");
                 if (xSemaphoreTake(PrivateHandler.SpotifyBuffer.SpotifyResponseReadyFlag, pdMS_TO_TICKS(SEC)) == pdTRUE)              // Waiting for Token to be recieved by queue
                 {
-                    if (Spotify_ExtractAccessToken(PrivateHandler.SpotifyBuffer.MessageBuffer, sizeof(PrivateHandler.SpotifyBuffer.MessageBuffer)) == true)     // extract all keys from spotify server response
+                    if (ExtractAccessTokenParamsTokenFromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, &PrivateHandler.token) == true)     // extract all keys from spotify server response
                     {
                         ESP_LOGI(TAG, "Token found!");
                         PrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                      // Save the time when the token was received
@@ -228,7 +227,7 @@ static bool Spotify_TokenRenew(void)
     
     if (xSemaphoreTake(PrivateHandler.SpotifyBuffer.SpotifyResponseReadyFlag, pdMS_TO_TICKS(SEC)) == pdTRUE) 
     {
-        if (Spotify_ExtractAccessToken(PrivateHandler.SpotifyBuffer.MessageBuffer, sizeof(PrivateHandler.SpotifyBuffer.MessageBuffer)) == true)
+        if (ExtractAccessTokenParamsTokenFromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, &PrivateHandler.token) == true)
         {
             ESP_LOGI(TAG, "new Token found!");
             PrivateHandler.TokenLastUpdate = xTaskGetTickCount();
@@ -247,31 +246,7 @@ static bool Spotify_TokenRenew(void)
     }
 }
 
-/**
- * @brief This function  Extracts JSON content from an HTTP response string
- *        and give value to privet handler variable , if all things was true , spotify event handler
- *        register
- * @return True if token received and saved, false for otherwise
- */
-bool Spotify_ExtractAccessToken(char *ReceivedData, size_t SizeOfReceivedData)
-{
-    // extract keys from JSON
-    if (ExtractAccessTokenParamsTokenFromJson(ReceivedData, SizeOfReceivedData,
-                                              PrivateHandler.token.AccessToken,
-                                              PrivateHandler.token.TokenType,
-                                              PrivateHandler.token.RefreshToken,
-                                              PrivateHandler.token.GrantedScope,
-                                              PrivateHandler.token.ExpiresInMS) == true)
-    {
-        return true;
-    }
-    else
-    {
-        ESP_LOGE(TAG, "TOKEN extraction failed, back to LOGIN state");
-        return false;
-        // TO DO: the handler should reset here
-    }
-}
+
 
 /**
  * @brief Sends a command to control Spotify.
@@ -322,6 +297,7 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
             if(PrivateHandler.SpotifyBuffer.status == 200)
             {
                 retValue = true;
+                ExtractUserInfoParamsfromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, InterfaceHandler->UserInfo);
             }
             else if (PrivateHandler.SpotifyBuffer.status == 204)
             {
@@ -335,8 +311,6 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
             break;
             // TO DO: Implement this feature
     }
-
-
 
     if (PrivateHandler.SpotifyBuffer.ContentLength > 0)
     {

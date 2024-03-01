@@ -66,7 +66,7 @@ typedef struct UserInfo_t
 
 } UserInfo_t;
 
-typedef struct NowPlaying_t
+typedef struct PlaybackInfo_t
 {
     char SongName[DISPLAY_NAME_STR_SIZE];
     char ArtistName[DISPLAY_NAME_STR_SIZE];
@@ -77,14 +77,14 @@ typedef struct NowPlaying_t
     int Progress;
     int IsPlaying;
     TickType_t LastUpdate;
-} NowPlaying_t;
+} PlaybackInfo_t;
 typedef struct
 {
     QueueHandle_t *HttpsBufQueue;
     SemaphoreHandle_t *IsSpotifyAuthorizedSemaphore;
     char *ConfigAddressInSpiffs;
     UserInfo_t *UserInfo;            // Nested struct for user information
-    NowPlaying_t *NowPlaying;        // Nested struct for now playing song information
+    PlaybackInfo_t *PlaybackInfo;        // Nested struct for now playing song information
 } SpotifyInterfaceHandler_t;
 
 /**

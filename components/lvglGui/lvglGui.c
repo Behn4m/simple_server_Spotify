@@ -27,7 +27,7 @@ static lv_style_t PanelStyle;
 lv_color_t *LVGL_BigBuf1;
 lv_color_t *LVGL_BigBuf2;
 static void scroll_event_cb(lv_event_t *e);
-int i = 1;
+int i =0;
 lv_obj_t *SwitchObject;
 lv_obj_t *OneclickLable;
 lv_obj_t *BigpalnelScrollObject;
@@ -36,7 +36,6 @@ static void set_value(void *bar, int32_t v)
     lv_bar_set_value(bar, v, LV_ANIM_OFF);
 }
 lv_obj_t *BarObject;
-
 static void IRAM_ATTR button_event_cb(void *arg, void *data)
 {
     ESP_LOGE(TAG, "Buttom callback");
@@ -53,12 +52,11 @@ static void IRAM_ATTR button_event_cb(void *arg, void *data)
 
     // lv_obj_add_state(BigpalnelScrollObject, LV_STATE_SCROLLED);
     // lv_event_send(BigpalnelScrollObject, LV_EVENT_VALUE_CHANGED, NULL);
-    i = i * 10;
-    ESP_LOGW(TAG, "i=%d",i);
-
-    lv_bar_set_value(BarObject, (int32_t)i, LV_ANIM_ON);
-    if (i == 100)
+    i = i +10;
+    ESP_LOGW(TAG, "i=%d", i);
+    if (i >= 100)
         i = 1;
+    lv_event_send(BarObject, LV_EVENT_ALL, (void *)i);
 }
 
 void button_init(uint32_t button_num)
@@ -302,7 +300,16 @@ void lv_example_bar_6(void)
     lv_anim_start(&a);
 }
 
-void lv_example_bar_2(void)
+static void bar_event_cb(lv_event_t *e)
+{
+    lv_obj_t *cont = lv_event_get_target(e);
+    // int ii=0;
+    // ii = (int32_t)(e->param);
+    // ESP_LOGW(TAG, "param ii=%d", ii);
+    lv_bar_set_value(cont, i, LV_ANIM_OFF);
+    // lv_bar_set_value(cont, 45, LV_ANIM_ON);
+}
+void RailBar(void)
 {
     static lv_style_t style_bg;
     static lv_style_t style_indic;
@@ -319,14 +326,16 @@ void lv_example_bar_2(void)
     lv_style_set_bg_color(&style_indic, lv_palette_main(LV_PALETTE_BLUE));
     lv_style_set_radius(&style_indic, 3);
 
-    lv_obj_t *BarObject = lv_bar_create(lv_scr_act());
+    BarObject = lv_bar_create(lv_scr_act());
     lv_obj_remove_style_all(BarObject); /*To have a clean start*/
     lv_obj_add_style(BarObject, &style_bg, 0);
     lv_obj_add_style(BarObject, &style_indic, LV_PART_INDICATOR);
 
     lv_obj_set_size(BarObject, 200, 20);
     lv_obj_center(BarObject);
-    lv_bar_set_value(BarObject, 100, LV_ANIM_ON);
+    lv_obj_add_event_cb(BarObject, bar_event_cb, LV_EVENT_ALL, NULL);
+
+    // lv_bar_set_value(BarObject, 46, LV_ANIM_ON);
 }
 
 /**
@@ -460,7 +469,7 @@ static void LVGL_mainTask(void *pvParameter)
     // LVGL_MyUI();
     // LV_UI2();
     // LV_UI3();
-    lv_example_bar_2();
+    RailBar();
     // lv_example_bar_6();
     while (1)
     {

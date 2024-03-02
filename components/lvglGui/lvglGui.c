@@ -26,33 +26,12 @@ static lv_style_t MusicBox;
 static lv_style_t PanelStyle;
 lv_color_t *LVGL_BigBuf1;
 lv_color_t *LVGL_BigBuf2;
-static void scroll_event_cb(lv_event_t *e);
-int i =0;
-lv_obj_t *SwitchObject;
-lv_obj_t *OneclickLable;
-lv_obj_t *BigpalnelScrollObject;
-static void set_value(void *bar, int32_t v)
-{
-    lv_bar_set_value(bar, v, LV_ANIM_OFF);
-}
+int i = 0;
 lv_obj_t *BarObject;
 static void IRAM_ATTR button_event_cb(void *arg, void *data)
 {
     ESP_LOGE(TAG, "Buttom callback");
-
-    // if (lv_obj_has_state(SwitchObject, LV_STATE_CHECKED))
-    // {
-    //     lv_obj_clear_state(SwitchObject, LV_STATE_CHECKED);
-    // }
-    // else
-    // {
-    //     lv_obj_add_state(SwitchObject, LV_STATE_CHECKED);
-    // }
-    // lv_event_send(SwitchObject, LV_EVENT_VALUE_CHANGED, NULL);
-
-    // lv_obj_add_state(BigpalnelScrollObject, LV_STATE_SCROLLED);
-    // lv_event_send(BigpalnelScrollObject, LV_EVENT_VALUE_CHANGED, NULL);
-    i = i +10;
+    i = i + 10;
     ESP_LOGW(TAG, "i=%d", i);
     if (i >= 100)
         i = 1;
@@ -78,236 +57,14 @@ void gpio_test()
 {
     button_init(BOOT_BUTTON_NUM);
 }
-
-#if LV_USE_FLEX
-
-static void scroll_event_cb(lv_event_t *e)
+static void set_value(void *bar, int32_t v)
 {
-    lv_obj_t *cont = lv_event_get_target(e);
-
-    lv_area_t cont_a;
-    lv_obj_get_coords(cont, &cont_a);
-    lv_coord_t cont_y_center = cont_a.y1 + lv_area_get_height(&cont_a) / 2;
-
-    lv_coord_t r = lv_obj_get_height(cont) * 7 / 10;
-    uint32_t i;
-    uint32_t child_cnt = lv_obj_get_child_cnt(cont);
-    for (i = 0; i < child_cnt; i++)
-    {
-        lv_obj_t *child = lv_obj_get_child(cont, i);
-        lv_area_t child_a;
-        lv_obj_get_coords(child, &child_a);
-
-        lv_coord_t child_y_center = child_a.y1 + lv_area_get_height(&child_a) / 2;
-
-        lv_coord_t diff_y = child_y_center - cont_y_center;
-        diff_y = LV_ABS(diff_y);
-
-        /*Get the x of diff_y on a circle.*/
-        lv_coord_t x;
-        /*If diff_y is out of the circle use the last point of the circle (the radius)*/
-        if (diff_y >= r)
-        {
-            x = r;
-        }
-        else
-        {
-            /*Use Pythagoras theorem to get x from radius and y*/
-            uint32_t x_sqr = r * r - diff_y * diff_y;
-            lv_sqrt_res_t res;
-            lv_sqrt(x_sqr, &res, 0x8000); /*Use lvgl's built in sqrt root function*/
-            x = r - res.i;
-        }
-
-        /*Translate the item by the calculated X coordinate*/
-        lv_obj_set_style_translate_x(child, x, 0);
-
-        /*Use some opacity with larger translations*/
-        lv_opa_t opa = lv_map(x, 0, r, LV_OPA_TRANSP, LV_OPA_COVER);
-        lv_obj_set_style_opa(child, LV_OPA_COVER - opa, 0);
-    }
+    lv_bar_set_value(bar, v, LV_ANIM_OFF);
 }
-
-/**
- * Translate the object as they scroll
- */
-
-void LV_UI3(void)
-{
-    Cont = lv_obj_create(lv_scr_act());
-    lv_obj_set_size(Cont, 200, 200);
-    lv_obj_center(Cont);
-    lv_obj_set_flex_flow(Cont, LV_FLEX_FLOW_COLUMN);
-    lv_obj_add_event_cb(Cont, scroll_event_cb, LV_EVENT_SCROLL, NULL);
-    lv_obj_set_scroll_dir(Cont, LV_DIR_VER);
-    lv_obj_set_scroll_snap_y(Cont, LV_SCROLL_SNAP_CENTER);
-    lv_obj_set_scrollbar_mode(Cont, LV_SCROLLBAR_MODE_OFF);
-
-    uint32_t i;
-    for (i = 0; i < 20; i++)
-    {
-        lv_obj_t *btn = lv_btn_create(Cont);
-        lv_obj_set_width(btn, lv_pct(100));
-
-        lv_obj_t *label = lv_label_create(btn);
-        lv_label_set_text_fmt(label, "Button %" LV_PRIu32, i);
-    }
-
-    /*Update the buttons position manually for first*/
-    lv_event_send(Cont, LV_EVENT_SCROLL, NULL);
-
-    /*Be sure the fist button is in the middle*/
-    lv_obj_scroll_to_view(lv_obj_get_child(Cont, 1), LV_ANIM_ON);
-}
-
-#endif
-
-static void sw_event_cb(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t *sw = lv_event_get_target(e);
-
-    if (code == LV_EVENT_VALUE_CHANGED)
-    {
-        lv_obj_t *list = lv_event_get_user_data(e);
-
-        if (lv_obj_has_state(sw, LV_STATE_CHECKED))
-        {
-            lv_obj_add_flag(list, LV_OBJ_FLAG_SCROLL_ONE);
-        }
-        else
-            lv_obj_clear_flag(list, LV_OBJ_FLAG_SCROLL_ONE);
-    }
-}
-static void panel_event_cb(lv_event_t *e)
-{
-    lv_event_code_t code = lv_event_get_code(e);
-    lv_obj_t *sw = lv_event_get_target(e);
-
-    if (code == LV_EVENT_SCROLL)
-    {
-        lv_obj_t *list = lv_event_get_user_data(e);
-        if (lv_obj_has_state(sw, LV_STATE_CHECKED))
-        {
-            lv_obj_add_flag(list, LV_OBJ_FLAG_SCROLL_ONE);
-        }
-        else
-            lv_obj_clear_flag(list, LV_OBJ_FLAG_SCROLL_ONE);
-    }
-}
-/**
- * Show an example to scroll snap
- */
-void LV_UI2(void)
-{
-    // Base style for MusicBox
-    lv_style_init(&PanelStyle);
-    lv_style_set_bg_color(&PanelStyle, lv_color_black());
-    lv_obj_t *panel = lv_obj_create(lv_scr_act());
-    lv_obj_add_style(panel, &PanelStyle, 0);
-    lv_obj_set_size(panel, LV_HOR_RES, LV_VER_RES); // Set size to cover entire horizontal, half vertical
-    lv_obj_set_scroll_snap_x(panel, LV_SCROLL_SNAP_CENTER);
-    lv_obj_set_flex_flow(panel, LV_FLEX_FLOW_COLUMN);
-    lv_obj_align(panel, LV_ALIGN_CENTER, 0, 0);
-    lv_obj_add_event_cb(BigpalnelScrollObject, panel_event_cb, LV_EVENT_ALL, panel);
-    uint32_t i;
-    for (i = 0; i < 10; i++)
-    {
-        BigpalnelScrollObject = lv_btn_create(panel);
-        lv_obj_set_size(BigpalnelScrollObject, 150, LV_VER_RES * 2 / 3);
-        lv_obj_center(BigpalnelScrollObject);
-
-        lv_obj_t *label = lv_label_create(BigpalnelScrollObject);
-        if (i == 3)
-        {
-            lv_label_set_text_fmt(label, "Panel %" LV_PRIu32 "\nno snap", i);
-            lv_obj_clear_flag(BigpalnelScrollObject, LV_OBJ_FLAG_SNAPPABLE);
-        }
-        else
-        {
-            lv_label_set_text_fmt(label, "Panel %" LV_PRIu32, i);
-        }
-        lv_obj_center(label);
-    }
-    lv_obj_update_snap(panel, LV_ANIM_ON);
-    SwitchObject = lv_switch_create(lv_scr_act());
-    lv_obj_align(SwitchObject, LV_ALIGN_TOP_RIGHT, -20, 10);
-    lv_obj_add_event_cb(SwitchObject, sw_event_cb, LV_EVENT_ALL, panel);
-    OneclickLable = lv_label_create(lv_scr_act());
-    lv_label_set_text(OneclickLable, "One scroll");
-    lv_obj_align_to(OneclickLable, SwitchObject, LV_ALIGN_OUT_BOTTOM_MID, 0, 5);
-}
-
-static void event_cb(lv_event_t *e)
-{
-    lv_obj_draw_part_dsc_t *dsc = lv_event_get_draw_part_dsc(e);
-    if (dsc->part != LV_PART_INDICATOR)
-        return;
-
-    lv_obj_t *obj = lv_event_get_target(e);
-
-    lv_draw_label_dsc_t label_dsc;
-    lv_draw_label_dsc_init(&label_dsc);
-    label_dsc.font = LV_FONT_DEFAULT;
-
-    char buf[8];
-    lv_snprintf(buf, sizeof(buf), "%d", (int)lv_bar_get_value(obj));
-
-    lv_point_t txt_size;
-    lv_txt_get_size(&txt_size, buf, label_dsc.font, label_dsc.letter_space, label_dsc.line_space, LV_COORD_MAX,
-                    label_dsc.flag);
-
-    lv_area_t txt_area;
-    /*If the indicator is long enough put the text inside on the right*/
-    if (lv_area_get_width(dsc->draw_area) > txt_size.x + 20)
-    {
-        txt_area.x2 = dsc->draw_area->x2 - 5;
-        txt_area.x1 = txt_area.x2 - txt_size.x + 1;
-        label_dsc.color = lv_color_white();
-    }
-    /*If the indicator is still short put the text out of it on the right*/
-    else
-    {
-        txt_area.x1 = dsc->draw_area->x2 + 5;
-        txt_area.x2 = txt_area.x1 + txt_size.x - 1;
-        label_dsc.color = lv_color_black();
-    }
-
-    txt_area.y1 = dsc->draw_area->y1 + (lv_area_get_height(dsc->draw_area) - txt_size.y) / 2;
-    txt_area.y2 = txt_area.y1 + txt_size.y - 1;
-
-    lv_draw_label(dsc->draw_ctx, &label_dsc, &txt_area, buf, NULL);
-}
-
-/**
- * Custom drawer on the bar to display the current value
- */
-void lv_example_bar_6(void)
-{
-    lv_obj_t *bar = lv_bar_create(lv_scr_act());
-    lv_obj_add_event_cb(bar, event_cb, LV_EVENT_DRAW_PART_END, NULL);
-    lv_obj_set_size(bar, 200, 20);
-    lv_obj_center(bar);
-
-    lv_anim_t a;
-    lv_anim_init(&a);
-    lv_anim_set_var(&a, bar);
-    lv_anim_set_values(&a, 0, 100);
-    lv_anim_set_exec_cb(&a, set_value);
-    lv_anim_set_time(&a, 2000);
-    lv_anim_set_playback_time(&a, 2000);
-    lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
-    lv_anim_start(&a);
-}
-
 static void bar_event_cb(lv_event_t *e)
 {
     lv_obj_t *cont = lv_event_get_target(e);
-    // int ii=0;
-    // ii = (int32_t)(e->param);
-    // ESP_LOGW(TAG, "param ii=%d", ii);
     lv_bar_set_value(cont, i, LV_ANIM_OFF);
-    // lv_bar_set_value(cont, 45, LV_ANIM_ON);
 }
 void RailBar(void)
 {
@@ -334,8 +91,6 @@ void RailBar(void)
     lv_obj_set_size(BarObject, 200, 20);
     lv_obj_center(BarObject);
     lv_obj_add_event_cb(BarObject, bar_event_cb, LV_EVENT_ALL, NULL);
-
-    // lv_bar_set_value(BarObject, 46, LV_ANIM_ON);
 }
 
 /**
@@ -420,7 +175,7 @@ void LVGL_Timer()
     ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000));
 
     // Create and start a timer for color change
-    TimerHandle_t xTimer = xTimerCreate("ColorTimer", pdMS_TO_TICKS(10000), pdTRUE, NULL, LVGL_ChangeColors);
+    TimerHandle_t xTimer = xTimerCreate("ColorTimer", pdMS_TO_TICKS(500), pdTRUE, NULL, LVGL_ChangeColors);
     xTimerStart(xTimer, 0);
     if (xTimer != NULL)
     {

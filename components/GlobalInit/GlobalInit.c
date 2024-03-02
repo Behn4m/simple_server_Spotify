@@ -1,7 +1,6 @@
 #include "GlobalInit.h"
 
 static const char *TAG = "Global init";
-extern QueueHandle_t BufQueue1;
 SemaphoreHandle_t FinishWifiConfig = NULL;
 
 #ifdef SpotifyEnable
@@ -15,7 +14,6 @@ SemaphoreHandle_t IsSpotifyAuthorizedSemaphore = NULL;
  */
 void GlobalInit()
 {
-    BufQueue1 = xQueueCreate(1, sizeof(char) * sizeof(char[2500]));
     FinishWifiConfig = xSemaphoreCreateBinary();
     WifiParamExistenceCheckerSemaphore = xSemaphoreCreateBinary();
 #ifdef SpotifyEnable

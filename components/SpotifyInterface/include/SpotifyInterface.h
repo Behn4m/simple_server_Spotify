@@ -27,13 +27,10 @@ extern "C"
 #define DISPLAY_NAME_STR_SIZE 100
 #define PROFILE_STR_SIZE 100
 #define USER_ID_SIZE 100
-#define IMAGE1_STR_SIZE 100
-#define IMAGE2_STR_SIZE 100
-#define COUNTERY_STR_SIZE 100
+#define IMAGE_STR_SIZE 100
+#define COUNTRY_STR_SIZE 100
 #define PRODUCT_STR_SIZE 100
 #define DISPLAY_NAME_STR_SIZE 100
-#define IMAGE1_STR_SIZE 100
-#define IMAGE2_STR_SIZE 100
 
 
 typedef enum
@@ -47,9 +44,7 @@ typedef enum
     Pause = 6,
     GetNowPlaying = 7,
     GetUserInfo = 8,
-    GetSongImageUrl = 9,
-    GetArtisImageUrl = 10,
-    GetUserTopItems = 11
+    GetUserTopItems = 9
 } Command_t;
 
 typedef struct UserInfo_t
@@ -57,13 +52,8 @@ typedef struct UserInfo_t
     char DisplayName[DISPLAY_NAME_STR_SIZE];
     char ProfileURL[PROFILE_STR_SIZE];
     char UserID[USER_ID_SIZE];
-    char Image1[IMAGE1_STR_SIZE];
-    char Image2[IMAGE2_STR_SIZE];
-    int Follower;
-    char Country[COUNTERY_STR_SIZE];
+    char Country[COUNTRY_STR_SIZE];
     char Product[PRODUCT_STR_SIZE];
-    TickType_t LastUpdate;
-
 } UserInfo_t;
 
 typedef struct PlaybackInfo_t
@@ -71,20 +61,18 @@ typedef struct PlaybackInfo_t
     char SongName[DISPLAY_NAME_STR_SIZE];
     char ArtistName[DISPLAY_NAME_STR_SIZE];
     char AlbumName[DISPLAY_NAME_STR_SIZE];
-    char SongImageURL[IMAGE1_STR_SIZE];
-    char ArtistImageURL[IMAGE1_STR_SIZE];
+    char SongImageURL[IMAGE_STR_SIZE];
+    char ArtistImageURL[IMAGE_STR_SIZE];
     int Duration;
     int Progress;
     int IsPlaying;
-    TickType_t LastUpdate;
 } PlaybackInfo_t;
-typedef struct
+typedef struct SpotifyInterfaceHandler_t
 {
-    QueueHandle_t *HttpsBufQueue;
-    SemaphoreHandle_t *IsSpotifyAuthorizedSemaphore;
+    UserInfo_t *UserInfo;                   // Nested struct for user information
+    PlaybackInfo_t *PlaybackInfo;           // Nested struct for now playing song information
     char *ConfigAddressInSpiffs;
-    UserInfo_t *UserInfo;            // Nested struct for user information
-    PlaybackInfo_t *PlaybackInfo;        // Nested struct for now playing song information
+    SemaphoreHandle_t *IsSpotifyAuthorizedSemaphore;
 } SpotifyInterfaceHandler_t;
 
 /**

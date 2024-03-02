@@ -39,7 +39,7 @@ esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
                                             // write 0 to the end of string
             break;
         case HTTP_EVENT_DISCONNECTED:
-            xSemaphoreGive(SpotifyBuffer->SpotifyResponseReadyFlag);                  // give semaphore to notify that data is ready  
+            xSemaphoreGive(SpotifyBuffer->SpotifyResponseReadyFlag);                        // give semaphore to notify that data is ready  
             dataToRead = false;                                                             // reset flag tp prepare it for next packets
             totalLen = 0;                                                                   // reset contect length counter
             break;
@@ -183,10 +183,10 @@ void Spotify_ControlPlayback(int Command, char *AccessToken)
     
     // Configure client object  
     esp_http_client_config_t clientConfig = {
-        .host = "api.spotify.com",                                                          // host for spotify api call
-        .path = clientPath,                                                                 // clientPath already filled based in API
-        .method = clientMethod,                                                             // method variable already filled based on API 
-        .event_handler = HttpEventHandler,                                                  // Event handler function
+        .host = "api.spotify.com",                                                              // host for spotify api call
+        .path = clientPath,                                                                     // clientPath already filled based in API
+        .method = clientMethod,                                                                 // method variable already filled based on API 
+        .event_handler = HttpEventHandler,                                                      // Event handler function
         .disable_auto_redirect = false,
         .crt_bundle_attach = esp_crt_bundle_attach,
     };

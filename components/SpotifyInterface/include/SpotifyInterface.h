@@ -83,6 +83,13 @@ typedef struct SpotifyInterfaceHandler_t
 bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler);
 
 /**
+ * @brief This function deinitiates the Spotify authorization process.
+ * @param SpotifyInterfaceHandler as the handler
+ * @return true if task run to the end
+ */
+void Spotify_TaskDeinit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler);
+
+/**
  * @brief This checks if the applciaiton is initiated and connected to Spotify web service
  * @param SpotifyInterfaceHandler as the handler
  * @return true if everything is OK, flase for ERROR

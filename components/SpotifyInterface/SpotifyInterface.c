@@ -93,6 +93,34 @@ bool Spotify_HttpServerServiceInit()
 }
 
 /**
+ * @brief Deinitiate the Spotify app
+ */
+void Spotify_TaskDeinit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
+{
+    if (SpotifyInterfaceHandler->PlaybackInfo != NULL)
+    {
+        free(SpotifyInterfaceHandler->PlaybackInfo);
+    }
+    if (SpotifyInterfaceHandler->UserInfo != NULL)
+    {
+        free(SpotifyInterfaceHandler->UserInfo);
+    }
+    if (PrivateHandler.SpotifyBuffer.MessageBuffer != NULL)
+    {
+        free(PrivateHandler.SpotifyBuffer.MessageBuffer);
+    }
+    if (PrivateHandler.SpotifyBuffer.SpotifyResponseReadyFlag != NULL)
+    {
+        vSemaphoreDelete(PrivateHandler.SpotifyBuffer.SpotifyResponseReadyFlag);
+    }
+    if (SendCodeFromHttpToSpotifyTask != NULL)
+    {
+        vQueueDelete(SendCodeFromHttpToSpotifyTask);
+    }
+    ESP_LOGI(TAG, "Spotify app deinitiated successfully");
+}
+
+/**
  * @brief This function is the entry point for handling HTTPS requests for Spotify authorization.
  * @param[in] parameters because it is a Task!
  */
@@ -128,7 +156,6 @@ static void Spotify_MainTask(void *pvparameters)
             {
                 if (xQueueReceive(SendCodeFromHttpToSpotifyTask, receivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)       // Waiting for Code to be recieved by queue
                 {
-                    ESP_LOGI(TAG, "Received CODE by queue: %s\n", receivedData);
                     Spotify_SendTokenRequest(receivedData);                                                         // send request for Token
                     PrivateHandler.Status = AUTHENTICATED;                                                          // Code received and checked, so update Status to AUTHENTICATED         
                 }
@@ -287,7 +314,13 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
             Spotify_ControlPlayback(Command, PrivateHandler.token.AccessToken);
             if(PrivateHandler.SpotifyBuffer.status == 204)
             {
+                ESP_LOGI(TAG, "Command is sent successfully");
                 retValue = true;
+            }
+            else
+            {
+                ESP_LOGW(TAG, "Command is not sent successfully");
+                retValue = false;
             }
             break;
 
@@ -300,6 +333,7 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
             }
             else if (PrivateHandler.SpotifyBuffer.status == 204)
             {
+                ESP_LOGW(TAG, "No song is playing");
                 retValue = false;
             }
             break;
@@ -313,6 +347,7 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
             }
             else if (PrivateHandler.SpotifyBuffer.status == 204)
             {
+                ESP_LOGW(TAG, "No user is found");
                 retValue = false;
             }
             break;

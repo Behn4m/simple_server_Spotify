@@ -16,7 +16,7 @@ void CallbackTest(char *buffer)
 }
 void app_main(void)
 {
-    // LVGL_TaskInit();
+    LVGL_TaskInit();
     GlobalInit();
     nvsFlashInit();
     SpiffsGlobalConfig();
@@ -37,31 +37,31 @@ void app_main(void)
     if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
     {
         bool CommandResult = false;
-        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, Pause);
-
-        vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
-        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, Play);
-
-        vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
-        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, PlayPrev);
-
-        vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
-        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, PlayNext);
-
-        vTaskDelay((pdMS_TO_TICKS(SEC * 1)));
-        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying);
-        if (CommandResult == true)
-        {
-            ESP_LOGI(TAG, "Playback info updated");
-        }
-
-        vTaskDelay((pdMS_TO_TICKS(SEC * 1)));        
         CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetUserInfo);
         if (CommandResult == true)
         {
             ESP_LOGI(TAG, "User info updated");
         }
 
+        vTaskDelay((pdMS_TO_TICKS(SEC * 1)));
+        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying);
+        if (CommandResult == true)
+        {
+            ESP_LOGI(TAG, "Playback info updated");
+
+            vTaskDelay((pdMS_TO_TICKS(SEC * 2)));
+            CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, Pause);
+
+            vTaskDelay((pdMS_TO_TICKS(SEC * 2)));
+            CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, Play);
+
+            vTaskDelay((pdMS_TO_TICKS(SEC * 2)));
+            CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, PlayPrev);
+
+            vTaskDelay((pdMS_TO_TICKS(SEC * 2)));
+            CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, PlayNext);
+        }
     }
+    Spotify_TaskDeinit(&SpotifyInterfaceHandler);
 #endif
 }

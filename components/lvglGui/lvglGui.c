@@ -16,6 +16,8 @@
 lv_obj_t *Cont;
 lv_obj_t *lvglButtomObject;
 lv_obj_t *lvglLableUI3;
+lv_obj_t *Label_UI5;
+
 static const char *TAG = "LVGL_GUI";
 
 static lv_disp_draw_buf_t disp_draw_buf;
@@ -25,24 +27,38 @@ static lv_style_t PanelStyle;
 lv_color_t *LVGL_BigBuf1;
 lv_color_t *LVGL_BigBuf2;
 static void scroll_event_cb(lv_event_t *e);
+int i = 1;
+lv_obj_t *SwitchObject;
+lv_obj_t *OneclickLable;
+lv_obj_t *BigpalnelScrollObject;
+static void set_value(void *bar, int32_t v)
+{
+    lv_bar_set_value(bar, v, LV_ANIM_OFF);
+}
+lv_obj_t *BarObject;
+
 static void IRAM_ATTR button_event_cb(void *arg, void *data)
 {
     ESP_LOGE(TAG, "Buttom callback");
-    // lv_event_t *aa;
-    // scroll_event_cb(LV_EVENT_CLICKED);
-    int i = 1;
-    if (LV_RES_OK == lv_event_send(Cont, LV_EVENT_SCROLL, NULL))
-    {
-        ESP_LOGE(TAG, "i=%d", i);
-        lv_obj_scroll_to_view(lv_obj_get_child(Cont, i), LV_ANIM_ON);
-        i++;
-        if (i == 9)
-        {
-            i = 0;
-        }
-    }
-    else
-        ESP_LOGE(TAG, "lv_event_send have problem");
+
+    // if (lv_obj_has_state(SwitchObject, LV_STATE_CHECKED))
+    // {
+    //     lv_obj_clear_state(SwitchObject, LV_STATE_CHECKED);
+    // }
+    // else
+    // {
+    //     lv_obj_add_state(SwitchObject, LV_STATE_CHECKED);
+    // }
+    // lv_event_send(SwitchObject, LV_EVENT_VALUE_CHANGED, NULL);
+
+    // lv_obj_add_state(BigpalnelScrollObject, LV_STATE_SCROLLED);
+    // lv_event_send(BigpalnelScrollObject, LV_EVENT_VALUE_CHANGED, NULL);
+    i = i * 10;
+    ESP_LOGW(TAG, "i=%d",i);
+
+    lv_bar_set_value(BarObject, (int32_t)i, LV_ANIM_ON);
+    if (i == 100)
+        i = 1;
 }
 
 void button_init(uint32_t button_num)
@@ -70,9 +86,6 @@ void gpio_test()
 static void scroll_event_cb(lv_event_t *e)
 {
     lv_obj_t *cont = lv_event_get_target(e);
-    // lv_obj_t *cont;
-    // cont=lvglLableUI3;
-    ESP_LOGW(TAG, "we are in scroll callback");
 
     lv_area_t cont_a;
     lv_obj_get_coords(cont, &cont_a);
@@ -81,15 +94,17 @@ static void scroll_event_cb(lv_event_t *e)
     lv_coord_t r = lv_obj_get_height(cont) * 7 / 10;
     uint32_t i;
     uint32_t child_cnt = lv_obj_get_child_cnt(cont);
-    ESP_LOGI(TAG,"lv_obj_get_child_cnt=%d",(int)child_cnt);
     for (i = 0; i < child_cnt; i++)
     {
         lv_obj_t *child = lv_obj_get_child(cont, i);
         lv_area_t child_a;
         lv_obj_get_coords(child, &child_a);
+
         lv_coord_t child_y_center = child_a.y1 + lv_area_get_height(&child_a) / 2;
+
         lv_coord_t diff_y = child_y_center - cont_y_center;
         diff_y = LV_ABS(diff_y);
+
         /*Get the x of diff_y on a circle.*/
         lv_coord_t x;
         /*If diff_y is out of the circle use the last point of the circle (the radius)*/
@@ -105,6 +120,7 @@ static void scroll_event_cb(lv_event_t *e)
             lv_sqrt(x_sqr, &res, 0x8000); /*Use lvgl's built in sqrt root function*/
             x = r - res.i;
         }
+
         /*Translate the item by the calculated X coordinate*/
         lv_obj_set_style_translate_x(child, x, 0);
 
@@ -120,11 +136,8 @@ static void scroll_event_cb(lv_event_t *e)
 
 void LV_UI3(void)
 {
-    lv_style_init(&PanelStyle);
-    lv_style_set_bg_color(&PanelStyle, lv_color_black());
     Cont = lv_obj_create(lv_scr_act());
-    lv_obj_add_style(Cont, &PanelStyle, 0);
-    lv_obj_set_size(Cont, LV_HOR_RES, LV_VER_RES); // Set size to cover entire horizontal, half vertical
+    lv_obj_set_size(Cont, 200, 200);
     lv_obj_center(Cont);
     lv_obj_set_flex_flow(Cont, LV_FLEX_FLOW_COLUMN);
     lv_obj_add_event_cb(Cont, scroll_event_cb, LV_EVENT_SCROLL, NULL);
@@ -133,20 +146,20 @@ void LV_UI3(void)
     lv_obj_set_scrollbar_mode(Cont, LV_SCROLLBAR_MODE_OFF);
 
     uint32_t i;
-    for (i = 0; i < 10; i++)
+    for (i = 0; i < 20; i++)
     {
-        lvglButtomObject = lv_btn_create(Cont);
-        lv_obj_set_width(lvglButtomObject, LV_VER_RES * 3 / 4);
+        lv_obj_t *btn = lv_btn_create(Cont);
+        lv_obj_set_width(btn, lv_pct(100));
 
-        lvglLableUI3 = lv_label_create(lvglButtomObject);
-        lv_label_set_text_fmt(lvglLableUI3, "Button %" LV_PRIu32, i);
+        lv_obj_t *label = lv_label_create(btn);
+        lv_label_set_text_fmt(label, "Button %" LV_PRIu32, i);
     }
 
     /*Update the buttons position manually for first*/
     lv_event_send(Cont, LV_EVENT_SCROLL, NULL);
 
     /*Be sure the fist button is in the middle*/
-    lv_obj_scroll_to_view(lv_obj_get_child(Cont, 0), LV_ANIM_ON);
+    lv_obj_scroll_to_view(lv_obj_get_child(Cont, 1), LV_ANIM_ON);
 }
 
 #endif
@@ -161,12 +174,29 @@ static void sw_event_cb(lv_event_t *e)
         lv_obj_t *list = lv_event_get_user_data(e);
 
         if (lv_obj_has_state(sw, LV_STATE_CHECKED))
+        {
             lv_obj_add_flag(list, LV_OBJ_FLAG_SCROLL_ONE);
+        }
         else
             lv_obj_clear_flag(list, LV_OBJ_FLAG_SCROLL_ONE);
     }
 }
+static void panel_event_cb(lv_event_t *e)
+{
+    lv_event_code_t code = lv_event_get_code(e);
+    lv_obj_t *sw = lv_event_get_target(e);
 
+    if (code == LV_EVENT_SCROLL)
+    {
+        lv_obj_t *list = lv_event_get_user_data(e);
+        if (lv_obj_has_state(sw, LV_STATE_CHECKED))
+        {
+            lv_obj_add_flag(list, LV_OBJ_FLAG_SCROLL_ONE);
+        }
+        else
+            lv_obj_clear_flag(list, LV_OBJ_FLAG_SCROLL_ONE);
+    }
+}
 /**
  * Show an example to scroll snap
  */
@@ -181,18 +211,19 @@ void LV_UI2(void)
     lv_obj_set_scroll_snap_x(panel, LV_SCROLL_SNAP_CENTER);
     lv_obj_set_flex_flow(panel, LV_FLEX_FLOW_COLUMN);
     lv_obj_align(panel, LV_ALIGN_CENTER, 0, 0);
-
+    lv_obj_add_event_cb(BigpalnelScrollObject, panel_event_cb, LV_EVENT_ALL, panel);
     uint32_t i;
     for (i = 0; i < 10; i++)
     {
-        lv_obj_t *btn = lv_btn_create(panel);
-        lv_obj_set_size(btn, 150, LV_VER_RES * 2 / 3);
-        lv_obj_center(btn);
-        lv_obj_t *label = lv_label_create(btn);
+        BigpalnelScrollObject = lv_btn_create(panel);
+        lv_obj_set_size(BigpalnelScrollObject, 150, LV_VER_RES * 2 / 3);
+        lv_obj_center(BigpalnelScrollObject);
+
+        lv_obj_t *label = lv_label_create(BigpalnelScrollObject);
         if (i == 3)
         {
             lv_label_set_text_fmt(label, "Panel %" LV_PRIu32 "\nno snap", i);
-            lv_obj_clear_flag(btn, LV_OBJ_FLAG_SNAPPABLE);
+            lv_obj_clear_flag(BigpalnelScrollObject, LV_OBJ_FLAG_SNAPPABLE);
         }
         else
         {
@@ -201,6 +232,101 @@ void LV_UI2(void)
         lv_obj_center(label);
     }
     lv_obj_update_snap(panel, LV_ANIM_ON);
+    SwitchObject = lv_switch_create(lv_scr_act());
+    lv_obj_align(SwitchObject, LV_ALIGN_TOP_RIGHT, -20, 10);
+    lv_obj_add_event_cb(SwitchObject, sw_event_cb, LV_EVENT_ALL, panel);
+    OneclickLable = lv_label_create(lv_scr_act());
+    lv_label_set_text(OneclickLable, "One scroll");
+    lv_obj_align_to(OneclickLable, SwitchObject, LV_ALIGN_OUT_BOTTOM_MID, 0, 5);
+}
+
+static void event_cb(lv_event_t *e)
+{
+    lv_obj_draw_part_dsc_t *dsc = lv_event_get_draw_part_dsc(e);
+    if (dsc->part != LV_PART_INDICATOR)
+        return;
+
+    lv_obj_t *obj = lv_event_get_target(e);
+
+    lv_draw_label_dsc_t label_dsc;
+    lv_draw_label_dsc_init(&label_dsc);
+    label_dsc.font = LV_FONT_DEFAULT;
+
+    char buf[8];
+    lv_snprintf(buf, sizeof(buf), "%d", (int)lv_bar_get_value(obj));
+
+    lv_point_t txt_size;
+    lv_txt_get_size(&txt_size, buf, label_dsc.font, label_dsc.letter_space, label_dsc.line_space, LV_COORD_MAX,
+                    label_dsc.flag);
+
+    lv_area_t txt_area;
+    /*If the indicator is long enough put the text inside on the right*/
+    if (lv_area_get_width(dsc->draw_area) > txt_size.x + 20)
+    {
+        txt_area.x2 = dsc->draw_area->x2 - 5;
+        txt_area.x1 = txt_area.x2 - txt_size.x + 1;
+        label_dsc.color = lv_color_white();
+    }
+    /*If the indicator is still short put the text out of it on the right*/
+    else
+    {
+        txt_area.x1 = dsc->draw_area->x2 + 5;
+        txt_area.x2 = txt_area.x1 + txt_size.x - 1;
+        label_dsc.color = lv_color_black();
+    }
+
+    txt_area.y1 = dsc->draw_area->y1 + (lv_area_get_height(dsc->draw_area) - txt_size.y) / 2;
+    txt_area.y2 = txt_area.y1 + txt_size.y - 1;
+
+    lv_draw_label(dsc->draw_ctx, &label_dsc, &txt_area, buf, NULL);
+}
+
+/**
+ * Custom drawer on the bar to display the current value
+ */
+void lv_example_bar_6(void)
+{
+    lv_obj_t *bar = lv_bar_create(lv_scr_act());
+    lv_obj_add_event_cb(bar, event_cb, LV_EVENT_DRAW_PART_END, NULL);
+    lv_obj_set_size(bar, 200, 20);
+    lv_obj_center(bar);
+
+    lv_anim_t a;
+    lv_anim_init(&a);
+    lv_anim_set_var(&a, bar);
+    lv_anim_set_values(&a, 0, 100);
+    lv_anim_set_exec_cb(&a, set_value);
+    lv_anim_set_time(&a, 2000);
+    lv_anim_set_playback_time(&a, 2000);
+    lv_anim_set_repeat_count(&a, LV_ANIM_REPEAT_INFINITE);
+    lv_anim_start(&a);
+}
+
+void lv_example_bar_2(void)
+{
+    static lv_style_t style_bg;
+    static lv_style_t style_indic;
+
+    lv_style_init(&style_bg);
+    lv_style_set_border_color(&style_bg, lv_palette_main(LV_PALETTE_BLUE));
+    lv_style_set_border_width(&style_bg, 2);
+    lv_style_set_pad_all(&style_bg, 6); /*To make the indicator smaller*/
+    lv_style_set_radius(&style_bg, 6);
+    lv_style_set_anim_time(&style_bg, 1000);
+
+    lv_style_init(&style_indic);
+    lv_style_set_bg_opa(&style_indic, LV_OPA_COVER);
+    lv_style_set_bg_color(&style_indic, lv_palette_main(LV_PALETTE_BLUE));
+    lv_style_set_radius(&style_indic, 3);
+
+    lv_obj_t *BarObject = lv_bar_create(lv_scr_act());
+    lv_obj_remove_style_all(BarObject); /*To have a clean start*/
+    lv_obj_add_style(BarObject, &style_bg, 0);
+    lv_obj_add_style(BarObject, &style_indic, LV_PART_INDICATOR);
+
+    lv_obj_set_size(BarObject, 200, 20);
+    lv_obj_center(BarObject);
+    lv_bar_set_value(BarObject, 100, LV_ANIM_ON);
 }
 
 /**
@@ -333,7 +459,9 @@ static void LVGL_mainTask(void *pvParameter)
     LVGL_Timer();
     // LVGL_MyUI();
     // LV_UI2();
-    LV_UI3();
+    // LV_UI3();
+    lv_example_bar_2();
+    // lv_example_bar_6();
     while (1)
     {
         vTaskDelay(pdMS_TO_TICKS(10));

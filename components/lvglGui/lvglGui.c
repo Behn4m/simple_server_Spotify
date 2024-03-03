@@ -34,8 +34,8 @@ static void IRAM_ATTR button_event_cb(void *arg, void *data)
     i = i + 10;
     ESP_LOGW(TAG, "i=%d", i);
     if (i >= 100)
-        i = 1;
-    lv_event_send(BarObject, LV_EVENT_ALL, (void *)i);
+        i = 0;
+    lv_event_send(BarObject, LV_EVENT_ALL, (void *)&i);
 }
 
 void button_init(uint32_t button_num)
@@ -64,7 +64,13 @@ static void set_value(void *bar, int32_t v)
 static void bar_event_cb(lv_event_t *e)
 {
     lv_obj_t *cont = lv_event_get_target(e);
-    lv_bar_set_value(cont, i, LV_ANIM_OFF);
+    int32_t percentOfFillingBar = 0;
+    percentOfFillingBar = *((int32_t *)e->param);
+
+    if (percentOfFillingBar <= 100)
+    {
+        lv_bar_set_value(cont, i, LV_ANIM_OFF);
+    }
 }
 void RailBar(void)
 {

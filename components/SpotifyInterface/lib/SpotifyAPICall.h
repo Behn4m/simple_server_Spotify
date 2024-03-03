@@ -12,9 +12,13 @@ extern "C" {
 #include"SpotifyTypedef.h"
 #include "esp_crt_bundle.h"
 
-
-extern QueueHandle_t httpToSpotifyDataQueue;
-
+/**
+ * @brief This function sends a request to the Spotify login API to authorize the user.
+ * @param[in,out] Buf The character buffer to store the request and receive the response.
+ * @param[in] SizeBuf The size of the character buffer.
+ * @return This function does not return a value.
+ */
+void SpotifyAPICallInit(SpotifyAPIBuffer_t *SpotifyAPIBuffer);
 
 /**
  * @brief This function sends a request to the Spotify login API to exchange an authorization code for an access token.

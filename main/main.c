@@ -6,7 +6,8 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 // ****************************** GLobal Variables ****************************** //
-QueueHandle_t BufQueue1 = NULL;
+static const char *TAG = "Main";
+
 
 // ****************************** GLobal Functions ****************************** //
 void CallbackTest(char *buffer)
@@ -29,24 +30,38 @@ void app_main(void)
 #ifdef SpotifyEnable
     SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 
-    SpotifyInterfaceHandler.HttpsBufQueue = &BufQueue1;
     SpotifyInterfaceHandler.IsSpotifyAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;
     SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
     Spotify_TaskInit(&SpotifyInterfaceHandler);
     // after this semaphore you can use playback command function in every where !
     if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
     {
-        Spotify_SendCommand(Pause);
-        vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
-        Spotify_SendCommand(Play);
-        vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
-        Spotify_SendCommand(PlayPrev);
-        vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
-        Spotify_SendCommand(PlayNext);
-        vTaskDelay((pdMS_TO_TICKS(SEC * 3)));        
-        Spotify_SendCommand(GetUserInfo);
-        vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
-        Spotify_SendCommand(GetNowPlaying);
+        bool CommandResult = false;
+        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetUserInfo);
+        if (CommandResult == true)
+        {
+            ESP_LOGI(TAG, "User info updated");
+        }
+
+        vTaskDelay((pdMS_TO_TICKS(SEC * 1)));
+        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying);
+        if (CommandResult == true)
+        {
+            ESP_LOGI(TAG, "Playback info updated");
+
+            vTaskDelay((pdMS_TO_TICKS(SEC * 2)));
+            CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, Pause);
+
+            vTaskDelay((pdMS_TO_TICKS(SEC * 2)));
+            CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, Play);
+
+            vTaskDelay((pdMS_TO_TICKS(SEC * 2)));
+            CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, PlayPrev);
+
+            vTaskDelay((pdMS_TO_TICKS(SEC * 2)));
+            CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, PlayNext);
+        }
     }
+    Spotify_TaskDeinit(&SpotifyInterfaceHandler);
 #endif
 }

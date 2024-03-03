@@ -20,7 +20,7 @@ void app_main(void)
     nvsFlashInit();
     SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
-    WifiStationMode("Hardware20", "87654321");
+    WifiStationMode("Hardware10", "87654321");
     // WifiStationMode("BELL789", "167271A164A9");
 #else
     wifiConnectionModule();
@@ -32,21 +32,21 @@ void app_main(void)
     SpotifyInterfaceHandler.HttpsBufQueue = &BufQueue1;
     SpotifyInterfaceHandler.IsSpotifyAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;
     SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
-    Spotify_TaskInit(&SpotifyInterfaceHandler);
-    // after this semaphore you can use playback command function in every where !
-    if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
-    {
-        Spotify_SendCommand(Pause);
-        vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
-        Spotify_SendCommand(Play);
-        vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
-        Spotify_SendCommand(PlayPrev);
-        vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
-        Spotify_SendCommand(PlayNext);
-        vTaskDelay((pdMS_TO_TICKS(SEC * 3)));        
-        Spotify_SendCommand(GetUserInfo);
-        vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
-        Spotify_SendCommand(GetNowPlaying);
-    }
+    // Spotify_TaskInit(&SpotifyInterfaceHandler);
+    // // after this semaphore you can use playback command function in every where !
+    // if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
+    // {
+    //     Spotify_SendCommand(Pause);
+    //     vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
+    //     Spotify_SendCommand(Play);
+    //     vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
+    //     Spotify_SendCommand(PlayPrev);
+    //     vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
+    //     Spotify_SendCommand(PlayNext);
+    //     vTaskDelay((pdMS_TO_TICKS(SEC * 3)));        
+    //     Spotify_SendCommand(GetUserInfo);
+    //     vTaskDelay((pdMS_TO_TICKS(SEC * 3)));
+    //     Spotify_SendCommand(GetNowPlaying);
+    // }
 #endif
 }

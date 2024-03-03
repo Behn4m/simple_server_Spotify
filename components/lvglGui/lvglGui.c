@@ -6,6 +6,8 @@
 #include "iot_button.h"
 #include "lvgl__lvgl/src/core/lv_obj.h"
 
+static void SpotifyPage(void);
+
 #define BUTTON_UP_GPIO GPIO_NUM_21
 #define BOOT_BUTTON_NUM 0
 #define BUTTON_ACTIVE_LEVEL 0
@@ -112,7 +114,7 @@ static void lv_tick_task(void *arg)
  */
 void LVGL_ChangeColors(TimerHandle_t xTimer)
 {
-    // Define colors for MusicBox and TitleBox
+    // // Define colors for MusicBox and TitleBox
     lv_color_t musicBoxColor;
     musicBoxColor.full = 0x39e9;
     // Apply colors to MusicBox and TitleBox styles
@@ -120,11 +122,58 @@ void LVGL_ChangeColors(TimerHandle_t xTimer)
     lv_style_set_bg_color(&MusicBox, musicBoxColor);
     lv_style_set_bg_color(&TitleBox, titleBoxColor);
 }
+void MainMenu(void)
+{
+    /*A base style*/
+    static lv_style_t parentStyle;
+    lv_style_init(&parentStyle);
+    lv_style_set_border_width(&parentStyle, 2);
+    lv_style_set_radius(&parentStyle, 10);
+    lv_style_set_shadow_width(&parentStyle, 10);
+    lv_style_set_shadow_ofs_y(&parentStyle, 5);
+    lv_style_set_shadow_opa(&parentStyle, LV_OPA_50);
+    lv_style_set_text_color(&parentStyle, lv_color_white());
+    lv_style_set_text_font(&parentStyle, &lv_font_montserrat_18); // Set the font
+    lv_style_set_width(&parentStyle, LV_HOR_RES * 0.4);
+    lv_style_set_height(&parentStyle, LV_VER_RES / 3);
+
+    /*Set only the properties that should be different*/
+    static lv_style_t matterStyle;
+    lv_style_init(&matterStyle);
+    lv_style_set_bg_color(&matterStyle, lv_palette_main(LV_PALETTE_RED));
+    lv_style_set_border_color(&matterStyle, lv_palette_darken(LV_PALETTE_RED, 3));
+
+    /*Create an object with the base style only*/
+    lv_obj_t *matterObject = lv_obj_create(lv_scr_act());
+    lv_obj_add_style(matterObject, &parentStyle, 0);
+    lv_obj_add_style(matterObject, &matterStyle, 0);
+    lv_obj_align(matterObject, LV_ALIGN_LEFT_MID, 20, -35);
+
+    lv_obj_t *matterLabel = lv_label_create(matterObject);
+    lv_label_set_text(matterLabel, "1.Matter");
+    lv_obj_center(matterLabel);
+
+    /*Set only the properties that should be different*/
+    static lv_style_t spotifyStyle;
+    lv_style_init(&spotifyStyle);
+    lv_style_set_bg_color(&spotifyStyle, lv_palette_main(LV_PALETTE_GREEN));
+    lv_style_set_border_color(&spotifyStyle, lv_palette_darken(LV_PALETTE_GREEN, 3));
+
+    /*Create another object with the base style and earnings style too*/
+    lv_obj_t *spotifyObject = lv_obj_create(lv_scr_act());
+    lv_obj_add_style(spotifyObject, &parentStyle, 0);
+    lv_obj_add_style(spotifyObject, &spotifyStyle, 0);
+    lv_obj_align(spotifyObject, LV_ALIGN_RIGHT_MID, -20, 35);
+
+    lv_obj_t *spotifyLabel = lv_label_create(spotifyObject);
+    lv_label_set_text(spotifyLabel, "2.Spotify");
+    lv_obj_center(spotifyLabel);
+}
 
 /**
  * @brief Function to create the main LVGL user interface
  */
-static void LVGL_MyUI(void)
+static void SpotifyPage(void)
 {
     // Base style for MusicBox
     lv_style_init(&MusicBox);
@@ -181,7 +230,7 @@ void LVGL_Timer()
     ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000));
 
     // Create and start a timer for color change
-    TimerHandle_t xTimer = xTimerCreate("ColorTimer", pdMS_TO_TICKS(500), pdTRUE, NULL, LVGL_ChangeColors);
+    TimerHandle_t xTimer = xTimerCreate("ColorTimer", pdMS_TO_TICKS(10000), pdTRUE, NULL, LVGL_ChangeColors);
     xTimerStart(xTimer, 0);
     if (xTimer != NULL)
     {
@@ -227,11 +276,12 @@ static void LVGL_mainTask(void *pvParameter)
     gpio_test();
     // Start LVGL timer and create UI
     LVGL_Timer();
-    // LVGL_MyUI();
+
     // LV_UI2();
     // LV_UI3();
-    RailBar();
-    // lv_example_bar_6();
+    // RailBar();
+    MainMenu();
+
     while (1)
     {
         vTaskDelay(pdMS_TO_TICKS(10));

@@ -59,7 +59,11 @@
         "lvglgui.h": "c",
         "lvgl.h": "c",
         "gpio.h": "c",
-        "lv_obj.h": "c"
+        "lv_obj.h": "c",
+        "lv_example_libs.h": "c",
+        "lv_gif.h": "c",
+        "lv_examples.h": "c",
+        "gifdec.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

@@ -5,8 +5,12 @@
 #include "esp_pm.h"
 #include "iot_button.h"
 #include "lvgl__lvgl/src/core/lv_obj.h"
-
+#define LV_USE_GIF
+#include"lvgl__lvgl/examples/libs/lv_example_libs.h"
+#include"lvgl__lvgl/src/extra/libs/gif/lv_gif.h"
+#include"lvgl__lvgl/src/extra/libs/gif/gifdec.h"
 static void SpotifyPage(void);
+
 
 #define BUTTON_UP_GPIO GPIO_NUM_21
 #define BOOT_BUTTON_NUM 0
@@ -170,6 +174,21 @@ void MainMenu(void)
     lv_obj_center(spotifyLabel);
 }
 
+void GifTest(void)
+{
+     LV_IMG_DECLARE(img_bulb_gif);
+    lv_obj_t * img;
+
+    img = lv_gif_create(lv_scr_act());
+    lv_gif_set_src(img, &img_bulb_gif);
+    lv_obj_align(img, LV_ALIGN_LEFT_MID, 20, 0);
+
+    img = lv_gif_create(lv_scr_act());
+    /* Assuming a File system is attached to letter 'A'
+     * E.g. set LV_USE_FS_STDIO 'A' in lv_conf.h */
+    lv_gif_set_src(img, "A:lvgl/examples/libs/gif/bulb.gif");
+    lv_obj_align(img, LV_ALIGN_RIGHT_MID, -20, 0);
+}
 /**
  * @brief Function to create the main LVGL user interface
  */
@@ -276,12 +295,12 @@ static void LVGL_mainTask(void *pvParameter)
     gpio_test();
     // Start LVGL timer and create UI
     LVGL_Timer();
-
+    // MainMenu();
+    GifTest();
     // LV_UI2();
     // LV_UI3();
     // RailBar();
-    MainMenu();
-
+    // SpotifyPage();
     while (1)
     {
         vTaskDelay(pdMS_TO_TICKS(10));

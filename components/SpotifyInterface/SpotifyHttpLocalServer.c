@@ -125,18 +125,20 @@ httpd_handle_t Spotify_StartWebServer()
     httpd_config_t httpdConfig = HTTPD_DEFAULT_CONFIG();
     httpdConfig.lru_purge_enable = true;
     ESP_LOGI(TAG, "Starting HttpdServerHandler on port: '%d'", httpdConfig.server_port);
-    if (httpd_start(&httpdHandler, &httpdConfig) == ESP_OK)
+    
+    bool IsHttpdStarted = httpd_start(&httpdHandler, &httpdConfig) == ESP_OK;
+    if (!IsHttpdStarted)
     {
-        ESP_LOGI(TAG, "Registering URI handlers");
-        httpd_register_uri_handler(httpdHandler, &Spotify_Request_Access_URI);
-        httpd_register_uri_handler(httpdHandler, &Spotify_Response_Access_URI);
-        return httpdHandler;
-    }
-    else
-    {
+        ESP_LOGE(TAG, "Failed to start HttpdServerHandler");
         return NULL;
     }
+    
+    ESP_LOGI(TAG, "Registering URI handlers");
+    httpd_register_uri_handler(httpdHandler, &Spotify_Request_Access_URI);
+    httpd_register_uri_handler(httpdHandler, &Spotify_Response_Access_URI);
+    return httpdHandler;
 }
+
 
 /**
  * @brief This function stops the web HttpdServerHandler for handling HTTPS requests.
@@ -153,26 +155,26 @@ httpd_handle_t Spotify_StartWebServer()
 bool Spotify_StartMDNSService()
 {
     esp_err_t err;
-    err = mdns_init();
-    if (err != ESP_OK)
+    err = mdns_init() == ESP_OK;
+    if (!err)
     {
         ESP_LOGE(TAG, "MDNS Init failed: %d", err);
         return false;
     }
-    err = mdns_hostname_set("deskhub");
-    if (err != ESP_OK)
+    err = mdns_hostname_set("deskhub") == ESP_OK;
+    if (!err)
     {
         ESP_LOGE(TAG, "mdns_hostname_set  failed: %d", err);
         return false;
     }
-    err = mdns_instance_name_set("spotify");
-    if (err != ESP_OK)
+    err = mdns_instance_name_set("spotify") == ESP_OK;
+    if (!err)
     {
         ESP_LOGE(TAG, "mdns_instance_name_set  failed: %d", err);
         return false;
     }
-    err = mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0);
-    if (err != ESP_OK)
+    err = mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0) == ESP_OK;
+    if (!err)
     {
         ESP_LOGE(TAG, "mdns_service_add  failed: %d", err);
         return false;

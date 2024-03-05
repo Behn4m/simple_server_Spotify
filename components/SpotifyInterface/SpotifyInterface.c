@@ -82,7 +82,8 @@ bool Spotify_HttpServerServiceInit()
         return false;
     }
     
-    if (Spotify_StartMDNSService() == false)
+    bool IsMdnsStarted = Spotify_StartMDNSService();
+    if (!IsMdnsStarted)
     {
         ESP_LOGE(TAG, "Running mDNS failed!");
         return false;
@@ -133,57 +134,61 @@ static void Spotify_MainTask(void *pvparameters)
         {
             case INIT:
             {
-                if (Spotify_HttpServerServiceInit() == true)                                                        // Init the webserver in initialization
-                {
-                    if (SpiffsExistenceCheck(InterfaceHandler->ConfigAddressInSpiffs) == true)                      // Check if the refresh token exists in the spiffs
-                    {
-                        ESP_LOGI(TAG, "RefreshToken found");
-                        PrivateHandler.Status = EXPIRED;                                                            // If the refresh token exists, set the status to EXPIRED
-                    }
-                    else
-                    {
-                        ESP_LOGE(TAG, "Spotify autorization is needed");
-                        PrivateHandler.Status = LOGIN;                                                              // If the refresh token does not exist, set the status to LOGIN 
-                    }
-                }
-                else
+                bool IsServerInit = Spotify_HttpServerServiceInit();                                                     // Init the webserver in initialization
+                if (!IsServerInit)
                 {
                     ESP_LOGE(TAG, "Authorization initialization failed!");
+                    break;
                 }
+
+                bool IsSpiffExists = SpiffsExistenceCheck(InterfaceHandler->ConfigAddressInSpiffs);                      // Check if the refresh token exists in the spiffs
+                if (!IsSpiffExists)
+                {
+                    ESP_LOGE(TAG, "Spotify autorization is needed");
+                    PrivateHandler.Status = LOGIN;                                                              // If the refresh token does not exist, set the status to LOGIN 
+                    break;
+                }
+
+                ESP_LOGI(TAG, "RefreshToken found");
+                PrivateHandler.Status = EXPIRED;                                                            // If the refresh token exists, set the status to EXPIRED
                 break;
             }
             case LOGIN:
             {
-                if (xQueueReceive(SendCodeFromHttpToSpotifyTask, receivedData, pdMS_TO_TICKS(SEC)) == pdTRUE)       // Waiting for Code to be recieved by queue
+                bool IsCodeReceived = xQueueReceive(SendCodeFromHttpToSpotifyTask, receivedData, pdMS_TO_TICKS(SEC));       // Waiting for Code to be recieved by queue
+                if (!IsCodeReceived)
                 {
-                    Spotify_SendTokenRequest(receivedData);                                                         // send request for Token
-                    PrivateHandler.Status = AUTHENTICATED;                                                          // Code received and checked, so update Status to AUTHENTICATED         
+                    // stay in this state until receive the Code
+                    break;
                 }
+                Spotify_SendTokenRequest(receivedData);                                                         // send request for Token
+                PrivateHandler.Status = AUTHENTICATED;                                                          // Code received and checked, so update Status to AUTHENTICATED         
                 break;
             }
             case AUTHENTICATED:
             {
                 ESP_LOGI(TAG, "AUTHENTICATED");
-                if (xSemaphoreTake(PrivateHandler.SpotifyBuffer.SpotifyResponseReadyFlag, pdMS_TO_TICKS(SEC)) == pdTRUE)              // Waiting for Token to be recieved by queue
-                {
-                    ESP_LOGI(TAG,"HERE");
-                    if (ExtractAccessTokenParamsTokenFromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, &PrivateHandler.token) == true)     // extract all keys from spotify server response
-                    {
-                        ESP_LOGI(TAG, "Token found!");
-                        PrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                       // Save the time when the token was received
-                        PrivateHandler.Status = AUTHORIZED;                                                         // Token recieved and checked, so update Status to AUTHORIZED
-                    }
-                    else
-                    {
-                        ESP_LOGW(TAG, "Token not found!");
-                        PrivateHandler.Status = LOGIN;                                                               // the reponse did not include all needed keys, so set Status back to LOGIN
-                    }            
-                }
-                else
+                bool IsSpotifyResponded = xSemaphoreTake(PrivateHandler.SpotifyBuffer.SpotifyResponseReadyFlag, pdMS_TO_TICKS(SEC));              // Waiting for Token to be recieved by queue
+                if (!IsSpotifyResponded)
                 {
                     PrivateHandler.Status = LOGIN;                                                                  // if the response did not come within the expected time, set Status back to LOGIN
                     ESP_LOGW(TAG, "Timeout - Spotify did not respond within the expected time.!");
+                    break;
                 }
+
+                bool IsTokenExtracted = ExtractAccessTokenParamsTokenFromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, 
+                                                                              &PrivateHandler.token
+                                                                              );                       // extract all keys from spotify server response
+                if (!IsTokenExtracted)
+                {
+                    ESP_LOGW(TAG, "Token not found!");
+                    PrivateHandler.Status = LOGIN;                                                               // the reponse did not include all needed keys, so set Status back to LOGIN
+                    break;
+                }
+
+                ESP_LOGI(TAG, "Token found!");
+                PrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                       // Save the time when the token was received
+                PrivateHandler.Status = AUTHORIZED;                                                         // Token recieved and checked, so update Status to AUTHORIZED
                 break;
             }
             case AUTHORIZED:
@@ -201,25 +206,29 @@ static void Spotify_MainTask(void *pvparameters)
             }
             case CHECK_TIME:
             {
-                if (Spotify_IsTokenExpired() == true)                                                               // Check if the expiration time has elapsed since the last received token
+                bool IsTokenExpired = Spotify_IsTokenExpired();                                                               // Check if the expiration time has elapsed since the last received token
+                if (!IsTokenExpired)
                 {
-                    PrivateHandler.Status = EXPIRED;                                                                // set Status to EXPIRED if token expired
-                }            
+                    // keep state
+                    break;
+                }  
+                PrivateHandler.Status = EXPIRED;                                                                // set Status to EXPIRED if token expired
+          
                 break;
             }
             case EXPIRED:
             {
                 ESP_LOGW(TAG, "token is expired");
-                if (Spotify_TokenRenew() == true)                                                                   // Run function to renew the token
+                bool IsTokenRenewed = Spotify_TokenRenew();
+                if (!IsTokenRenewed)                                                                   // Run function to renew the token
                 {
-                    xSemaphoreGive((*InterfaceHandler->IsSpotifyAuthorizedSemaphore));                              // give IsSpotifyAuthorizedSemaphore semaphore in the IntefaceHandler
-                    PrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                           // Save the time when the token was received
-                    PrivateHandler.Status = CHECK_TIME;                                                             // set Status to CHECK_TIME if token renewed successfully
+                    PrivateHandler.Status = LOGIN;
+                    break;                                                                   // set Status to ILDLE if token renewed unsuccessfully
                 }
-                else
-                {
-                    PrivateHandler.Status = LOGIN;                                                                   // set Status to ILDLE if token renewed unsuccessfully
-                }
+
+                xSemaphoreGive((*InterfaceHandler->IsSpotifyAuthorizedSemaphore));                              // give IsSpotifyAuthorizedSemaphore semaphore in the IntefaceHandler
+                PrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                           // Save the time when the token was received
+                PrivateHandler.Status = CHECK_TIME;                                                             // set Status to CHECK_TIME if token renewed successfully
                 break;
             }
         }   
@@ -255,25 +264,23 @@ static bool Spotify_TokenRenew(void)
     SendRequest_ExchangeTokenWithRefreshToken(receivedData);
     memset(receivedData, 0x0, LONG_BUF);
     
-    if (xSemaphoreTake(PrivateHandler.SpotifyBuffer.SpotifyResponseReadyFlag, pdMS_TO_TICKS(SEC)) == pdTRUE) 
-    {
-        if (ExtractAccessTokenParamsTokenFromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, &PrivateHandler.token) == true)
-        {
-            ESP_LOGI(TAG, "new Token found!");
-            PrivateHandler.TokenLastUpdate = xTaskGetTickCount();
-            return true;
-        }
-        else
-        {
-            ESP_LOGW(TAG, "new Token not found!");
-            return false;
-        }
-    }
-    else
+    bool IsResponseReady = xSemaphoreTake(PrivateHandler.SpotifyBuffer.SpotifyResponseReadyFlag, pdMS_TO_TICKS(SEC));
+    if (!IsResponseReady)
     {
         ESP_LOGW(TAG, "timeout - Spotify not responded!");
         return false;
     }
+
+    bool IsTokenExtracted = ExtractAccessTokenParamsTokenFromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, &PrivateHandler.token);
+    if (!IsTokenExtracted)
+    {
+        ESP_LOGW(TAG, "new Token not found!");
+        return false;
+    }
+
+    ESP_LOGI(TAG, "new Token found!");
+    PrivateHandler.TokenLastUpdate = xTaskGetTickCount();
+    return true;
 }
 
 
@@ -305,6 +312,8 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
         ESP_LOGE(TAG, "You are not authorized !");
         return false;
     }
+
+    bool IsSuccessfull = false;
     switch (Command)
     {
         case Play:
@@ -312,46 +321,41 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
         case PlayNext:
         case PlayPrev:
             Spotify_ControlPlayback(Command, PrivateHandler.token.AccessToken);
-            if(PrivateHandler.SpotifyBuffer.status == 204)
-            {
-                ESP_LOGI(TAG, "Command is sent successfully");
-                retValue = true;
-            }
-            else
+            IsSuccessfull = PrivateHandler.SpotifyBuffer.status == 204;
+            if(!IsSuccessfull)
             {
                 ESP_LOGW(TAG, "Command is not sent successfully");
                 retValue = false;
+                break;
             }
+            ESP_LOGI(TAG, "Command is sent successfully");
+            retValue = true;
             break;
-
         case GetNowPlaying:
             Spotify_GetInfo(Command, PrivateHandler.token.AccessToken);
-            if(PrivateHandler.SpotifyBuffer.status == 200)
+            IsSuccessfull = PrivateHandler.SpotifyBuffer.status == 200;
+            if (!IsSuccessfull)
             {
-                retValue = true;
-                ExtractPlaybackInfoParamsfromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, InterfaceHandler->PlaybackInfo);
-            }
-            else if (PrivateHandler.SpotifyBuffer.status == 204)
-            {
-                ESP_LOGW(TAG, "No song is playing");
+                ESP_LOGW(TAG, "No song is found");
                 retValue = false;
+                break;
             }
+            ExtractPlaybackInfoParamsfromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, InterfaceHandler->PlaybackInfo);
+            retValue = true;
             break;
 
         case GetUserInfo:
             Spotify_GetInfo(Command, PrivateHandler.token.AccessToken);
-            if(PrivateHandler.SpotifyBuffer.status == 200)
-            {
-                retValue = true;
-                ExtractUserInfoParamsfromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, InterfaceHandler->UserInfo);
-            }
-            else if (PrivateHandler.SpotifyBuffer.status == 204)
+            IsSuccessfull = PrivateHandler.SpotifyBuffer.status == 200;
+            if (!IsSuccessfull)
             {
                 ESP_LOGW(TAG, "No user is found");
                 retValue = false;
+                break;
             }
+            ExtractUserInfoParamsfromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, InterfaceHandler->UserInfo);
+            retValue = true;
             break;
-
         default:
             break;
     }

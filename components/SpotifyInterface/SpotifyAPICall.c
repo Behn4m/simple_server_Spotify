@@ -92,9 +92,9 @@ void Spotify_SendTokenRequest(char *Code)
 
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "HTTP client perform failed: %s", esp_err_to_name(err));
+        return;
     } 
     ESP_LOGI(TAG, "HTTP client performed successfully");
-
     
     // Cleanup HTTP client
     esp_http_client_cleanup(httpClient);
@@ -138,6 +138,7 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken)
     if (err != ESP_OK) 
     {
         ESP_LOGE(TAG, "HTTP client perform failed: %s", esp_err_to_name(err));
+        return;
     }
     ESP_LOGI(TAG, "HTTP client performed successfully");
     
@@ -210,6 +211,7 @@ void Spotify_ControlPlayback(int Command, char *AccessToken)
     if (!err) 
     {
         ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
+        return;
     }
 
     SpotifyBuffer->status = esp_http_client_get_status_code(httpClient);
@@ -273,6 +275,7 @@ void Spotify_GetInfo(int Command, char *AccessToken)
     if (!err) 
     {
         ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
+        return;
     }
     SpotifyBuffer->status = esp_http_client_get_status_code(httpClient);
     SpotifyBuffer->ContentLength = esp_http_client_get_content_length(httpClient);

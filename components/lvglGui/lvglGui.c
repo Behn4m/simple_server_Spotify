@@ -6,7 +6,7 @@
 #include "iot_button.h"
 #include "lvgl__lvgl/src/core/lv_obj.h"
 
-static void SpotifyPage(void);
+static void SpotifyPageFunc(void);
 
 #define BUTTON_UP_GPIO GPIO_NUM_21
 #define BOOT_BUTTON_NUM 0
@@ -172,7 +172,7 @@ void MainMenu(void)
 /**
  * @brief Function to create the main LVGL user interface
  */
-static void SpotifyPage(void)
+static void SpotifyPageFunc(void)
 {
     // Base style for MusicBox
     lv_style_init(&MusicBox);
@@ -239,64 +239,93 @@ void LVGL_Timer()
         }
     }
 }
-static void backButtom(lv_event_t *e)
+
+lv_obj_t *UiScreen;
+lv_obj_t *Menu;
+lv_obj_t *MatterPage;
+lv_obj_t *SpotifyPage;
+lv_obj_t *BackBottom;
+void UiScreenInit(void)
 {
-    lv_obj_t *obj = lv_event_get_target(e);
-    lv_obj_t *menu = lv_event_get_user_data(e);
-    if (lv_menu_back_button_is_root(menu, obj))
-    {
-        lv_obj_t *mbox1 = lv_msgbox_create(NULL);
-        lv_msgbox_add_title(mbox1, "Hello");
-        lv_msgbox_add_close_button(mbox1);
-    }
+    /*Create a UiScreen object*/
+    UiScreen = lv_obj_create(NULL);
+    lv_obj_clear_flag(UiScreen, LV_OBJ_FLAG_CLICKABLE); /// Flags
+    lv_obj_remove_style_all(UiScreen);
+    /*Create a Menu object*/
+    Menu = lv_obj_create(NULL);
+    lv_obj_clear_flag(Menu, LV_OBJ_FLAG_CLICKABLE); /// Flags
+    lv_obj_remove_style_all(Menu);
+    /*Create a MatterPage object*/
+    MatterPage = lv_obj_create(NULL);
+    lv_obj_clear_flag(MatterPage, LV_OBJ_FLAG_CLICKABLE); /// Flags
+    lv_obj_remove_style_all(MatterPage);
+    /*Create a SpotifyPage object*/
+    SpotifyPage = lv_obj_create(NULL);
+    lv_obj_clear_flag(SpotifyPage, LV_OBJ_FLAG_CLICKABLE); /// Flags
+    lv_obj_remove_style_all(SpotifyPage);
+    /*Create a BackBottom object*/
+    BackBottom = lv_obj_create(NULL);
+    lv_obj_clear_flag(BackBottom, LV_OBJ_FLAG_CLICKABLE); /// Flags
+    lv_obj_remove_style_all(BackBottom);
 }
+void CreatMenu()
+{
+    /*Create a Menu object*/
+    Menu = lv_menu_create(lv_scr_act());
+    lv_obj_set_size(Menu, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
+    lv_obj_center(Menu);
+}
+static void backBottom(lv_event_t *e)
+{
+}
+void CreatBottomKeyForMenu()
+{
+    /*Modify the header*/
+    BackBottom = lv_menu_get_main_header_back_btn(Menu);
+    lv_obj_t *back_btn_label = lv_label_create(BackBottom);
+    lv_obj_add_event_cb(BackBottom, backBottom, LV_EVENT_CLICKED, BackBottom);
+    lv_label_set_text(back_btn_label, "Back");
+}
+
 void myMenu(void)
 {
     lv_obj_t *cont;
     lv_obj_t *label;
-
-    /*Create a menu object*/
-    lv_obj_t *menu = lv_menu_create(lv_scr_act());
-    lv_obj_set_size(menu, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
-    lv_obj_center(menu);
-
-    /*Modify the header*/
-    lv_obj_t *back_btn = lv_menu_get_main_header_back_btn(menu);
-    lv_obj_t *back_btn_label = lv_label_create(back_btn);
-    lv_obj_add_event_cb(back_btn, backButtom, LV_EVENT_CLICKED, back_btn);
-    lv_label_set_text(back_btn_label, "Back");
-
+    UiScreenInit();
+    CreatMenu();
+    CreatBottomKeyForMenu();
     /*Create a main page*/
-    lv_obj_t *main_page = lv_menu_page_create(menu, NULL);
-    lv_menu_set_page(menu, main_page);
+    lv_obj_t *main_page = lv_menu_page_create(Menu, NULL);
+    lv_menu_set_page(Menu, main_page);
 
     /*Create sub pages*/
-    lv_obj_t *sub_1_page = lv_menu_page_create(menu, "Page 1");
+    lv_obj_t *sub_1_page = lv_menu_page_create(Menu, "Page 1");
     cont = lv_menu_cont_create(sub_1_page);
     label = lv_label_create(cont);
     lv_label_set_text(label, "Hello, I am hiding here");
     cont = lv_menu_cont_create(main_page);
     label = lv_label_create(cont);
     lv_label_set_text(label, "Item 1 (Click me!)");
-    lv_menu_set_load_page_event(menu, cont, sub_1_page);
-
-    lv_obj_t *sub_2_page = lv_menu_page_create(menu, "Page 2");
+    lv_menu_set_load_page_event(Menu, cont, sub_1_page);
+    
+    /*Create sub pages*/
+    lv_obj_t *sub_2_page = lv_menu_page_create(Menu, "Page 2");
     cont = lv_menu_cont_create(sub_2_page);
     label = lv_label_create(cont);
     lv_label_set_text(label, "Hello, I am hiding here");
     cont = lv_menu_cont_create(main_page);
     label = lv_label_create(cont);
     lv_label_set_text(label, "Item 2 (Click me!)");
-    lv_menu_set_load_page_event(menu, cont, sub_2_page);
+    lv_menu_set_load_page_event(Menu, cont, sub_2_page);
 
-    lv_obj_t *sub_3_page = lv_menu_page_create(menu, "Page 3");
-    cont = lv_menu_cont_create(sub_3_page);
-    label = lv_label_create(cont);
-    lv_label_set_text(label, "Hello, I am hiding here");
-    cont = lv_menu_cont_create(main_page);
-    label = lv_label_create(cont);
-    lv_label_set_text(label, "Item 3 (Click me!)");
-    lv_menu_set_load_page_event(menu, cont, sub_3_page);
+    // lv_obj_t *sub_3_page = lv_menu_page_create(Menu, "Page 3");
+    // cont = lv_menu_cont_create(sub_3_page);
+    // label = lv_label_create(cont);
+    // lv_label_set_text(label, "Hello, I am hiding here");
+    // cont = lv_menu_cont_create(main_page);
+    // label = lv_label_create(cont);
+    // lv_label_set_text(label, "Item 3 (Click me!)");
+    // lv_menu_set_load_page_event(Menu, cont, sub_3_page);
 }
 /**
  * @brief main LVGL gui TASK

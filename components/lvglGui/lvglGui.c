@@ -30,6 +30,13 @@ lv_color_t *LVGL_BigBuf1;
 lv_color_t *LVGL_BigBuf2;
 int i = 0;
 lv_obj_t *BarObject;
+
+lv_obj_t *UiScreen;
+lv_obj_t *Menu;
+lv_obj_t *MenuPage;
+lv_obj_t *MatterPage;
+lv_obj_t *SpotifyPage;
+lv_obj_t *BackBottom;
 static void IRAM_ATTR button_event_cb(void *arg, void *data)
 {
     ESP_LOGE(TAG, "Buttom callback");
@@ -174,11 +181,18 @@ void MainMenu(void)
  */
 static void SpotifyPageFunc(void)
 {
+    lv_obj_t *cont;
+    SpotifyPage = lv_menu_page_create(Menu, "Page 1");
+    cont = lv_menu_cont_create(SpotifyPage);
+    lv_obj_set_size(cont, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
+
     // Base style for MusicBox
     lv_style_init(&MusicBox);
     lv_style_set_bg_color(&MusicBox, lv_color_make(17, 39, 28));
     // Create an object for the music display with the MusicBox style
-    lv_obj_t *musicObject = lv_obj_create(lv_scr_act());
+    // lv_obj_t *musicObject;
+    lv_obj_t *musicObject = lv_obj_create(cont);
+    // musicObject = lv_menu_page_create(Menu, "Page 1");
     lv_obj_add_style(musicObject, &MusicBox, 0);
     lv_obj_align(musicObject, LV_ALIGN_BOTTOM_MID, 0, 0);
     lv_obj_set_size(musicObject, LV_HOR_RES, LV_VER_RES / 2); // Set size to cover entire horizontal, half vertical
@@ -188,7 +202,7 @@ static void SpotifyPageFunc(void)
     lv_style_set_bg_color(&TitleBox, lv_color_make(0xff, 0x0, 0x00));
 
     /*Create another object with the base style and earnings style too*/
-    lv_obj_t *textObject = lv_obj_create(lv_scr_act());
+    lv_obj_t *textObject = lv_obj_create(cont);
     lv_obj_add_style(textObject, &TitleBox, 0);
     lv_obj_align(textObject, LV_ALIGN_BOTTOM_MID, 0, -100);  //  shift it in Y axis
     lv_obj_set_size(textObject, LV_HOR_RES, LV_VER_RES / 4); // Set size to cover entire horizontal, 0.25 vertical
@@ -201,7 +215,7 @@ static void SpotifyPageFunc(void)
     lv_style_set_text_font(&circular, &lv_font_montserrat_18); // Set the font
 
     // Create a circular scrolling text object
-    lv_obj_t *circularObject = lv_label_create(lv_scr_act());
+    lv_obj_t *circularObject = lv_label_create(cont);
     lv_obj_add_style(circularObject, &circular, 0);
     lv_label_set_long_mode(circularObject, LV_LABEL_LONG_SCROLL_CIRCULAR);
     lv_obj_set_width(circularObject, 150);
@@ -209,7 +223,7 @@ static void SpotifyPageFunc(void)
     lv_obj_align(circularObject, LV_ALIGN_CENTER, 0, 0);
 
     /* Create an image object for a music bottom picture*/
-    lv_obj_t *imageObject = lv_img_create(lv_scr_act());
+    lv_obj_t *imageObject = lv_img_create(cont);
     lv_img_set_src(imageObject, &music);
     lv_obj_align(imageObject, LV_ALIGN_BOTTOM_MID, 0, -10);
 }
@@ -240,11 +254,6 @@ void LVGL_Timer()
     }
 }
 
-lv_obj_t *UiScreen;
-lv_obj_t *Menu;
-lv_obj_t *MatterPage;
-lv_obj_t *SpotifyPage;
-lv_obj_t *BackBottom;
 void UiScreenInit(void)
 {
     /*Create a UiScreen object*/
@@ -274,6 +283,9 @@ void CreatMenu()
     Menu = lv_menu_create(lv_scr_act());
     lv_obj_set_size(Menu, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
     lv_obj_center(Menu);
+    /*Create a main page*/
+    lv_obj_t *MenuPage = lv_menu_page_create(Menu, NULL);
+    lv_menu_set_page(Menu, MenuPage);
 }
 static void backBottom(lv_event_t *e)
 {
@@ -294,26 +306,23 @@ void myMenu(void)
     UiScreenInit();
     CreatMenu();
     CreatBottomKeyForMenu();
-    /*Create a main page*/
-    lv_obj_t *main_page = lv_menu_page_create(Menu, NULL);
-    lv_menu_set_page(Menu, main_page);
 
     /*Create sub pages*/
     lv_obj_t *sub_1_page = lv_menu_page_create(Menu, "Page 1");
     cont = lv_menu_cont_create(sub_1_page);
     label = lv_label_create(cont);
     lv_label_set_text(label, "Hello, I am hiding here");
-    cont = lv_menu_cont_create(main_page);
+    cont = lv_menu_cont_create(MenuPage);
     label = lv_label_create(cont);
     lv_label_set_text(label, "Item 1 (Click me!)");
     lv_menu_set_load_page_event(Menu, cont, sub_1_page);
-    
+
     /*Create sub pages*/
     lv_obj_t *sub_2_page = lv_menu_page_create(Menu, "Page 2");
     cont = lv_menu_cont_create(sub_2_page);
     label = lv_label_create(cont);
     lv_label_set_text(label, "Hello, I am hiding here");
-    cont = lv_menu_cont_create(main_page);
+    cont = lv_menu_cont_create(MenuPage);
     label = lv_label_create(cont);
     lv_label_set_text(label, "Item 2 (Click me!)");
     lv_menu_set_load_page_event(Menu, cont, sub_2_page);
@@ -322,7 +331,7 @@ void myMenu(void)
     // cont = lv_menu_cont_create(sub_3_page);
     // label = lv_label_create(cont);
     // lv_label_set_text(label, "Hello, I am hiding here");
-    // cont = lv_menu_cont_create(main_page);
+    // cont = lv_menu_cont_create(MenuPage);
     // label = lv_label_create(cont);
     // lv_label_set_text(label, "Item 3 (Click me!)");
     // lv_menu_set_load_page_event(Menu, cont, sub_3_page);

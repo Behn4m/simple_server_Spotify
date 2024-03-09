@@ -71,7 +71,8 @@ void Spotify_SendTokenRequest(char *Code)
     // Initialize HTTP client with custom configuration
     esp_http_client_handle_t httpClient = esp_http_client_init(&clientConfig);
 
-    if (httpClient == NULL) {
+    if (httpClient == NULL) 
+    {
         ESP_LOGE(TAG, "Failed to initialize HTTP client");
         return;
     }
@@ -94,9 +95,9 @@ void Spotify_SendTokenRequest(char *Code)
 
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "HTTP client perform failed: %s", esp_err_to_name(err));
-    } else {
-        ESP_LOGI(TAG, "HTTP client performed successfully");
-    }
+        return;
+    } 
+    ESP_LOGI(TAG, "HTTP client performed successfully");
     
     // Cleanup HTTP client
     esp_http_client_cleanup(httpClient);
@@ -120,7 +121,8 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken)
 
     // Initialize HTTP client with custom configuration
     esp_http_client_handle_t httpClient = esp_http_client_init(&clientConfig);
-    if (httpClient == NULL) {
+    if (httpClient == NULL) 
+    {
         ESP_LOGE(TAG, "Failed to refresh the token client");
         return;
     }
@@ -136,11 +138,12 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken)
 
     // Perform HTTP request
     esp_err_t err = esp_http_client_perform(httpClient);
-    if (err != ESP_OK) {
+    if (err != ESP_OK) 
+    {
         ESP_LOGE(TAG, "HTTP client perform failed: %s", esp_err_to_name(err));
-    } else {
-        ESP_LOGI(TAG, "HTTP client performed successfully");
+        return;
     }
+    ESP_LOGI(TAG, "HTTP client performed successfully");
     
     esp_http_client_cleanup(httpClient);                                                        // close all connection releated to this client object 
 }
@@ -194,7 +197,8 @@ void Spotify_ControlPlayback(int Command, char *AccessToken)
     // Initialize HTTP client with custom configuration
     esp_http_client_handle_t httpClient = esp_http_client_init(&clientConfig);                  // apply configuration to the client object
 
-    if (httpClient == NULL) {
+    if (httpClient == NULL) 
+    {
         ESP_LOGE(TAG, "Failed to create the HTTP client");
         return;
     }
@@ -206,20 +210,18 @@ void Spotify_ControlPlayback(int Command, char *AccessToken)
     esp_http_client_set_header(httpClient, "Content-Length", "0");                              // thess requests are not going to send any data to the host
 
     // Perform the GET request
-    esp_err_t err = esp_http_client_perform(httpClient);                                        // perform http request
-    if (err == ESP_OK) 
-    {
-        SpotifyBuffer->status = esp_http_client_get_status_code(httpClient);
-        SpotifyBuffer->ContentLength = esp_http_client_get_content_length(httpClient);
-        ESP_LOGI(TAG, "HTTP GET Status = %lld, content_length = %lld",
-                SpotifyBuffer->status,
-                SpotifyBuffer->ContentLength);
-    } 
-    else 
+    esp_err_t err = esp_http_client_perform(httpClient) == ESP_OK;                                        // perform http request
+    if (!err) 
     {
         ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
+        return;
     }
 
+    SpotifyBuffer->status = esp_http_client_get_status_code(httpClient);
+    SpotifyBuffer->ContentLength = esp_http_client_get_content_length(httpClient);
+    ESP_LOGI(TAG, "HTTP GET Status = %lld, content_length = %lld",
+            SpotifyBuffer->status,
+            SpotifyBuffer->ContentLength);
     // Cleanup
     esp_http_client_cleanup(httpClient);                                                        // close all connection releated to this client object 
 }
@@ -259,7 +261,8 @@ void Spotify_GetInfo(int Command, char *AccessToken)
 
     // Initialize HTTP client with custom configuration
     esp_http_client_handle_t httpClient = esp_http_client_init(&clientConfig);                  // apply configuration to the client object
-    if (httpClient == NULL) {
+    if (httpClient == NULL) 
+    {
         ESP_LOGE(TAG, "Failed to create the HTTP client");
         return;
     }
@@ -271,20 +274,17 @@ void Spotify_GetInfo(int Command, char *AccessToken)
     esp_http_client_set_header(httpClient, "Content-Length", "0");                              // thess requests are not going to send any data to the host
 
     // Perform the GET request
-    esp_err_t err = esp_http_client_perform(httpClient);                                        // perform http request
-    if (err == ESP_OK) 
-    {
-        SpotifyBuffer->status = esp_http_client_get_status_code(httpClient);
-        SpotifyBuffer->ContentLength = esp_http_client_get_content_length(httpClient);
-        ESP_LOGI(TAG, "HTTP GET Status = %lld, content_length = %lld",
-                SpotifyBuffer->status,
-                SpotifyBuffer->ContentLength);
-    } 
-    else 
+    esp_err_t err = esp_http_client_perform(httpClient) == ESP_OK;                                        // perform http request
+    if (!err) 
     {
         ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
+        return;
     }
-
+    SpotifyBuffer->status = esp_http_client_get_status_code(httpClient);
+    SpotifyBuffer->ContentLength = esp_http_client_get_content_length(httpClient);
+    ESP_LOGI(TAG, "HTTP GET Status = %lld, content_length = %lld",
+            SpotifyBuffer->status,
+            SpotifyBuffer->ContentLength);
     // Cleanup
     esp_http_client_cleanup(httpClient);                                                        // close all connection releated to this client object 
 }

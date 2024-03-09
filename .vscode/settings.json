@@ -54,9 +54,7 @@
         "sys.h": "c",
         "esp_http_client.h": "c",
         "esp_eth.h": "c",
-        "spotifyapicall.h": "c",
-        "spotifyappinfo.h": "c",
-        "esp_psram.h": "c"
+        "spotifyapicall.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

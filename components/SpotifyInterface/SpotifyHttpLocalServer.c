@@ -58,7 +58,7 @@ static esp_err_t Spotify_RequestDataAccess(httpd_req_t *HttpdRequest)
     }
     memset(localURL, 0x0, SMALL_BUF * 2);
     ESP_LOGI(TAG, "Starting authorization, sending request for TOKEN");
-    sprintf(localURL, "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state", ClientId, ReDirectUri);
+    sprintf(localURL, "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state", CLIENT_ID, REDIRECT_URI);
     httpd_resp_set_hdr(HttpdRequest, "Location", localURL);
     httpd_resp_set_type(HttpdRequest, "text/plain");
     httpd_resp_set_status(HttpdRequest, "302");

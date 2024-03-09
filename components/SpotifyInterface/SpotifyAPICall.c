@@ -3,10 +3,12 @@
 
 static const char *TAG = "HTTP";
 SpotifyAPIBuffer_t *SpotifyBuffer;
+char Base64Credintials[SMALL_BUF] = {0};
 
 void SpotifyAPICallInit(SpotifyAPIBuffer_t *SpotifyAPIBuffer)
 {
-    SpotifyBuffer = SpotifyAPIBuffer;
+    SpotifyBuffer = SpotifyAPIBuffer;   
+    sprintf(Base64Credintials, "Basic %s", BASE64_CREDINTIALS);
 }
 
 esp_err_t HttpEventHandler(esp_http_client_event_t *evt) 
@@ -75,13 +77,13 @@ void Spotify_SendTokenRequest(char *Code)
     }
 
     // Set headers for authentication and content type
-    esp_http_client_set_header(httpClient, "Authorization", "Basic NTViYjk3NGEwNjY3NDgxYWIwYjJhNDlmZDBhYmVhNmQ6ZDgwYmQ3ZThjMWIwNGJmY2FjZGI1ZWNmNmExNTUyMTU=");
+    esp_http_client_set_header(httpClient, "Authorization", Base64Credintials);
     esp_http_client_set_header(httpClient, "Content-Type", "application/x-www-form-urlencoded");
     esp_http_client_set_header(httpClient, "Cookie", "__Host-device_id=AQAwmp7jxagopcWw89BjSDAA530mHwIieOZdJ9Im8nI0-70oEsSInx3jkeSO09YQ7sPgPaIUyMEvZ-tct7I6OlshJrzVYOqcgo0; sp_tr=false");
 
     // Set the request body (POST data)
     char Grand[MEDIUM_BUF] = {0};
-    sprintf(Grand, "grant_type=authorization_code&redirect_uri=%s&%s", ReDirectUri, Code);
+    sprintf(Grand, "grant_type=authorization_code&redirect_uri=%s&%s", REDIRECT_URI, Code);
     esp_http_client_set_post_field(httpClient, Grand, strlen(Grand));
 
     // Enable detailed logging for debugging
@@ -125,12 +127,12 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken)
     }
 
     // Set headers for authentication and content type
-    esp_http_client_set_header(httpClient, "Authorization", "Basic NTViYjk3NGEwNjY3NDgxYWIwYjJhNDlmZDBhYmVhNmQ6ZDgwYmQ3ZThjMWIwNGJmY2FjZGI1ZWNmNmExNTUyMTU=");
+    esp_http_client_set_header(httpClient, "Authorization", Base64Credintials);
     esp_http_client_set_header(httpClient, "Content-Type", "application/x-www-form-urlencoded");
 
     // Set the request body (POST data)
     char Grand[SMALL_BUF] = {0};
-    sprintf(Grand, "grant_type=refresh_token&refresh_token=%s&redirect_uri=%s", RefreshToken, ReDirectUri);
+    sprintf(Grand, "grant_type=refresh_token&refresh_token=%s&redirect_uri=%s", RefreshToken, REDIRECT_URI);
     esp_http_client_set_post_field(httpClient, Grand, strlen(Grand));
 
     // Perform HTTP request

@@ -18,7 +18,7 @@ extern "C"
 #include "mdns.h"
 #include "freertos/queue.h"
 #include "esp_psram.h"
-#include "SpotifyAppInfo.h"
+#include "SpotifyWebAppInfo.h"
 
 // ****************************************************************
 #define SPOTIFY_TASK_STACK_SIZE (uint32_t)(30*1000U)

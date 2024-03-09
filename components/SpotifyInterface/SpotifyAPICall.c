@@ -7,7 +7,6 @@ char Base64Credintials[SMALL_BUF] = {0};
 
 void SpotifyAPICallInit(SpotifyAPIBuffer_t *SpotifyAPIBuffer)
 {
-    bool err;
     SpotifyBuffer = SpotifyAPIBuffer;   
     sprintf(Base64Credintials, "Basic %s", BASE64_CREDINTIALS);
 }

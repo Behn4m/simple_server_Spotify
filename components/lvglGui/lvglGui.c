@@ -8,9 +8,13 @@
 
 static void SpotifyPageFunc(void);
 
-#define BUTTON_UP_GPIO GPIO_NUM_21
-#define BOOT_BUTTON_NUM 0
-#define BUTTON_ACTIVE_LEVEL 0
+#define BUTTON_BACK GPIO_NUM_21
+#define BUTTON_ACCEPT GPIO_NUM_13
+#define BUTTON_UP GPIO_NUM_12
+#define BUTTON_PAUSE GPIO_NUM_11
+
+#define BOOT_BUTTON_NUM 21
+#define BUTTON_ACTIVE_LEVEL 1
 
 #define LV_TICK_PERIOD_MS 1
 #define LVGL_STACK 2500
@@ -39,12 +43,13 @@ lv_obj_t *SpotifyPage;
 lv_obj_t *BackBottom;
 static void IRAM_ATTR button_event_cb(void *arg, void *data)
 {
-    ESP_LOGE(TAG, "Buttom callback");
+    ESP_LOGE(TAG, "Bottom callback");
     i = i + 10;
     ESP_LOGW(TAG, "i=%d", i);
     if (i >= 100)
         i = 0;
     lv_event_send(BarObject, LV_EVENT_ALL, (void *)&i);
+
 }
 
 void button_init(uint32_t button_num)
@@ -64,7 +69,10 @@ void button_init(uint32_t button_num)
 
 void gpio_test()
 {
-    button_init(BOOT_BUTTON_NUM);
+    button_init(BUTTON_BACK);
+    button_init(BUTTON_ACCEPT);
+    button_init(BUTTON_UP);
+    button_init(BUTTON_PAUSE);
 }
 static void set_value(void *bar, int32_t v)
 {

@@ -37,10 +37,11 @@ lv_obj_t *BarObject;
 
 lv_obj_t *UiScreen;
 lv_obj_t *Menu;
-lv_obj_t *MenuPage;
 lv_obj_t *MatterPage;
 lv_obj_t *SpotifyPage;
+lv_obj_t *MenuPage;
 lv_obj_t *BackBottom;
+
 static void IRAM_ATTR button_event_cb(void *arg, void *data)
 {
     ESP_LOGE(TAG, "Bottom callback");
@@ -49,7 +50,6 @@ static void IRAM_ATTR button_event_cb(void *arg, void *data)
     if (i >= 100)
         i = 0;
     lv_event_send(BarObject, LV_EVENT_ALL, (void *)&i);
-
 }
 
 void button_init(uint32_t button_num)
@@ -138,6 +138,12 @@ void LVGL_ChangeColors(TimerHandle_t xTimer)
 }
 void MainMenu(void)
 {
+    lv_obj_remove_style_all(MenuPage);
+    lv_obj_set_size(MenuPage, LV_HOR_RES, LV_VER_RES);
+    lv_obj_set_align(MenuPage, LV_ALIGN_DEFAULT);
+    lv_obj_clear_flag(MenuPage, LV_OBJ_FLAG_SCROLLABLE); /// Flags
+    lv_obj_set_style_bg_color(MenuPage, lv_color_white(), LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_set_style_bg_opa(MenuPage, 255, LV_PART_MAIN | LV_STATE_DEFAULT);
     /*A base style*/
     static lv_style_t parentStyle;
     lv_style_init(&parentStyle);
@@ -158,7 +164,8 @@ void MainMenu(void)
     lv_style_set_border_color(&matterStyle, lv_palette_darken(LV_PALETTE_RED, 3));
 
     /*Create an object with the base style only*/
-    lv_obj_t *matterObject = lv_obj_create(lv_scr_act());
+    lv_obj_t *matterObject = lv_btn_create(MenuPage);
+    // lv_obj_t *matterObject = lv_btn_create(MenuPage);
     lv_obj_add_style(matterObject, &parentStyle, 0);
     lv_obj_add_style(matterObject, &matterStyle, 0);
     lv_obj_align(matterObject, LV_ALIGN_LEFT_MID, 20, -35);
@@ -166,7 +173,7 @@ void MainMenu(void)
     lv_obj_t *matterLabel = lv_label_create(matterObject);
     lv_label_set_text(matterLabel, "1.Matter");
     lv_obj_center(matterLabel);
-
+    // lv_obj_add_event_cb(matterObject, ui_event_Button2, LV_EVENT_ALL, NULL);
     /*Set only the properties that should be different*/
     static lv_style_t spotifyStyle;
     lv_style_init(&spotifyStyle);
@@ -174,7 +181,8 @@ void MainMenu(void)
     lv_style_set_border_color(&spotifyStyle, lv_palette_darken(LV_PALETTE_GREEN, 3));
 
     /*Create another object with the base style and earnings style too*/
-    lv_obj_t *spotifyObject = lv_obj_create(lv_scr_act());
+    lv_obj_t *spotifyObject = lv_btn_create(MenuPage);
+    // lv_obj_t *spotifyObject = lv_btn_create(MenuPage);
     lv_obj_add_style(spotifyObject, &parentStyle, 0);
     lv_obj_add_style(spotifyObject, &spotifyStyle, 0);
     lv_obj_align(spotifyObject, LV_ALIGN_RIGHT_MID, -20, 35);
@@ -264,26 +272,23 @@ void LVGL_Timer()
 
 void UiScreenInit(void)
 {
-    /*Create a UiScreen object*/
-    UiScreen = lv_obj_create(NULL);
-    lv_obj_clear_flag(UiScreen, LV_OBJ_FLAG_CLICKABLE); /// Flags
-    lv_obj_remove_style_all(UiScreen);
-    /*Create a Menu object*/
-    Menu = lv_obj_create(NULL);
-    lv_obj_clear_flag(Menu, LV_OBJ_FLAG_CLICKABLE); /// Flags
-    lv_obj_remove_style_all(Menu);
+
+    MenuPage = lv_obj_create(lv_scr_act());
+    lv_obj_clear_flag(MenuPage, LV_OBJ_FLAG_SCROLLABLE); /// Flags
+    lv_obj_remove_style_all(MenuPage);
     /*Create a MatterPage object*/
-    MatterPage = lv_obj_create(NULL);
-    lv_obj_clear_flag(MatterPage, LV_OBJ_FLAG_CLICKABLE); /// Flags
-    lv_obj_remove_style_all(MatterPage);
-    /*Create a SpotifyPage object*/
-    SpotifyPage = lv_obj_create(NULL);
-    lv_obj_clear_flag(SpotifyPage, LV_OBJ_FLAG_CLICKABLE); /// Flags
-    lv_obj_remove_style_all(SpotifyPage);
-    /*Create a BackBottom object*/
-    BackBottom = lv_obj_create(NULL);
-    lv_obj_clear_flag(BackBottom, LV_OBJ_FLAG_CLICKABLE); /// Flags
-    lv_obj_remove_style_all(BackBottom);
+    // MatterPage = lv_obj_create(NULL);
+    // lv_obj_clear_flag(MatterPage, LV_OBJ_FLAG_SCROLLABLE); /// Flags
+    // lv_obj_remove_style_all(MatterPage);
+    // /*Create a SpotifyPage object*/
+    // SpotifyPage = lv_obj_create(NULL);
+    // lv_obj_clear_flag(SpotifyPage, LV_OBJ_FLAG_SCROLLABLE); /// Flags
+    // lv_obj_remove_style_all(SpotifyPage);
+
+    // /*Create a BackBottom object*/
+    // BackBottom = lv_obj_create(NULL);
+    // lv_obj_clear_flag(BackBottom, LV_OBJ_FLAG_CLICKABLE); /// Flags
+    // lv_obj_remove_style_all(BackBottom);
 }
 void CreatMenu()
 {
@@ -312,28 +317,8 @@ void myMenu(void)
     lv_obj_t *cont;
     lv_obj_t *label;
     UiScreenInit();
-    CreatMenu();
-    CreatBottomKeyForMenu();
-
-    /*Create sub pages*/
-    lv_obj_t *sub_1_page = lv_menu_page_create(Menu, "Page 1");
-    cont = lv_menu_cont_create(sub_1_page);
-    label = lv_label_create(cont);
-    lv_label_set_text(label, "Hello, I am hiding here");
-    cont = lv_menu_cont_create(MenuPage);
-    label = lv_label_create(cont);
-    lv_label_set_text(label, "Item 1 (Click me!)");
-    lv_menu_set_load_page_event(Menu, cont, sub_1_page);
-
-    /*Create sub pages*/
-    lv_obj_t *sub_2_page = lv_menu_page_create(Menu, "Page 2");
-    cont = lv_menu_cont_create(sub_2_page);
-    label = lv_label_create(cont);
-    lv_label_set_text(label, "Hello, I am hiding here");
-    cont = lv_menu_cont_create(MenuPage);
-    label = lv_label_create(cont);
-    lv_label_set_text(label, "Item 2 (Click me!)");
-    lv_menu_set_load_page_event(Menu, cont, sub_2_page);
+    MainMenu();
+    // CreatBottomKeyForMenu();
 
     // lv_obj_t *sub_3_page = lv_menu_page_create(Menu, "Page 3");
     // cont = lv_menu_cont_create(sub_3_page);

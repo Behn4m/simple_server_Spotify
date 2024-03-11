@@ -8,6 +8,8 @@
 
 static void SpotifyPageFunc(void);
 
+#define MULTIPLIER 20
+
 #define BUTTON_BACK GPIO_NUM_21
 #define BUTTON_ACCEPT GPIO_NUM_13
 #define BUTTON_UP GPIO_NUM_12
@@ -41,17 +43,34 @@ lv_obj_t *MatterPage;
 lv_obj_t *SpotifyPage;
 lv_obj_t *MenuPage;
 lv_obj_t *BackBottom;
+lv_obj_t *matterObject;
 
+int k = 0;
 static void IRAM_ATTR button_event_cb(void *arg, void *data)
 {
-    ESP_LOGE(TAG, "Bottom callback");
-    i = i + 10;
-    ESP_LOGW(TAG, "i=%d", i);
-    if (i >= 100)
-        i = 0;
-    lv_event_send(BarObject, LV_EVENT_ALL, (void *)&i);
-}
+    if (k == 1)
+    {
+        ESP_LOGE(TAG, "Bottom callback");
+        i = i + 10;
+        ESP_LOGW(TAG, "i=%d", i);
+        if (i >= 100)
+            i = 0;
+        // lv_event_send(BarObject, LV_EVENT_ALL, (void *)&i);
+        // lv_event_send(matterObject, LV_EVENT_ALL, (void *)&i);
 
+        // lv_disp_load_scr(SpotifyPage);
+        lv_obj_del(MenuPage);
+        SpotifyPageFunc();
+        lv_disp_load_scr(SpotifyPage);
+    }
+}
+void _ui_screen_change(lv_obj_t **target, lv_scr_load_anim_t fademode, int spd, int delay, void (*target_init)(void))
+{
+    ESP_LOGI(TAG, "we are in _ui_screen_change");
+    if (*target == NULL)
+        target_init();
+    lv_scr_load_anim(*target, fademode, spd, delay, false);
+}
 void button_init(uint32_t button_num)
 {
     button_config_t btn_cfg = {
@@ -129,15 +148,29 @@ static void lv_tick_task(void *arg)
 void LVGL_ChangeColors(TimerHandle_t xTimer)
 {
     // // Define colors for MusicBox and TitleBox
-    lv_color_t musicBoxColor;
-    musicBoxColor.full = 0x39e9;
-    // Apply colors to MusicBox and TitleBox styles
-    lv_color_t titleBoxColor = lv_color_make(0x0, 0x0, 0x00);
-    lv_style_set_bg_color(&MusicBox, musicBoxColor);
-    lv_style_set_bg_color(&TitleBox, titleBoxColor);
+    // lv_color_t musicBoxColor;
+    // musicBoxColor.full = 0x39e9;
+    // // Apply colors to MusicBox and TitleBox styles
+    // lv_color_t titleBoxColor = lv_color_make(0x0, 0x0, 0x00);
+    // lv_style_set_bg_color(&MusicBox, musicBoxColor);
+    // lv_style_set_bg_color(&TitleBox, titleBoxColor);
+    // lv_obj_clean(lv_scr_act());
+}
+void ui_event_Button2(lv_event_t *e)
+{
+    // lv_event_code_t event_code = lv_event_get_code(e);
+    // lv_obj_t *target = lv_event_get_target(e);
+    // if (event_code == LV_EVENT_CLICKED)
+    // {
+    //     _ui_screen_change(&target, LV_SCR_LOAD_ANIM_FADE_ON, 500, 0, &SpotifyPageFunc);
+    // }
+    // lv_obj_del(MenuPage);
+    // SpotifyPageFunc();
+    // lv_disp_load_scr(SpotifyPage);
 }
 void MainMenu(void)
 {
+    MenuPage = lv_obj_create(lv_scr_act());
     lv_obj_remove_style_all(MenuPage);
     lv_obj_set_size(MenuPage, LV_HOR_RES, LV_VER_RES);
     lv_obj_set_align(MenuPage, LV_ALIGN_DEFAULT);
@@ -162,9 +195,8 @@ void MainMenu(void)
     lv_style_init(&matterStyle);
     lv_style_set_bg_color(&matterStyle, lv_palette_main(LV_PALETTE_RED));
     lv_style_set_border_color(&matterStyle, lv_palette_darken(LV_PALETTE_RED, 3));
-
     /*Create an object with the base style only*/
-    lv_obj_t *matterObject = lv_btn_create(MenuPage);
+    matterObject = lv_btn_create(MenuPage);
     // lv_obj_t *matterObject = lv_btn_create(MenuPage);
     lv_obj_add_style(matterObject, &parentStyle, 0);
     lv_obj_add_style(matterObject, &matterStyle, 0);
@@ -173,7 +205,7 @@ void MainMenu(void)
     lv_obj_t *matterLabel = lv_label_create(matterObject);
     lv_label_set_text(matterLabel, "1.Matter");
     lv_obj_center(matterLabel);
-    // lv_obj_add_event_cb(matterObject, ui_event_Button2, LV_EVENT_ALL, NULL);
+    lv_obj_add_event_cb(matterObject, ui_event_Button2, LV_EVENT_ALL, NULL);
     /*Set only the properties that should be different*/
     static lv_style_t spotifyStyle;
     lv_style_init(&spotifyStyle);
@@ -197,17 +229,18 @@ void MainMenu(void)
  */
 static void SpotifyPageFunc(void)
 {
-    lv_obj_t *cont;
-    SpotifyPage = lv_menu_page_create(Menu, "Page 1");
-    cont = lv_menu_cont_create(SpotifyPage);
-    lv_obj_set_size(cont, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
-
+    /*Create a SpotifyPage object*/
+    SpotifyPage = lv_obj_create(lv_scr_act());
+    lv_obj_remove_style_all(SpotifyPage);
+    lv_obj_set_size(SpotifyPage, LV_HOR_RES, LV_VER_RES);
+    lv_obj_set_align(SpotifyPage, LV_ALIGN_DEFAULT);
+    lv_obj_clear_flag(SpotifyPage, LV_OBJ_FLAG_SCROLLABLE); /// Flags
     // Base style for MusicBox
     lv_style_init(&MusicBox);
     lv_style_set_bg_color(&MusicBox, lv_color_make(17, 39, 28));
     // Create an object for the music display with the MusicBox style
     // lv_obj_t *musicObject;
-    lv_obj_t *musicObject = lv_obj_create(cont);
+    lv_obj_t *musicObject = lv_obj_create(SpotifyPage);
     // musicObject = lv_menu_page_create(Menu, "Page 1");
     lv_obj_add_style(musicObject, &MusicBox, 0);
     lv_obj_align(musicObject, LV_ALIGN_BOTTOM_MID, 0, 0);
@@ -218,7 +251,7 @@ static void SpotifyPageFunc(void)
     lv_style_set_bg_color(&TitleBox, lv_color_make(0xff, 0x0, 0x00));
 
     /*Create another object with the base style and earnings style too*/
-    lv_obj_t *textObject = lv_obj_create(cont);
+    lv_obj_t *textObject = lv_obj_create(SpotifyPage);
     lv_obj_add_style(textObject, &TitleBox, 0);
     lv_obj_align(textObject, LV_ALIGN_BOTTOM_MID, 0, -100);  //  shift it in Y axis
     lv_obj_set_size(textObject, LV_HOR_RES, LV_VER_RES / 4); // Set size to cover entire horizontal, 0.25 vertical
@@ -231,7 +264,7 @@ static void SpotifyPageFunc(void)
     lv_style_set_text_font(&circular, &lv_font_montserrat_18); // Set the font
 
     // Create a circular scrolling text object
-    lv_obj_t *circularObject = lv_label_create(cont);
+    lv_obj_t *circularObject = lv_label_create(SpotifyPage);
     lv_obj_add_style(circularObject, &circular, 0);
     lv_label_set_long_mode(circularObject, LV_LABEL_LONG_SCROLL_CIRCULAR);
     lv_obj_set_width(circularObject, 150);
@@ -239,7 +272,7 @@ static void SpotifyPageFunc(void)
     lv_obj_align(circularObject, LV_ALIGN_CENTER, 0, 0);
 
     /* Create an image object for a music bottom picture*/
-    lv_obj_t *imageObject = lv_img_create(cont);
+    lv_obj_t *imageObject = lv_img_create(SpotifyPage);
     lv_img_set_src(imageObject, &music);
     lv_obj_align(imageObject, LV_ALIGN_BOTTOM_MID, 0, -10);
 }
@@ -259,7 +292,7 @@ void LVGL_Timer()
     ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000));
 
     // Create and start a timer for color change
-    TimerHandle_t xTimer = xTimerCreate("ColorTimer", pdMS_TO_TICKS(10000), pdTRUE, NULL, LVGL_ChangeColors);
+    TimerHandle_t xTimer = xTimerCreate("ColorTimer", pdMS_TO_TICKS(100000), pdTRUE, NULL, LVGL_ChangeColors);
     xTimerStart(xTimer, 0);
     if (xTimer != NULL)
     {
@@ -273,61 +306,27 @@ void LVGL_Timer()
 void UiScreenInit(void)
 {
 
-    MenuPage = lv_obj_create(lv_scr_act());
-    lv_obj_clear_flag(MenuPage, LV_OBJ_FLAG_SCROLLABLE); /// Flags
-    lv_obj_remove_style_all(MenuPage);
     /*Create a MatterPage object*/
-    // MatterPage = lv_obj_create(NULL);
-    // lv_obj_clear_flag(MatterPage, LV_OBJ_FLAG_SCROLLABLE); /// Flags
-    // lv_obj_remove_style_all(MatterPage);
-    // /*Create a SpotifyPage object*/
-    // SpotifyPage = lv_obj_create(NULL);
-    // lv_obj_clear_flag(SpotifyPage, LV_OBJ_FLAG_SCROLLABLE); /// Flags
-    // lv_obj_remove_style_all(SpotifyPage);
+    MatterPage = lv_obj_create(lv_scr_act());
+    lv_obj_clear_flag(MatterPage, LV_OBJ_FLAG_SCROLLABLE); /// Flags
+    lv_obj_remove_style_all(MatterPage);
 
-    // /*Create a BackBottom object*/
-    // BackBottom = lv_obj_create(NULL);
-    // lv_obj_clear_flag(BackBottom, LV_OBJ_FLAG_CLICKABLE); /// Flags
-    // lv_obj_remove_style_all(BackBottom);
-}
-void CreatMenu()
-{
-    /*Create a Menu object*/
-    Menu = lv_menu_create(lv_scr_act());
-    lv_obj_set_size(Menu, lv_disp_get_hor_res(NULL), lv_disp_get_ver_res(NULL));
-    lv_obj_center(Menu);
-    /*Create a main page*/
-    lv_obj_t *MenuPage = lv_menu_page_create(Menu, NULL);
-    lv_menu_set_page(Menu, MenuPage);
-}
-static void backBottom(lv_event_t *e)
-{
-}
-void CreatBottomKeyForMenu()
-{
-    /*Modify the header*/
-    BackBottom = lv_menu_get_main_header_back_btn(Menu);
-    lv_obj_t *back_btn_label = lv_label_create(BackBottom);
-    lv_obj_add_event_cb(BackBottom, backBottom, LV_EVENT_CLICKED, BackBottom);
-    lv_label_set_text(back_btn_label, "Back");
+    /*Create a BackBottom object*/
+    BackBottom = lv_obj_create(NULL);
+    lv_obj_clear_flag(BackBottom, LV_OBJ_FLAG_CLICKABLE); /// Flags
+    lv_obj_remove_style_all(BackBottom);
 }
 
 void myMenu(void)
 {
-    lv_obj_t *cont;
-    lv_obj_t *label;
     UiScreenInit();
-    MainMenu();
-    // CreatBottomKeyForMenu();
 
-    // lv_obj_t *sub_3_page = lv_menu_page_create(Menu, "Page 3");
-    // cont = lv_menu_cont_create(sub_3_page);
-    // label = lv_label_create(cont);
-    // lv_label_set_text(label, "Hello, I am hiding here");
-    // cont = lv_menu_cont_create(MenuPage);
-    // label = lv_label_create(cont);
-    // lv_label_set_text(label, "Item 3 (Click me!)");
-    // lv_menu_set_load_page_event(Menu, cont, sub_3_page);
+    MainMenu();
+    SpotifyPageFunc();
+    // lv_obj_clean(lv_scr_act());
+    lv_obj_del(SpotifyPage);
+
+    lv_disp_load_scr(MenuPage);
 }
 /**
  * @brief main LVGL gui TASK
@@ -335,8 +334,8 @@ void myMenu(void)
 static void LVGL_mainTask(void *pvParameter)
 {
     // Allocate memory for LVGL display buffers
-    lv_color_t *LVGL_BigBuf1 = (lv_color_t *)malloc(LV_HOR_RES_MAX * 100 * sizeof(lv_color_t));
-    lv_color_t *LVGL_BigBuf2 = (lv_color_t *)malloc(LV_HOR_RES_MAX * 100 * sizeof(lv_color_t));
+    lv_color_t *LVGL_BigBuf1 = (lv_color_t *)malloc(LV_HOR_RES_MAX * 100 * MULTIPLIER * sizeof(lv_color_t));
+    lv_color_t *LVGL_BigBuf2 = (lv_color_t *)malloc(LV_HOR_RES_MAX * 100 * MULTIPLIER * sizeof(lv_color_t));
 
     // Check memory allocation
     if (LVGL_BigBuf2 == NULL || LVGL_BigBuf2 == NULL)
@@ -365,6 +364,7 @@ static void LVGL_mainTask(void *pvParameter)
     // Start LVGL timer and create UI
     LVGL_Timer();
     // MainMenu();
+    k = 1;
     myMenu();
     // LV_UI2();
     // LV_UI3();
@@ -383,7 +383,7 @@ static void LVGL_mainTask(void *pvParameter)
 void LVGL_TaskInit(void)
 {
     StaticTask_t *xTaskLVGLBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
-    StackType_t *xLVGLStack = (StackType_t *)malloc(LVGL_STACK * 8 * sizeof(StackType_t));
+    StackType_t *xLVGLStack = (StackType_t *)malloc(LVGL_STACK * 8 * MULTIPLIER * sizeof(StackType_t));
     if (xTaskLVGLBuffer == NULL || xLVGLStack == NULL)
     {
         ESP_LOGE("TAG", "Memory allocation failed!");
@@ -392,13 +392,13 @@ void LVGL_TaskInit(void)
         return; // Exit with an error code
     }
     xTaskCreateStatic(
-        LVGL_mainTask,        // Task function
-        "LVGL_mainTask",      // Task name (for debugging)
-        LVGL_STACK * 8,       // Stack size (in words)
-        NULL,                 // Task parameters (passed to the task function)
-        tskIDLE_PRIORITY + 1, // Task priority (adjust as needed)
-        xLVGLStack,           // Stack buffer
-        xTaskLVGLBuffer       // Task control block
+        LVGL_mainTask,               // Task function
+        "LVGL_mainTask",             // Task name (for debugging)
+        LVGL_STACK * 8 * MULTIPLIER, // Stack size (in words)
+        NULL,                        // Task parameters (passed to the task function)
+        tskIDLE_PRIORITY + 1,        // Task priority (adjust as needed)
+        xLVGLStack,                  // Stack buffer
+        xTaskLVGLBuffer              // Task control block
     );
     // this delay so important
     vTaskDelay(500);

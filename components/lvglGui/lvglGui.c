@@ -46,7 +46,7 @@ lv_obj_t *BackBottom;
 lv_obj_t *matterObject;
 
 int k = 0;
-static void IRAM_ATTR button_event_cb(void *arg, void *data)
+static void  button_event_cb(void *arg, void *data)
 {
     if (k == 1)
     {
@@ -59,9 +59,12 @@ static void IRAM_ATTR button_event_cb(void *arg, void *data)
         // lv_event_send(matterObject, LV_EVENT_ALL, (void *)&i);
 
         // lv_disp_load_scr(SpotifyPage);
-        lv_obj_del(MenuPage);
-        SpotifyPageFunc();
-        lv_disp_load_scr(SpotifyPage);
+        lv_obj_clean(lv_scr_act());
+        // SpotifyPageFunc();
+        // lv_obj_del(MenuPage);
+        // vTaskDelay(1);
+        
+        // lv_disp_load_scr(SpotifyPage);
     }
 }
 void _ui_screen_change(lv_obj_t **target, lv_scr_load_anim_t fademode, int spd, int delay, void (*target_init)(void))
@@ -305,7 +308,6 @@ void LVGL_Timer()
 
 void UiScreenInit(void)
 {
-
     /*Create a MatterPage object*/
     MatterPage = lv_obj_create(lv_scr_act());
     lv_obj_clear_flag(MatterPage, LV_OBJ_FLAG_SCROLLABLE); /// Flags
@@ -320,7 +322,6 @@ void UiScreenInit(void)
 void myMenu(void)
 {
     UiScreenInit();
-
     MainMenu();
     SpotifyPageFunc();
     // lv_obj_clean(lv_scr_act());
@@ -372,7 +373,7 @@ static void LVGL_mainTask(void *pvParameter)
     // SpotifyPage();
     while (1)
     {
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(pdMS_TO_TICKS(1));
         lv_task_handler();
     }
 }

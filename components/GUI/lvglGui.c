@@ -37,13 +37,6 @@ lv_color_t *LVGL_BigBuf2;
 int i = 0;
 lv_obj_t *BarObject;
 
-lv_obj_t *UiScreen;
-lv_obj_t *Menu;
-lv_obj_t *MatterPage;
-lv_obj_t *SpotifyPage;
-lv_obj_t *MenuPage;
-lv_obj_t *BackBottom;
-lv_obj_t *matterObject;
 
 int k = 0;
 static void  button_event_cb(void *arg, void *data)
@@ -67,13 +60,7 @@ static void  button_event_cb(void *arg, void *data)
         // lv_disp_load_scr(SpotifyPage);
     }
 }
-void _ui_screen_change(lv_obj_t **target, lv_scr_load_anim_t fademode, int spd, int delay, void (*target_init)(void))
-{
-    ESP_LOGI(TAG, "we are in _ui_screen_change");
-    if (*target == NULL)
-        target_init();
-    lv_scr_load_anim(*target, fademode, spd, delay, false);
-}
+
 void button_init(uint32_t button_num)
 {
     button_config_t btn_cfg = {

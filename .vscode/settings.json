@@ -64,7 +64,8 @@
         "lv_gif.h": "c",
         "lv_examples.h": "c",
         "gifdec.h": "c",
-        "compare": "cpp"
+        "compare": "cpp",
+        "typedef.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

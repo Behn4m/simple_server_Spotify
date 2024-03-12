@@ -1,13 +1,10 @@
-/*
- * a component for create indipendent test for gui
- */
-#ifndef LVGL_GUI_H_
-#define LVGL_GUI_H_
+#ifndef LVGL_TYPEDEF_H_
+#define LVGL_TYPEDEF_H_
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
-
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -42,11 +39,17 @@ extern "C" {
 #include "lvgl__lvgl/src/font/lv_font.h"
 #include "lvgl__lvgl/examples/scroll/lv_example_scroll.h"
 
-/**
- * @brief      create guiTask and its global method
- */
 
-void LVGL_TaskInit(void);
+
+
+
+
+
+
+
+
+
+
 
 #ifdef __cplusplus
 }

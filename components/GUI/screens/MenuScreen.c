@@ -1,8 +1,8 @@
 
-#include"MenuScreen.h"
-#include"GUIEvent.h"
+#include "MenuScreen.h"
+#include "GUIEvent.h"
 static const char *TAG = "GUI_MainMenuScreen";
-void MainMenu(void)
+void MainMenu(lv_obj_t *MenuPage, lv_obj_t *matterObject, lv_obj_t *spotifyObject)
 {
     MenuPage = lv_obj_create(lv_scr_act());
     lv_obj_remove_style_all(MenuPage);
@@ -47,7 +47,7 @@ void MainMenu(void)
     lv_style_set_border_color(&spotifyStyle, lv_palette_darken(LV_PALETTE_GREEN, 3));
 
     /*Create another object with the base style and earnings style too*/
-    lv_obj_t *spotifyObject = lv_btn_create(MenuPage);
+    spotifyObject = lv_btn_create(MenuPage);
     // lv_obj_t *spotifyObject = lv_btn_create(MenuPage);
     lv_obj_add_style(spotifyObject, &parentStyle, 0);
     lv_obj_add_style(spotifyObject, &spotifyStyle, 0);

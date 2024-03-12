@@ -6,7 +6,6 @@ extern "C"
 {
 #endif
 
-
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/timers.h"
@@ -35,27 +34,19 @@ extern "C"
 #include "libs/lv_example_libs.h"
 #include "lvgl__lvgl/src/font/lv_font.h"
 #include "lvgl__lvgl/examples/scroll/lv_example_scroll.h"
+#include "lvgl__lvgl/src/core/lv_obj.h"
 
+#include "SpotifyScreen.h"
 
-
-#include"SpotifyScreen.h"
-
-
-
-
-// lv_obj_t *MatterPage;
-lv_obj_t *SpotifyPage;
-lv_obj_t *MenuPage;
-// lv_obj_t *BackBottom;
-lv_obj_t *matterObject;
-lv_obj_t *BarObject;
-
-
-
-
-
-
-
+    typedef struct
+    {
+        lv_obj_t *MatterPage;
+        lv_obj_t *SpotifyPage;
+        lv_obj_t *MenuPage;
+        lv_obj_t *BackBottom;
+        lv_obj_t *matterObject;
+        lv_obj_t *BarObject;
+    } GUIGlobalObject_t;
 
 #ifdef __cplusplus
 }

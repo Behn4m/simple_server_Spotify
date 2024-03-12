@@ -1,7 +1,4 @@
 #include "lvglGui.h"
-#include "image_test.h"
-#include "lvgl__lvgl/src/core/lv_obj.h"
-
 #include "SpotifyScreen.h"
 #include "MatterScreen.h"
 #include "MenuScreen.h"
@@ -16,7 +13,7 @@ static const char *TAG = "LVGL_GUI";
 static lv_disp_draw_buf_t disp_draw_buf;
 lv_color_t *LVGL_BigBuf1;
 lv_color_t *LVGL_BigBuf2;
-
+GUIGlobalObject_t GUIGlobalObject; 
 
 /**
  * @brief timer handler for scheduling gui (for refreshing display we need it !)
@@ -25,9 +22,6 @@ static void lv_tick_task(void *arg)
 {
     lv_tick_inc(LV_TICK_PERIOD_MS);
 }
-
-
-
 
 /**
  * @brief Function to change colors based on a timer callback
@@ -105,7 +99,7 @@ static void LVGL_mainTask(void *pvParameter)
     // LV_UI2();
     // LV_UI3();
     // RailBar();
-    SpotifyPageFunc();
+    SpotifyPageFunc(GUIGlobalObject.SpotifyPage);
     while (1)
     {
         vTaskDelay(pdMS_TO_TICKS(1));

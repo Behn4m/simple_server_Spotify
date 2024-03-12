@@ -19,7 +19,7 @@ extern "C"
 #define BUTTON_ACTIVE_LEVEL 1
 
 
-void LVGLBottomInit();
+void LVGLBottomInit(void);
 
 #ifdef __cplusplus
 }

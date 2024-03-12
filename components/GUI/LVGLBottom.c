@@ -17,7 +17,7 @@ void button_init(uint32_t button_num)
     ESP_ERROR_CHECK(err);
 }
 
-void LVGLBottomInit()
+void LVGLBottomInit(void)
 {
     button_init(BUTTON_BACK);
     button_init(BUTTON_ACCEPT);

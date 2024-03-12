@@ -8,7 +8,7 @@ void set_value(void *bar, int32_t v)
 {
     lv_bar_set_value(bar, v, LV_ANIM_OFF);
 }
-void RailBar(void)
+void RailBar(lv_obj_t *BarObject)
 {
     static lv_style_t style_bg;
     static lv_style_t style_indic;
@@ -38,7 +38,7 @@ void RailBar(void)
 /**
  * @brief Function to create the main LVGL user interface
  */
-void SpotifyPageFunc(void)
+void SpotifyPageFunc(lv_obj_t *SpotifyPage)
 {
     /*Create a SpotifyPage object*/
     SpotifyPage = lv_obj_create(lv_scr_act());

@@ -8,7 +8,7 @@ extern "C"
 #include "GUITypedef.h"
 
 
-void SpotifyPageFunc(void);
+void SpotifyPageFunc(lv_obj_t *SpotifyPage);
 
 
 

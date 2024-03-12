@@ -6,7 +6,7 @@ extern "C"
 {
 #endif
 #include "GUITypedef.h"
-void menuscreen();
+void MainMenu(lv_obj_t *MenuPage, lv_obj_t *matterObject, lv_obj_t *spotifyObject);
 
 
 

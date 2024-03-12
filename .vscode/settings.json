@@ -70,7 +70,11 @@
         "menuscreen.h": "c",
         "stdbool.h": "c",
         "timers.h": "c",
-        "guievent.h": "c"
+        "guievent.h": "c",
+        "matterscreen.h": "c",
+        "guitypedef.h": "c",
+        "lvglbottom.h": "c",
+        "iot_button.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

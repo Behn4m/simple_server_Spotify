@@ -1,36 +1,23 @@
 #include "lvglGui.h"
 #include "image_test.h"
-#include <inttypes.h>
-#include "driver/gpio.h"
-#include "esp_pm.h"
-#include "iot_button.h"
 #include "lvgl__lvgl/src/core/lv_obj.h"
+
+#include "SpotifyScreen.h"
+#include "MatterScreen.h"
+#include "MenuScreen.h"
+#include "GUIEvent.h"
+#include "GUITypedef.h"
+#include"LVGLBottom.h"
 #define MULTIPLIER 20
-
-#define BUTTON_BACK GPIO_NUM_21
-#define BUTTON_ACCEPT GPIO_NUM_13
-#define BUTTON_UP GPIO_NUM_12
-#define BUTTON_PAUSE GPIO_NUM_11
-
-#define BOOT_BUTTON_NUM 21
-#define BUTTON_ACTIVE_LEVEL 1
-
 #define LV_TICK_PERIOD_MS 1
 #define LVGL_STACK 2500
 #define TIMER_CALLBACK_TIME 10 * 1000 /* in milliseconds */
-lv_obj_t *Cont;
-lv_obj_t *lvglButtomObject;
-lv_obj_t *lvglLableUI3;
-lv_obj_t *Label_UI5;
-
 static const char *TAG = "LVGL_GUI";
-
 static lv_disp_draw_buf_t disp_draw_buf;
-
 lv_color_t *LVGL_BigBuf1;
 lv_color_t *LVGL_BigBuf2;
-int i = 0;
-int k = 0;
+
+
 /**
  * @brief timer handler for scheduling gui (for refreshing display we need it !)
  */
@@ -39,56 +26,15 @@ static void lv_tick_task(void *arg)
     lv_tick_inc(LV_TICK_PERIOD_MS);
 }
 
-void button_event_cb(void *arg, void *data)
-{
-    if (k == 1)
-    {
-        ESP_LOGE(TAG, "Bottom callback");
-        i = i + 10;
-        ESP_LOGW(TAG, "i=%d", i);
-        if (i >= 100)
-            i = 0;
-        // lv_event_send(BarObject, LV_EVENT_ALL, (void *)&i);
-        // lv_event_send(matterObject, LV_EVENT_ALL, (void *)&i);
 
-        // lv_disp_load_scr(SpotifyPage);
-        lv_obj_clean(lv_scr_act());
-        // SpotifyPageFunc();
-        // lv_obj_del(MenuPage);
-        // vTaskDelay(1);
 
-        // lv_disp_load_scr(SpotifyPage);
-    }
-}
 
-void button_init(uint32_t button_num)
-{
-    button_config_t btn_cfg = {
-        .type = BUTTON_TYPE_GPIO,
-        .gpio_button_config = {
-            .gpio_num = button_num,
-            .active_level = BUTTON_ACTIVE_LEVEL,
-        },
-    };
-    button_handle_t btn = iot_button_create(&btn_cfg);
-    assert(btn);
-    esp_err_t err = iot_button_register_cb(btn, BUTTON_PRESS_DOWN, button_event_cb, NULL);
-    ESP_ERROR_CHECK(err);
-}
-
-void gpio_test()
-{
-    button_init(BUTTON_BACK);
-    button_init(BUTTON_ACCEPT);
-    button_init(BUTTON_UP);
-    button_init(BUTTON_PAUSE);
-}
 /**
  * @brief Function to change colors based on a timer callback
  */
 void GUITimerInterrupt(TimerHandle_t xTimer)
 {
-     ESP_LOGI(TAG, "Timer getting interrupt");
+    ESP_LOGI(TAG, "Timer getting interrupt");
 
     // lv_obj_clean(lv_scr_act());
 }
@@ -151,16 +97,15 @@ static void LVGL_mainTask(void *pvParameter)
     disp_drv.flush_cb = disp_driver_flush;
     disp_drv.draw_buf = &disp_draw_buf;
     lv_disp_drv_register(&disp_drv);
-    gpio_test();
+    LVGLBottomInit();
     // Start LVGL timer and create UI
     LVGL_Timer();
     // MainMenu();
-    k = 1;
-    myMenu();
+    // myMenu();
     // LV_UI2();
     // LV_UI3();
     // RailBar();
-    // SpotifyPage();
+    SpotifyPageFunc();
     while (1)
     {
         vTaskDelay(pdMS_TO_TICKS(1));

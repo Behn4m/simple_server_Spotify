@@ -6,12 +6,15 @@ extern "C"
 {
 #endif
 
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <esp_event.h>
 #include <esp_log.h>
 #include <esp_system.h>
 #include <sys/param.h>
 #include "freertos/queue.h"
-#include "esp_psram.h"
 
     typedef enum
     {

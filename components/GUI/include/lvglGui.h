@@ -8,7 +8,7 @@
 extern "C" {
 #endif
 
-#include "Typedef.h"
+#include "GUITypedef.h"
 
 /**
  * @brief      create guiTask and its global method

@@ -5,7 +5,7 @@
 extern "C"
 {
 #endif
-#include "Typedef.h"
+#include "GUITypedef.h"
 void menuscreen();
 
 

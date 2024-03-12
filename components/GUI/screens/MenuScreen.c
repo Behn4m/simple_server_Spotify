@@ -1,7 +1,7 @@
 
 #include"MenuScreen.h"
-
-
+#include"GUIEvent.h"
+static const char *TAG = "GUI_MainMenuScreen";
 void MainMenu(void)
 {
     MenuPage = lv_obj_create(lv_scr_act());

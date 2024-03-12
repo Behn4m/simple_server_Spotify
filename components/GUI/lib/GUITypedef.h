@@ -5,10 +5,7 @@
 extern "C"
 {
 #endif
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -45,12 +42,11 @@ extern "C"
 
 
 
-lv_obj_t *UiScreen;
-lv_obj_t *Menu;
-lv_obj_t *MatterPage;
+
+// lv_obj_t *MatterPage;
 lv_obj_t *SpotifyPage;
 lv_obj_t *MenuPage;
-lv_obj_t *BackBottom;
+// lv_obj_t *BackBottom;
 lv_obj_t *matterObject;
 lv_obj_t *BarObject;
 

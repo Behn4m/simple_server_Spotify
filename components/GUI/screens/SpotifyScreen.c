@@ -1,7 +1,7 @@
 #include "SpotifyScreen.h"
 #include "image_test.h"
 #include "GUIEvent.h"
-
+static const char *TAG = "GUI_SpotifyScreen";
 
 
 void set_value(void *bar, int32_t v)
@@ -46,8 +46,8 @@ void SpotifyPageFunc(void)
     lv_obj_set_size(SpotifyPage, LV_HOR_RES, LV_VER_RES);
     lv_obj_set_align(SpotifyPage, LV_ALIGN_DEFAULT);
     lv_obj_clear_flag(SpotifyPage, LV_OBJ_FLAG_SCROLLABLE); /// Flags
+    
     // Base style for MusicBox
-
     lv_style_t MusicBox;
     lv_style_init(&MusicBox);
     lv_color_t musicBoxColor;

@@ -4,8 +4,11 @@
 #ifdef __cplusplus
 extern "C"
 {
+#endif
+#include "Typedef.h"
 
-void spotifytest();
+
+void SpotifyPageFunc(void);
 
 
 
@@ -15,3 +18,11 @@ void spotifytest();
 #endif
 
 #endif
+
+
+
+
+
+
+
+

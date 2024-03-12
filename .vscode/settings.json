@@ -65,7 +65,12 @@
         "lv_examples.h": "c",
         "gifdec.h": "c",
         "compare": "cpp",
-        "typedef.h": "c"
+        "typedef.h": "c",
+        "spotifyscreen.h": "c",
+        "menuscreen.h": "c",
+        "stdbool.h": "c",
+        "timers.h": "c",
+        "guievent.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

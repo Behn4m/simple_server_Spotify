@@ -1,23 +1,12 @@
 #include <stdio.h>
 #include "Setup_GPIO.h"
-#define BUTTON_BACK GPIO_NUM_21
-#define BUTTON_ACCEPT GPIO_NUM_13
-#define BUTTON_UP GPIO_NUM_12
-#define BUTTON_PAUSE GPIO_NUM_11
 
-#define BOOT_BUTTON_NUM 21
-#define BUTTON_ACTIVE_LEVEL 1
 
 
 int i=1;
 static void IRAM_ATTR button_event_cb(void *arg, void *data)
 {
     ESP_LOGE(TAG, "Bottom callback");
-    i = i + 10;
-    ESP_LOGW(TAG, "i=%d", i);
-    if (i >= 100)
-        i = 0;
-
 }
 
 
@@ -38,7 +27,7 @@ void button_init(uint32_t button_num)
 
 
 
-void gpio_test()
+void GPIO_INIT()
 {
     button_init(BUTTON_BACK);
     button_init(BUTTON_ACCEPT);

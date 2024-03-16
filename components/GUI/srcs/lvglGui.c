@@ -1,10 +1,7 @@
 #include "lvglGui.h"
-#include "SpotifyScreen.h"
-#include "MatterScreen.h"
-#include "MenuScreen.h"
-#include "GUIEvent.h"
-#include "GUITypedef.h"
-#include"LVGLBottom.h"
+#include"custom.h"
+#include "gui_guider.h"
+
 #define MULTIPLIER 20
 #define LV_TICK_PERIOD_MS 1
 #define LVGL_STACK 2500
@@ -13,10 +10,10 @@ static const char *TAG = "LVGL_GUI";
 static lv_disp_draw_buf_t disp_draw_buf;
 lv_color_t *LVGL_BigBuf1;
 lv_color_t *LVGL_BigBuf2;
-GUIGlobalObject_t GUIGlobalObject; 
+
 
 /**
- * @brief timer handler for scheduling gui (for refreshing display we need it !)
+ * @brief timer handler for scheduling gui (for refreshing display,  we need it !)
  */
 static void lv_tick_task(void *arg)
 {
@@ -30,7 +27,6 @@ void GUITimerInterrupt(TimerHandle_t xTimer)
 {
     ESP_LOGI(TAG, "Timer getting interrupt");
 
-    // lv_obj_clean(lv_scr_act());
 }
 
 /**
@@ -48,7 +44,7 @@ void LVGL_Timer()
     ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000));
 
     // Create and start a timer for color change
-    TimerHandle_t xTimer = xTimerCreate("ColorTimer", pdMS_TO_TICKS(100000), pdTRUE, NULL, GUITimerInterrupt);
+    TimerHandle_t xTimer = xTimerCreate("ColorTimer", pdMS_TO_TICKS(4000), pdFALSE, NULL, GUITimerInterrupt);
     xTimerStart(xTimer, 0);
     if (xTimer != NULL)
     {
@@ -91,15 +87,9 @@ static void LVGL_mainTask(void *pvParameter)
     disp_drv.flush_cb = disp_driver_flush;
     disp_drv.draw_buf = &disp_draw_buf;
     lv_disp_drv_register(&disp_drv);
-    LVGLBottomInit();
-    // Start LVGL timer and create UI
+    // LVGLBottomInit();
     LVGL_Timer();
-    // MainMenu();
-    // myMenu();
-    // LV_UI2();
-    // LV_UI3();
-    // RailBar();
-    SpotifyPageFunc(GUIGlobalObject.SpotifyPage);
+    setup_ui(&guider_ui);
     while (1)
     {
         vTaskDelay(pdMS_TO_TICKS(1));

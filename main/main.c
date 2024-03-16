@@ -5,6 +5,8 @@
 #include "SpotifyInterface.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "Setup_GPIO.h"
+
 // ****************************** GLobal Variables ****************************** //
 static const char *TAG = "Main";
 
@@ -16,6 +18,7 @@ void CallbackTest(char *buffer)
 }
 void app_main(void)
 {
+    GPIO_INIT();
     LVGL_TaskInit();
     GlobalInit();
     nvsFlashInit();

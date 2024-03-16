@@ -6,7 +6,14 @@ extern "C"
 #define SETUP_GPIO_H_
 
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/timers.h"
+#include "esp_freertos_hooks.h"
+#include "freertos/semphr.h"
 
+#include "esp_system.h"
+#include "driver/gpio.h"
 
 #define BUTTON_BACK GPIO_NUM_21
 #define BUTTON_ACCEPT GPIO_NUM_13

@@ -23,6 +23,7 @@ bool Spotify_FindCode(char *Response, uint16_t SizeRes)
         // Invalid input, either null pointer or insufficient buffer size
         return false;
     }
+
     for (uint16_t i = 0; i <= SizeRes - codeLength; ++i)
     {
         bool Found = true;
@@ -57,7 +58,7 @@ static esp_err_t Spotify_RequestDataAccess(httpd_req_t *HttpdRequest)
     }
     memset(localURL, 0x0, SMALL_BUF * 2);
     ESP_LOGI(TAG, "Starting authorization, sending request for TOKEN");
-    sprintf(localURL, "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state", ClientId, ReDirectUri);
+    sprintf(localURL, "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state", CLIENT_ID, REDIRECT_URI);
     httpd_resp_set_hdr(HttpdRequest, "Location", localURL);
     httpd_resp_set_type(HttpdRequest, "text/plain");
     httpd_resp_set_status(HttpdRequest, "302");
@@ -73,28 +74,30 @@ static esp_err_t Spotify_RequestDataAccess(httpd_req_t *HttpdRequest)
  */
 static esp_err_t Spotify_HttpsCallbackHandler(httpd_req_t *HttpdRequest)
 {
-    char queryBuffer[SMALL_BUF * 2];
-    if (httpd_req_get_url_query_str(HttpdRequest, queryBuffer, sizeof(queryBuffer)) == ESP_OK)
+    int bufferSize = httpd_req_get_url_query_len(HttpdRequest) + 1;     // +1 for null terminator
+    char queryBuffer[bufferSize];                                       // Buffer to store the query string
+    esp_err_t err = httpd_req_get_url_query_str(HttpdRequest, queryBuffer, sizeof(queryBuffer));
+    if (err != ESP_OK)
     {
-        if (Spotify_FindCode(queryBuffer, sizeof(queryBuffer)) == true)
-        {
-            if (xQueueSend(SendCodeFromHttpToSpotifyTask, queryBuffer, pdMS_TO_TICKS(SEC * 15)) != pdTRUE)
-            {
-                ESP_LOGE(TAG, "Sent data with queue failed!");
-            }
-            ESP_LOGI(TAG, "the CODE found in response");
-        }
-        else
-        {
-            ESP_LOGE(TAG, "response does not include code at the beginning ");
-            return ESP_FAIL;
-        }
-    }
-    else
-    {
-        ESP_LOGW(TAG, "bad arguments - the response does not include correct structure");
+        ESP_LOGE(TAG, "Failed to get the query string from the URL");
         return ESP_FAIL;
     }
+
+    bool isCodeFound = Spotify_FindCode(queryBuffer, sizeof(queryBuffer));
+    if (!isCodeFound)
+    {
+        ESP_LOGE(TAG, "response does not include code at the beginning ");
+        return ESP_FAIL;
+    }
+
+    bool isCodeSent = xQueueSend(SendCodeFromHttpToSpotifyTask, queryBuffer,  pdMS_TO_TICKS(SEC*15));
+    if (!isCodeSent)
+    {
+        ESP_LOGE(TAG, "Sent data with queue failed!");
+        return ESP_FAIL;
+    }
+
+    ESP_LOGI(TAG, "the CODE found in response");
     return ESP_OK;
 }
 
@@ -124,18 +127,20 @@ httpd_handle_t Spotify_StartWebServer()
     httpd_config_t httpdConfig = HTTPD_DEFAULT_CONFIG();
     httpdConfig.lru_purge_enable = true;
     ESP_LOGI(TAG, "Starting HttpdServerHandler on port: '%d'", httpdConfig.server_port);
-    if (httpd_start(&httpdHandler, &httpdConfig) == ESP_OK)
+
+    bool IsHttpdStarted = httpd_start(&httpdHandler, &httpdConfig) == ESP_OK;
+    if (!IsHttpdStarted)
     {
-        ESP_LOGI(TAG, "Registering URI handlers");
-        httpd_register_uri_handler(httpdHandler, &Spotify_Request_Access_URI);
-        httpd_register_uri_handler(httpdHandler, &Spotify_Response_Access_URI);
-        return httpdHandler;
-    }
-    else
-    {
+        ESP_LOGE(TAG, "Failed to start HttpdServerHandler");
         return NULL;
     }
+    
+    ESP_LOGI(TAG, "Registering URI handlers");
+    httpd_register_uri_handler(httpdHandler, &Spotify_Request_Access_URI);
+    httpd_register_uri_handler(httpdHandler, &Spotify_Response_Access_URI);
+    return httpdHandler;
 }
+
 
 /**
  * @brief This function stops the web HttpdServerHandler for handling HTTPS requests.
@@ -158,24 +163,28 @@ bool Spotify_StartMDNSService()
         ESP_LOGE(TAG, "MDNS Init failed: %d", err);
         return false;
     }
+
     err = mdns_hostname_set("deskhub");
     if (err != ESP_OK)
     {
         ESP_LOGE(TAG, "mdns_hostname_set  failed: %d", err);
         return false;
     }
+
     err = mdns_instance_name_set("spotify");
     if (err != ESP_OK)
     {
         ESP_LOGE(TAG, "mdns_instance_name_set  failed: %d", err);
         return false;
     }
+
     err = mdns_service_add(NULL, "_http", "_tcp", 80, NULL, 0);
     if (err != ESP_OK)
     {
         ESP_LOGE(TAG, "mdns_service_add  failed: %d", err);
         return false;
     }
-    ESP_LOGI(TAG, " MDNS Inited :");
+    
+    ESP_LOGI(TAG, "MDNS Init done");
     return true;
 }

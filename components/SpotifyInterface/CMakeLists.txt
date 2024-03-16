@@ -1,11 +1,7 @@
 idf_component_register(SRCS "SpotifyAPICall.c" "JsonExtraction.c" "SpotifyInterface.c" 
                             "SpotifyHttpLocalServer.c"
-                    INCLUDE_DIRS "include" "lib" "certs"
+                    INCLUDE_DIRS "include"
                     
-                    EMBED_TXTFILES certs/server_root_cert.pem 
-                                   certs/local_server_cert.pem 
-                                   certs/local_server_key.pem
-
                     REQUIRES mdns esp_wifi esp_event esp_eth protocol_examples_common
                     esp_https_server esp_http_client nvs_flash json
                     GlobalInit esp_psram heap) 

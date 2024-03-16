@@ -74,7 +74,10 @@
         "matterscreen.h": "c",
         "guitypedef.h": "c",
         "lvglbottom.h": "c",
-        "iot_button.h": "c"
+        "iot_button.h": "c",
+        "lvgltimer.h": "c",
+        "lvglinterface.h": "c",
+        "gui_guider.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

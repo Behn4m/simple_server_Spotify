@@ -23,6 +23,7 @@ idf_component_register(
 "generated/setup_scr_Main_menu_page.c"
 "generated/gui_guider.c"
 "generated/setup_scr_Spotify_Page.c"
+"srcs/lvglTimer.c"
 "srcs/lvglGui.c"
  INCLUDE_DIRS 
 
@@ -30,8 +31,4 @@ idf_component_register(
 "generated"
 "generated/guider_customer_fonts"
 "include"
-     REQUIRES lvgl__lvgl lvgl_esp32_drivers  driver esp_timer GlobalInit driver espressif__button)
-
-
-
-    
+     REQUIRES lvgl__lvgl lvgl_esp32_drivers  driver esp_timer GlobalInit driver espressif__button) 

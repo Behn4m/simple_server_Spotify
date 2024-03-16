@@ -2,58 +2,10 @@
 #include"custom.h"
 #include "gui_guider.h"
 
-#define MULTIPLIER 20
-#define LV_TICK_PERIOD_MS 1
-#define LVGL_STACK 2500
-#define TIMER_CALLBACK_TIME 10 * 1000 /* in milliseconds */
 static const char *TAG = "LVGL_GUI";
 static lv_disp_draw_buf_t disp_draw_buf;
 lv_color_t *LVGL_BigBuf1;
 lv_color_t *LVGL_BigBuf2;
-
-
-/**
- * @brief timer handler for scheduling gui (for refreshing display,  we need it !)
- */
-static void lv_tick_task(void *arg)
-{
-    lv_tick_inc(LV_TICK_PERIOD_MS);
-}
-
-/**
- * @brief Function to change colors based on a timer callback
- */
-void GUITimerInterrupt(TimerHandle_t xTimer)
-{
-    ESP_LOGI(TAG, "Timer getting interrupt");
-
-}
-
-/**
- * @brief Function to initialize and start LVGL timer
- */
-void LVGL_Timer()
-{
-    // Create and start a periodic timer interrupt to call lv_tick_inc
-    const esp_timer_create_args_t periodic_timer_args = {
-        .callback = &lv_tick_task,
-        .name = "periodic_gui"};
-
-    esp_timer_handle_t periodic_timer;
-    ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
-    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000));
-
-    // Create and start a timer for color change
-    TimerHandle_t xTimer = xTimerCreate("ColorTimer", pdMS_TO_TICKS(4000), pdFALSE, NULL, GUITimerInterrupt);
-    xTimerStart(xTimer, 0);
-    if (xTimer != NULL)
-    {
-        if (xTimerStart(xTimer, 0) == pdPASS)
-        {
-            ESP_LOGI(TAG, "Timer getting start");
-        }
-    }
-}
 
 /**
  * @brief main LVGL gui TASK
@@ -75,10 +27,7 @@ static void LVGL_mainTask(void *pvParameter)
     // Initialize LVGL and display driver
     lv_init();
     lvgl_driver_init();
-
-    // Initialize display buffer
     lv_disp_draw_buf_init(&disp_draw_buf, LVGL_BigBuf1, LVGL_BigBuf2, LV_HOR_RES_MAX * 100);
-
     // Initialize display driver
     lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);

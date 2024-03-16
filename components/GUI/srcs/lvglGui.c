@@ -37,7 +37,7 @@ static void LVGL_mainTask(void *pvParameter)
     disp_drv.draw_buf = &disp_draw_buf;
     lv_disp_drv_register(&disp_drv);
     // LVGLBottomInit();
-    LVGL_Timer();
+    // LVGL_Timer();
     setup_ui(&guider_ui);
     while (1)
     {
@@ -71,4 +71,27 @@ void LVGL_TaskInit(void)
     );
     // this delay so important
     vTaskDelay(500);
+}
+
+
+/**
+ * @brief Function to update the LVGL screen
+ * @param Artist: Artist name
+ * @param Title: Title of the song
+ * @param Album: Album name
+ * @return void
+ */
+void LVGL_UpdateSpotifyScreen(char *Artist, char *Title, char *Album)
+{
+	lv_label_set_text(guider_ui.Spotify_Page_Artist_name, Artist);
+	lv_label_set_text(guider_ui.Spotify_Page_Song_name, Title);
+	lv_label_set_text(guider_ui.Spotify_Page_Album_name, Album);
+
+    lv_obj_update_layout(guider_ui.Spotify_Page);
+    lv_obj_update_layout(guider_ui.Spotify_Page_Artist_name);
+    lv_obj_update_layout(guider_ui.Spotify_Page_Song_name);
+    lv_obj_update_layout(guider_ui.Spotify_Page_Album_name);
+
+    lv_obj_update_layout(guider_ui.Spotify_Page);
+
 }

@@ -155,6 +155,6 @@ void init_scr_del_flag(lv_ui *ui)
 void setup_ui(lv_ui *ui)
 {
 	init_scr_del_flag(ui);
-	setup_scr_Main_menu_page(ui);
-	lv_scr_load(ui->Main_menu_page);
+	setup_scr_Spotify_Page(ui);
+	lv_scr_load(ui->Spotify_Page);
 }

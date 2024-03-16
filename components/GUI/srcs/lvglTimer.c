@@ -31,7 +31,7 @@ void LVGL_Timer()
 
     esp_timer_handle_t periodic_timer;
     ESP_ERROR_CHECK(esp_timer_create(&periodic_timer_args, &periodic_timer));
-    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, LV_TICK_PERIOD_MS * 1000));
+    ESP_ERROR_CHECK(esp_timer_start_periodic(periodic_timer, 1000));
 
     // Create and start a timer for color change
     TimerHandle_t xTimer = xTimerCreate("ColorTimer",TIMER_TIME, pdTRUE, NULL, GUITimerInterrupt);

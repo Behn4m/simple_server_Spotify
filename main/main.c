@@ -8,12 +8,28 @@
 // ****************************** GLobal Variables ****************************** //
 static const char *TAG = "Main";
 
+SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
+
 
 // ****************************** GLobal Functions ****************************** //
-void CallbackTest(char *buffer)
+/**
+ * @brief Function to change colors based on a timer callback
+ */
+void SpotifyPeriodicTimer()
 {
-    ESP_LOGW("Spotify_callback_test ", "%s", buffer);
+    bool CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying);
+    if (CommandResult == false)
+    {
+        ESP_LOGE(TAG, "Playback info update failed");
+        return;
+    }
+    LVGL_UpdateSpotifyScreen( SpotifyInterfaceHandler.PlaybackInfo->ArtistName, 
+                              SpotifyInterfaceHandler.PlaybackInfo->SongName, 
+                              SpotifyInterfaceHandler.PlaybackInfo->AlbumName);
+    ESP_LOGI(TAG, "Playback info updated");
 }
+
+
 void app_main(void)
 {
     LVGL_TaskInit();
@@ -28,40 +44,32 @@ void app_main(void)
 #endif
     
 #ifdef SpotifyEnable
-    SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 
     SpotifyInterfaceHandler.IsSpotifyAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;
     SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
     Spotify_TaskInit(&SpotifyInterfaceHandler);
+
     // after this semaphore you can use playback command function in every where !
     if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
     {
         bool CommandResult = false;
         CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetUserInfo);
-        if (CommandResult == true)
+        if (CommandResult == false)
         {
-            ESP_LOGI(TAG, "User info updated");
+            ESP_LOGE(TAG, "User info update failed");
+            return;
         }
+        
+        ESP_LOGI(TAG, "User info updated");
 
-        vTaskDelay((pdMS_TO_TICKS(SEC * 1)));
-        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying);
-        if (CommandResult == true)
-        {
-            ESP_LOGI(TAG, "Playback info updated");
-
-            vTaskDelay((pdMS_TO_TICKS(SEC * 2)));
-            CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, Pause);
-
-            vTaskDelay((pdMS_TO_TICKS(SEC * 2)));
-            CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, Play);
-
-            vTaskDelay((pdMS_TO_TICKS(SEC * 2)));
-            CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, PlayPrev);
-
-            vTaskDelay((pdMS_TO_TICKS(SEC * 2)));
-            CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, PlayNext);
-        }
+        // Create and start a periodic timer to update Spotify screen info
+        esp_timer_create_args_t periodic_timer_args = {.callback = SpotifyPeriodicTimer,
+                                                       .name = "periodic_spotify"};    
+        esp_timer_handle_t periodic_timer;
+        esp_timer_create(&periodic_timer_args, &periodic_timer);
+        esp_timer_start_periodic(periodic_timer, 1000000);
     }
-    Spotify_TaskDeinit(&SpotifyInterfaceHandler);
 #endif
 }
+
+

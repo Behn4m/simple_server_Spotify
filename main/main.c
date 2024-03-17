@@ -32,7 +32,6 @@ void SpotifyPeriodicTimer()
 void app_main(void)
 {
     LVGL_TaskInit();
-    vTaskDelay(500);
     LVGL_UpdateSpotifyScreen("Mohammad", "javad", "Abbasi");
     GlobalInit();
     nvsFlashInit();

@@ -5,7 +5,7 @@
 #include "SpotifyInterface.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "lvglTimer.h"
+
 // ****************************** GLobal Variables ****************************** //
 static const char *TAG = "Main";
 

@@ -18,9 +18,6 @@ extern "C" {
 
 void events_init(lv_ui *ui);
 
-void events_init_Main_menu_page(lv_ui *ui);
-void events_init_Matter_connected_page(lv_ui *ui);
-void events_init_Matter_disconnect_page(lv_ui *ui);
 void events_init_Spotify_Page(lv_ui *ui);
 
 #ifdef __cplusplus

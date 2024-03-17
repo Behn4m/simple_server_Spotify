@@ -74,14 +74,14 @@ void setup_scr_Spotify_Page(lv_ui *ui)
 	ui->Spotify_Page_label_artist = lv_label_create(ui->Spotify_Page_cont_Spotify);
 	lv_label_set_text(ui->Spotify_Page_label_artist, "Artist:");
 	lv_label_set_long_mode(ui->Spotify_Page_label_artist, LV_LABEL_LONG_CLIP);
-	lv_obj_set_pos(ui->Spotify_Page_label_artist, 235, 150);
-	lv_obj_set_size(ui->Spotify_Page_label_artist, 306, 20);
+	lv_obj_set_pos(ui->Spotify_Page_label_artist, 235, 155);
+	lv_obj_set_size(ui->Spotify_Page_label_artist, 48, 15);
 
 	//Write style for Spotify_Page_label_artist, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
 	lv_obj_set_style_border_width(ui->Spotify_Page_label_artist, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_radius(ui->Spotify_Page_label_artist, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_text_color(ui->Spotify_Page_label_artist, lv_color_hex(0x000000), LV_PART_MAIN|LV_STATE_DEFAULT);
-	lv_obj_set_style_text_font(ui->Spotify_Page_label_artist, &lv_font_Adventpro_regular_16, LV_PART_MAIN|LV_STATE_DEFAULT);
+	lv_obj_set_style_text_font(ui->Spotify_Page_label_artist, &lv_font_arial_16, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_text_opa(ui->Spotify_Page_label_artist, 255, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_text_letter_space(ui->Spotify_Page_label_artist, 2, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_text_line_space(ui->Spotify_Page_label_artist, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
@@ -98,13 +98,13 @@ void setup_scr_Spotify_Page(lv_ui *ui)
 	lv_label_set_text(ui->Spotify_Page_label_song, "Song:");
 	lv_label_set_long_mode(ui->Spotify_Page_label_song, LV_LABEL_LONG_CLIP);
 	lv_obj_set_pos(ui->Spotify_Page_label_song, 235, 125);
-	lv_obj_set_size(ui->Spotify_Page_label_song, 306, 20);
+	lv_obj_set_size(ui->Spotify_Page_label_song, 49, 14);
 
 	//Write style for Spotify_Page_label_song, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
 	lv_obj_set_style_border_width(ui->Spotify_Page_label_song, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_radius(ui->Spotify_Page_label_song, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_text_color(ui->Spotify_Page_label_song, lv_color_hex(0x000000), LV_PART_MAIN|LV_STATE_DEFAULT);
-	lv_obj_set_style_text_font(ui->Spotify_Page_label_song, &lv_font_Adventpro_regular_16, LV_PART_MAIN|LV_STATE_DEFAULT);
+	lv_obj_set_style_text_font(ui->Spotify_Page_label_song, &lv_font_arial_16, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_text_opa(ui->Spotify_Page_label_song, 255, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_text_letter_space(ui->Spotify_Page_label_song, 2, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_text_line_space(ui->Spotify_Page_label_song, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
@@ -121,13 +121,13 @@ void setup_scr_Spotify_Page(lv_ui *ui)
 	lv_label_set_text(ui->Spotify_Page_label_album, "Album:");
 	lv_label_set_long_mode(ui->Spotify_Page_label_album, LV_LABEL_LONG_CLIP);
 	lv_obj_set_pos(ui->Spotify_Page_label_album, 235, 100);
-	lv_obj_set_size(ui->Spotify_Page_label_album, 65, 18);
+	lv_obj_set_size(ui->Spotify_Page_label_album, 48, 19);
 
 	//Write style for Spotify_Page_label_album, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
 	lv_obj_set_style_border_width(ui->Spotify_Page_label_album, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_radius(ui->Spotify_Page_label_album, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_text_color(ui->Spotify_Page_label_album, lv_color_hex(0x000000), LV_PART_MAIN|LV_STATE_DEFAULT);
-	lv_obj_set_style_text_font(ui->Spotify_Page_label_album, &lv_font_Adventpro_regular_16, LV_PART_MAIN|LV_STATE_DEFAULT);
+	lv_obj_set_style_text_font(ui->Spotify_Page_label_album, &lv_font_arial_16, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_text_opa(ui->Spotify_Page_label_album, 255, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_text_letter_space(ui->Spotify_Page_label_album, 2, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_text_line_space(ui->Spotify_Page_label_album, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
@@ -145,7 +145,7 @@ void setup_scr_Spotify_Page(lv_ui *ui)
 	lv_img_set_src(ui->Spotify_Page_img_song, &_song_cover_alpha_192x192);
 	lv_img_set_pivot(ui->Spotify_Page_img_song, 50,50);
 	lv_img_set_angle(ui->Spotify_Page_img_song, 0);
-	lv_obj_set_pos(ui->Spotify_Page_img_song, 12, 25);
+	lv_obj_set_pos(ui->Spotify_Page_img_song, 6, 22);
 	lv_obj_set_size(ui->Spotify_Page_img_song, 192, 192);
 
 	//Write style for Spotify_Page_img_song, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
@@ -205,7 +205,7 @@ void setup_scr_Spotify_Page(lv_ui *ui)
 
 	//Write codes Spotify_Page_Album_name
 	ui->Spotify_Page_Album_name = lv_label_create(ui->Spotify_Page_cont_Spotify);
-	lv_label_set_text(ui->Spotify_Page_Album_name, "Album name ");
+	lv_label_set_text(ui->Spotify_Page_Album_name, "Album test");
 	lv_label_set_long_mode(ui->Spotify_Page_Album_name, LV_LABEL_LONG_WRAP);
 	lv_obj_set_pos(ui->Spotify_Page_Album_name, 299, 100);
 	lv_obj_set_size(ui->Spotify_Page_Album_name, 182, 18);
@@ -228,9 +228,9 @@ void setup_scr_Spotify_Page(lv_ui *ui)
 
 	//Write codes Spotify_Page_Song_name
 	ui->Spotify_Page_Song_name = lv_label_create(ui->Spotify_Page_cont_Spotify);
-	lv_label_set_text(ui->Spotify_Page_Song_name, "test");
+	lv_label_set_text(ui->Spotify_Page_Song_name, "song test");
 	lv_label_set_long_mode(ui->Spotify_Page_Song_name, LV_LABEL_LONG_WRAP);
-	lv_obj_set_pos(ui->Spotify_Page_Song_name, 298, 126);
+	lv_obj_set_pos(ui->Spotify_Page_Song_name, 298, 125);
 	lv_obj_set_size(ui->Spotify_Page_Song_name, 182, 18);
 
 	//Write style for Spotify_Page_Song_name, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
@@ -251,9 +251,9 @@ void setup_scr_Spotify_Page(lv_ui *ui)
 
 	//Write codes Spotify_Page_Artist_name
 	ui->Spotify_Page_Artist_name = lv_label_create(ui->Spotify_Page_cont_Spotify);
-	lv_label_set_text(ui->Spotify_Page_Artist_name, "test");
+	lv_label_set_text(ui->Spotify_Page_Artist_name, "artist test");
 	lv_label_set_long_mode(ui->Spotify_Page_Artist_name, LV_LABEL_LONG_WRAP);
-	lv_obj_set_pos(ui->Spotify_Page_Artist_name, 299, 156);
+	lv_obj_set_pos(ui->Spotify_Page_Artist_name, 297, 155);
 	lv_obj_set_size(ui->Spotify_Page_Artist_name, 182, 18);
 
 	//Write style for Spotify_Page_Artist_name, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.

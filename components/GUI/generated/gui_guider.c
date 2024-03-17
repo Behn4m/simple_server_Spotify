@@ -15,7 +15,6 @@
 #endif
 
 lv_ui guider_ui;
-
 void ui_init_style(lv_style_t * style)
 {
 	if (style->prop_cnt > 1)
@@ -146,9 +145,6 @@ void ui_img_rotate_animation(void * var, int32_t duration, int32_t delay, lv_coo
 void init_scr_del_flag(lv_ui *ui)
 {
   
-	ui->Main_menu_page_del = true;
-	ui->Matter_connected_page_del = true;
-	ui->Matter_disconnect_page_del = true;
 	ui->Spotify_Page_del = true;
 }
 

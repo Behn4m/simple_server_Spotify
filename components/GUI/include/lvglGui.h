@@ -39,7 +39,7 @@ void LVGL_TaskInit(void);
  * @param Album: Album name
  * @return void
  */
-void LVGL_UpdateSpotifyScreen(char *Artist, char *Title, char *Album);
+void LVGL_UpdateSpotifyScreen(char *Artist, char *Song, char *Album);
 
 #ifdef __cplusplus
 }

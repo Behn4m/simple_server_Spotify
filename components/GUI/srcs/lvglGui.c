@@ -1,5 +1,5 @@
 #include "lvglGui.h"
-#include"custom.h"
+#include "custom.h"
 #include "gui_guider.h"
 
 static const char *TAG = "LVGL_GUI";
@@ -73,7 +73,6 @@ void LVGL_TaskInit(void)
     vTaskDelay(500);
 }
 
-
 /**
  * @brief Function to update the LVGL screen
  * @param Artist: Artist name
@@ -81,17 +80,9 @@ void LVGL_TaskInit(void)
  * @param Album: Album name
  * @return void
  */
-void LVGL_UpdateSpotifyScreen(char *Artist, char *Title, char *Album)
+void LVGL_UpdateSpotifyScreen(char *Artist, char *Song, char *Album)
 {
-	lv_label_set_text(guider_ui.Spotify_Page_Artist_name, Artist);
-	lv_label_set_text(guider_ui.Spotify_Page_Song_name, Title);
-	lv_label_set_text(guider_ui.Spotify_Page_Album_name, Album);
-
-    lv_obj_update_layout(guider_ui.Spotify_Page);
-    lv_obj_update_layout(guider_ui.Spotify_Page_Artist_name);
-    lv_obj_update_layout(guider_ui.Spotify_Page_Song_name);
-    lv_obj_update_layout(guider_ui.Spotify_Page_Album_name);
-
-    lv_obj_update_layout(guider_ui.Spotify_Page);
-
+    lv_event_send(guider_ui.Spotify_Page_Artist_name, LV_EVENT_VALUE_CHANGED, Artist);
+    lv_event_send(guider_ui.Spotify_Page_Song_name, LV_EVENT_VALUE_CHANGED, Song);
+    lv_event_send(guider_ui.Spotify_Page_Album_name, LV_EVENT_VALUE_CHANGED, Album);
 }

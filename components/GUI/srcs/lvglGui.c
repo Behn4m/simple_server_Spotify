@@ -36,9 +36,9 @@ static void LVGL_mainTask(void *pvParameter)
     disp_drv.flush_cb = disp_driver_flush;
     disp_drv.draw_buf = &disp_draw_buf;
     lv_disp_drv_register(&disp_drv);
-    // LVGLBottomInit();
-    // LVGL_Timer();
     setup_ui(&guider_ui);
+        // LVGLBottomInit();
+    LVGL_Timer();
     while (1)
     {
         vTaskDelay(pdMS_TO_TICKS(1));

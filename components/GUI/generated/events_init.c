@@ -67,7 +67,7 @@ static void Spotify_Page_Album_name_event_handler(lv_event_t *e)
 	{
 		lv_obj_set_style_text_font(object, &lv_font_arial_16, 0);
 		lv_label_set_text(object, inputText);
-		lv_refr_now(NULL);
+		
 		break;
 	}
 	default:
@@ -85,7 +85,7 @@ static void Spotify_Page_Song_name_event_handler(lv_event_t *e)
 	{
 		lv_obj_set_style_text_font(object, &lv_font_arial_16, 0);
 		lv_label_set_text(object, inputText);
-		lv_refr_now(NULL);
+		// lv_refr_now(NULL);
 		break;
 	}
 	default:
@@ -103,7 +103,7 @@ static void Spotify_Page_Artist_name_event_handler(lv_event_t *e)
 	{
 		lv_obj_set_style_text_font(object, &lv_font_arial_16, 0);
 		lv_label_set_text(object, inputText);
-		lv_refr_now(NULL);
+		// lv_refr_now(NULL);
 		break;
 	}
 	default:

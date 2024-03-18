@@ -78,7 +78,8 @@ void app_main(void)
             }
         }
         BottomCallBackFunctions_t BottomCallBackFunctions;
-        BottomCallBackFunctions.
+        BottomCallBackFunctions.BackBottomCallBack;
+        BottomCallBackFunctions.AcceptBottomCallBack;
     }
 #endif
 }

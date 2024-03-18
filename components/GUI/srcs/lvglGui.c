@@ -73,7 +73,6 @@ void LVGL_TaskInit(void)
     vTaskDelay(500);
 }
 
-v
 
 /**
  * @brief Function to update the LVGL screen

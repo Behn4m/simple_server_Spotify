@@ -23,14 +23,14 @@ extern "C"
 #define BUTTON_ACCEPT GPIO_NUM_21
 #define BUTTON_ACTIVE_LEVEL 1
 
-    typedef void (*BackBottomCallBack)(void *arg, void *data);
-    typedef void (*AcceptBottomCallBack)(void *arg, void *data);
+    typedef void (*BackBottomCallBack_t)(void *arg, void *data);
+    typedef void (*AcceptBottomCallBack_t)(void *arg, void *data);
     typedef struct
     {
-        typedef void (*BackBottomCallBack)(void *arg, void *data);
-        typedef void (*AcceptBottomCallBack)(void *arg, void *data);
-    } BottomCallBackFunctions;
-
+        BackBottomCallBack_t BackBottomCallBack;
+        AcceptBottomCallBack_t AcceptBottomCallBack;
+    } BottomCallBackFunctions_t;
+    
 #endif
 #ifdef __cplusplus
 }

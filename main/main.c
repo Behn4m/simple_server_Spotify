@@ -5,6 +5,7 @@
 #include "SpotifyInterface.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "Setup_GPIO.h"
 #define TIMER_TIME pdMS_TO_TICKS(5000) // in millis
 
 // ****************************** GLobal Variables ****************************** //
@@ -16,7 +17,6 @@ SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 /**
  * @brief Function to change colors based on a timer callback
  */
-uint32_t T1;
 void SpotifyPeriodicTimer(TimerHandle_t xTimer)
 {
     bool CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying);
@@ -30,7 +30,14 @@ void SpotifyPeriodicTimer(TimerHandle_t xTimer)
                              SpotifyInterfaceHandler.PlaybackInfo->AlbumName);
     ESP_LOGI(TAG, "Playback info updated");
 }
-
+void IRAM_ATTR BackBottomCallBack(void *arg, void *data)
+{
+    ESP_LOGE(TAG, "Bottom callback");
+}
+void IRAM_ATTR AcceptBottomCallBack(void *arg, void *data)
+{
+    ESP_LOGE(TAG, "Bottom callback");
+}
 void app_main(void)
 {
     LVGL_TaskInit();
@@ -70,7 +77,8 @@ void app_main(void)
                 ESP_LOGI(TAG, "Timer getting start");
             }
         }
-        T1 = xTaskGetTickCount();
+        BottomCallBackFunctions_t BottomCallBackFunctions;
+        BottomCallBackFunctions.
     }
 #endif
 }

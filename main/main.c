@@ -30,13 +30,13 @@ void SpotifyPeriodicTimer(TimerHandle_t xTimer)
                              SpotifyInterfaceHandler.PlaybackInfo->AlbumName);
     ESP_LOGI(TAG, "Playback info updated");
 }
-void IRAM_ATTR BackBottomCallBack(void *arg, void *data)
+void IRAM_ATTR BackBottomCallBack_(void *arg, void *data)
 {
-    ESP_LOGE(TAG, "Bottom callback");
+    ESP_LOGE(TAG, "BackBottomCallBack callback");
 }
-void IRAM_ATTR AcceptBottomCallBack(void *arg, void *data)
+void IRAM_ATTR AcceptBottomCallBack_(void *arg, void *data)
 {
-    ESP_LOGE(TAG, "Bottom callback");
+    ESP_LOGE(TAG, "AcceptBottomCallBack callback");
 }
 void app_main(void)
 {
@@ -44,8 +44,12 @@ void app_main(void)
     GlobalInit();
     nvsFlashInit();
     SpiffsGlobalConfig();
+    BottomCallBackFunctions_t BottomCallBackFunctions;
+    BottomCallBackFunctions.BackBottomCallBack = BackBottomCallBack_;
+    BottomCallBackFunctions.AcceptBottomCallBack = AcceptBottomCallBack_;
+    GPIO_ini(BottomCallBackFunctions);
 #ifdef WIFI_INIT_STA_MODE
-    WifiStationMode("Hardware", "87654321");
+    // WifiStationMode("Hardware", "87654321");
     // WifiStationMode("BELL789", "167271A164A9");
 #else
     wifiConnectionModule();
@@ -53,33 +57,30 @@ void app_main(void)
 
 #ifdef SpotifyEnable
 
-    SpotifyInterfaceHandler.IsSpotifyAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;
-    SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
-    Spotify_TaskInit(&SpotifyInterfaceHandler);
+    // SpotifyInterfaceHandler.IsSpotifyAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;
+    // SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
+    // Spotify_TaskInit(&SpotifyInterfaceHandler);
 
-    // after this semaphore you can use playback command function in every where !
-    if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
-    {
-        bool CommandResult = false;
-        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetUserInfo);
-        if (CommandResult == false)
-        {
-            ESP_LOGE(TAG, "User info update failed");
-            return;
-        }
-        ESP_LOGI(TAG, "User info updated");
-        TimerHandle_t xTimer = xTimerCreate("update", TIMER_TIME, pdTRUE, NULL, SpotifyPeriodicTimer);
-        xTimerStart(xTimer, 0);
-        if (xTimer != NULL)
-        {
-            if (xTimerStart(xTimer, 0) == pdPASS)
-            {
-                ESP_LOGI(TAG, "Timer getting start");
-            }
-        }
-        BottomCallBackFunctions_t BottomCallBackFunctions;
-        BottomCallBackFunctions.BackBottomCallBack;
-        BottomCallBackFunctions.AcceptBottomCallBack;
-    }
+    // // after this semaphore you can use playback command function in every where !
+    // if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
+    // {
+    //     bool CommandResult = false;
+    //     CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetUserInfo);
+    //     if (CommandResult == false)
+    //     {
+    //         ESP_LOGE(TAG, "User info update failed");
+    //         return;
+    //     }
+    //     ESP_LOGI(TAG, "User info updated");
+    //     TimerHandle_t xTimer = xTimerCreate("update", TIMER_TIME, pdTRUE, NULL, SpotifyPeriodicTimer);
+    //     xTimerStart(xTimer, 0);
+    //     if (xTimer != NULL)
+    //     {
+    //         if (xTimerStart(xTimer, 0) == pdPASS)
+    //         {
+    //             ESP_LOGI(TAG, "Timer getting start");
+    //         }
+    //     }
+    // }
 #endif
 }

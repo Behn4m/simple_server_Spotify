@@ -30,7 +30,7 @@ extern "C"
         BackBottomCallBack_t BackBottomCallBack;
         AcceptBottomCallBack_t AcceptBottomCallBack;
     } BottomCallBackFunctions_t;
-    
+void GPIO_ini(BottomCallBackFunctions_t BottomCallBackFunctions);
 #endif
 #ifdef __cplusplus
 }

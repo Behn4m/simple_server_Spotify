@@ -32,7 +32,7 @@ void AcceptBottom(void* CallBackFunc)
     esp_err_t err = iot_button_register_cb(btn, BUTTON_PRESS_DOWN, CallBackFunc, NULL);
     ESP_ERROR_CHECK(err);
 }
-void GPIO_init(BottomCallBackFunctions_t BottomCallBackFunctions)
+void GPIO_ini(BottomCallBackFunctions_t BottomCallBackFunctions)
 {
     AcceptBottom(BottomCallBackFunctions.BackBottomCallBack);
     BackBottom(BottomCallBackFunctions.AcceptBottomCallBack);

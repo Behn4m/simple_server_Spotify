@@ -30,16 +30,17 @@ extern "C" {
 /**
  * @brief      create guiTask and its global method
  */
-void LVGL_TaskInit(void);
+void GUI_TaskInit(void);
 
 /**
  * @brief Function to update the LVGL screen
  * @param Artist: Artist name
  * @param Title: Title of the song
  * @param Album: Album name
+ * @param ProgressMS: Progress of the song in milliseconds
  * @return void
  */
-void LVGL_UpdateSpotifyScreen(char *Artist, char *Song, char *Album);
+void GUI_UpdateSpotifyScreen(char *Artist, char *Song, char *Album, int ProgressMS);
 
 #ifdef __cplusplus
 }

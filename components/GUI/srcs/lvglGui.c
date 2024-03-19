@@ -10,7 +10,7 @@ lv_color_t *LVGL_BigBuf2;
 /**
  * @brief main LVGL gui TASK
  */
-static void LVGL_mainTask(void *pvParameter)
+static void GUI_mainTask(void *pvParameter)
 {
     // Allocate memory for LVGL display buffers
     lv_color_t *LVGL_BigBuf1 = (lv_color_t *)malloc(LV_HOR_RES_MAX * 100 * MULTIPLIER * sizeof(lv_color_t));
@@ -49,7 +49,7 @@ static void LVGL_mainTask(void *pvParameter)
 /**
  * @brief Function to initialize LVGL task
  */
-void LVGL_TaskInit(void)
+void GUI_TaskInit(void)
 {
     StaticTask_t *xTaskLVGLBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
     StackType_t *xLVGLStack = (StackType_t *)malloc(LVGL_STACK * 8 * MULTIPLIER * sizeof(StackType_t));
@@ -61,8 +61,8 @@ void LVGL_TaskInit(void)
         return; // Exit with an error code
     }
     xTaskCreateStatic(
-        LVGL_mainTask,               // Task function
-        "LVGL_mainTask",             // Task name (for debugging)
+        GUI_mainTask,               // Task function
+        "GUI_mainTask",             // Task name (for debugging)
         LVGL_STACK * 8 * MULTIPLIER, // Stack size (in words)
         NULL,                        // Task parameters (passed to the task function)
         tskIDLE_PRIORITY + 1,        // Task priority (adjust as needed)
@@ -81,9 +81,17 @@ void LVGL_TaskInit(void)
  * @param Album: Album name
  * @return void
  */
-void LVGL_UpdateSpotifyScreen(char *Artist, char *Song, char *Album)
+void GUI_UpdateSpotifyScreen(char *Artist, char *Song, char *Album, int ProgressMS)
 {
     lv_event_send(guider_ui.Spotify_Page_Artist_name, LV_EVENT_VALUE_CHANGED, Artist);
     lv_event_send(guider_ui.Spotify_Page_Song_name, LV_EVENT_VALUE_CHANGED, Song);
     lv_event_send(guider_ui.Spotify_Page_Album_name, LV_EVENT_VALUE_CHANGED, Album);
+
+    int minutues = ProgressMS / 60000;
+    int second = (ProgressMS % 60000) / 1000;
+    char time [20];
+    sprintf(time, "%d:%d", minutues, second);
+    ESP_LOGW(TAG, "Time: %s", time);
+    lv_event_send(guider_ui.Spotify_Page_label_time, LV_EVENT_VALUE_CHANGED, time);
 }
+

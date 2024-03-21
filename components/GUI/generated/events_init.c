@@ -46,12 +46,14 @@ static void Spotify_Page_label_time_event_handler(lv_event_t *e)
 static void Spotify_Page_bar_progress_event_handler(lv_event_t *e)
 {
 	lv_event_code_t code = lv_event_get_code(e);
-
+	lv_obj_t *object = lv_event_get_current_target(e);
+	int inputNum = (int)lv_event_get_param(e);
 	switch (code)
 	{
 	case LV_EVENT_VALUE_CHANGED:
 	{
-		lv_obj_add_state(guider_ui.Spotify_Page_bar_progress, LV_STATE_EDITED);
+		lv_bar_set_value(object, inputNum, LV_ANIM_OFF);
+		lv_refr_now(NULL);
 		break;
 	}
 	default:

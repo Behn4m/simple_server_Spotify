@@ -25,8 +25,6 @@ extern "C" {
 // #include "lvgl__lvgl/src/core/lv_obj.h"
 
 
-
-
 /**
  * @brief      create guiTask and its global method
  */
@@ -40,7 +38,7 @@ void GUI_TaskInit(void);
  * @param ProgressMS: Progress of the song in milliseconds
  * @return void
  */
-void GUI_UpdateSpotifyScreen(char *Artist, char *Song, char *Album, int ProgressMS);
+void GUI_UpdateSpotifyScreen(char *Artist, char *Song, char *Album, int DurationMS, int ProgressMS);
 
 #ifdef __cplusplus
 }

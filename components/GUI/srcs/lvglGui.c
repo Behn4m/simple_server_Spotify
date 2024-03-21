@@ -81,7 +81,7 @@ void GUI_TaskInit(void)
  * @param Album: Album name
  * @return void
  */
-void GUI_UpdateSpotifyScreen(char *Artist, char *Song, char *Album, int ProgressMS)
+void GUI_UpdateSpotifyScreen(char *Artist, char *Song, char *Album, int DurationMS, int ProgressMS)
 {
     lv_event_send(guider_ui.Spotify_Page_Artist_name, LV_EVENT_VALUE_CHANGED, Artist);
     lv_event_send(guider_ui.Spotify_Page_Song_name, LV_EVENT_VALUE_CHANGED, Song);
@@ -93,5 +93,8 @@ void GUI_UpdateSpotifyScreen(char *Artist, char *Song, char *Album, int Progress
     sprintf(time, "%d:%d", minutues, second);
     ESP_LOGW(TAG, "Time: %s", time);
     lv_event_send(guider_ui.Spotify_Page_label_time, LV_EVENT_VALUE_CHANGED, time);
+
+    int progress = (ProgressMS * 100) / DurationMS;
+    lv_event_send(guider_ui.Spotify_Page_bar_progress, LV_EVENT_VALUE_CHANGED, progress);
 }
 

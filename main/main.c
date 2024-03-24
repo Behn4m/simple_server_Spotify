@@ -11,7 +11,6 @@
 // ****************************** GLobal Variables ****************************** //
 static const char *TAG = "Main";
 SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
-
 // ****************************** GLobal Functions ****************************** //
 /**
  * @brief Function to change colors based on a timer callback

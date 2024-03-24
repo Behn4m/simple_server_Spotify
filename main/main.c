@@ -6,11 +6,10 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "Setup_GPIO.h"
-#define TIMER_TIME pdMS_TO_TICKS(5000) // in millis
+#define TIMER_TIME pdMS_TO_TICKS(500) // in millis
 
 // ****************************** GLobal Variables ****************************** //
 static const char *TAG = "Main";
-
 SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 
 // ****************************** GLobal Functions ****************************** //
@@ -25,44 +24,36 @@ void SpotifyPeriodicTimer(TimerHandle_t xTimer)
         ESP_LOGE(TAG, "Playback info update failed");
         return;
     }
-    GUI_UpdateSpotifyScreen( SpotifyInterfaceHandler.PlaybackInfo->ArtistName,
-                             SpotifyInterfaceHandler.PlaybackInfo->SongName,
-                             SpotifyInterfaceHandler.PlaybackInfo->AlbumName,
-                             SpotifyInterfaceHandler.PlaybackInfo->Duration,
-                             SpotifyInterfaceHandler.PlaybackInfo->Progress);
+    GUI_UpdateSpotifyScreen(SpotifyInterfaceHandler.PlaybackInfo->ArtistName,
+                            SpotifyInterfaceHandler.PlaybackInfo->SongName,
+                            SpotifyInterfaceHandler.PlaybackInfo->AlbumName,
+                            SpotifyInterfaceHandler.PlaybackInfo->Duration,
+                            SpotifyInterfaceHandler.PlaybackInfo->Progress);
     ESP_LOGI(TAG, "Playback info updated");
 }
 void IRAM_ATTR BackBottomCallBack_(void *arg, void *data)
 {
-    // bool IsNowPlaying = xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE;
-    // if (IsNowPlaying == false)
-    // {
-    //     ESP_LOGE(TAG, "Spotify is not authorized");
-    //     return;
-    // }
-    // bool CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying);
-    // if (CommandResult == false)
-    // {
-    //     ESP_LOGE(TAG, "Playback info update failed");
-    //     return;
-    // }
-    // Spotify_SendCommand(SpotifyInterfaceHandler, PlayNext);
+    if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, 0) == pdTRUE)
+    {
+        bool CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, Play);
+        if (CommandResult == false)
+        {
+            ESP_LOGE(TAG, "Play failed");
+            return;
+        }
+    }
 }
 void IRAM_ATTR AcceptBottomCallBack_(void *arg, void *data)
 {
-    // bool IsNowPlaying = xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE;
-    // if (IsNowPlaying == false)
-    // {
-    //     ESP_LOGE(TAG, "Spotify is not authorized");
-    //     return;
-    // }
-    // bool CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying);
-    // if (CommandResult == false)
-    // {
-    //     ESP_LOGE(TAG, "Playback info update failed");
-    //     return;
-    // }
-    // Spotify_SendCommand(SpotifyInterfaceHandler, PlayNext);
+    if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, 0) == pdTRUE)
+    {
+        bool CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, Pause);
+        if (CommandResult == false)
+        {
+            ESP_LOGE(TAG, "Pause failed");
+            return;
+        }
+    }
 }
 void app_main(void)
 {
@@ -75,8 +66,8 @@ void app_main(void)
     BottomCallBackFunctions.AcceptBottomCallBack = AcceptBottomCallBack_;
     GPIO_init(BottomCallBackFunctions);
 #ifdef WIFI_INIT_STA_MODE
-    // WifiStationMode("Hardware", "87654321");
-    WifiStationMode("BELL789", "167271A164A9");
+    WifiStationMode("Hardware10", "87654321");
+    // WifiStationMode("BELL789", "167271A164A9");
 #else
     wifiConnectionModule();
 #endif

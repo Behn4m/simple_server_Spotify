@@ -8,7 +8,12 @@ extern "C"
 #include "lvgl.h"
 #include "LVGLInterface.h"
 
-    void LVGL_Timer();
+/**
+ * @brief Function to initialize and start LVGL timer ,
+ * LVGL for working need a timer ,
+ * timer used for making animation and refresh screen and ...
+ */
+void LVGL_Timer();
 
 #ifdef __cplusplus
 }

@@ -5,7 +5,6 @@
 #include "SpotifyInterface.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "Setup_GPIO.h"
 #define TIMER_TIME pdMS_TO_TICKS(500) // in millis
 
 // ****************************** GLobal Variables ****************************** //
@@ -30,40 +29,12 @@ void SpotifyPeriodicTimer(TimerHandle_t xTimer)
                             SpotifyInterfaceHandler.PlaybackInfo->Progress);
     ESP_LOGI(TAG, "Playback info updated");
 }
-void IRAM_ATTR BackBottomCallBack_(void *arg, void *data)
-{
-    if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, 0) == pdTRUE)
-    {
-        bool CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, Play);
-        if (CommandResult == false)
-        {
-            ESP_LOGE(TAG, "Play failed");
-            return;
-        }
-    }
-}
-void IRAM_ATTR AcceptBottomCallBack_(void *arg, void *data)
-{
-    if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, 0) == pdTRUE)
-    {
-        bool CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, Pause);
-        if (CommandResult == false)
-        {
-            ESP_LOGE(TAG, "Pause failed");
-            return;
-        }
-    }
-}
 void app_main(void)
 {
     GUI_TaskInit();
     GlobalInit();
     nvsFlashInit();
     SpiffsGlobalConfig();
-    BottomCallBackFunctions_t BottomCallBackFunctions;
-    BottomCallBackFunctions.BackBottomCallBack = BackBottomCallBack_;
-    BottomCallBackFunctions.AcceptBottomCallBack = AcceptBottomCallBack_;
-    GPIO_init(BottomCallBackFunctions);
 #ifdef WIFI_INIT_STA_MODE
     WifiStationMode("Hardware10", "87654321");
     // WifiStationMode("BELL789", "167271A164A9");

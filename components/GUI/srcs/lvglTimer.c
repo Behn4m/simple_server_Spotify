@@ -9,7 +9,9 @@ static void lv_tick_task(TimerHandle_t xTimer)
 }
 
 /**
- * @brief Function to initialize and start LVGL timer
+ * @brief Function to initialize and start LVGL timer ,
+ * LVGL for working need a timer ,
+ * timer used for making animation and refresh screen and ...
  */
 void LVGL_Timer()
 {

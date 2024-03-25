@@ -1,5 +1,4 @@
 #include "lvglGui.h"
-#include "custom.h"
 #include "gui_guider.h"
 
 static const char *TAG = "LVGL_GUI";

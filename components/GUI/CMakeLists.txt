@@ -1,7 +1,6 @@
 idf_component_register(
     SRCS
     
-"custom/custom.c"
 "generated/widgets_init.c"
 "generated/guider_fonts/lv_font_arial_20.c"
 "generated/guider_fonts/lv_font_montserratMedium_12.c"
@@ -23,8 +22,7 @@ idf_component_register(
 "srcs/lvglGui.c"
  INCLUDE_DIRS 
 
-"custom"
 "generated"
 "generated/guider_customer_fonts"
 "include"
-     REQUIRES lvgl__lvgl lvgl_esp32_drivers  driver esp_timer GlobalInit driver espressif__button) 
+     REQUIRES lvgl__lvgl lvgl_esp32_drivers  driver esp_timer GlobalInit driver espressif__button)

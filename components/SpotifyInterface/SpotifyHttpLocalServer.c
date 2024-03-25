@@ -37,10 +37,10 @@ bool Spotify_FindCode(char *Response, uint16_t SizeRes)
         }
         if (Found)
         {
-            return true;    // Found the access token substring
+            return true; // Found the access token substring
         }
     }
-    return false;           // Access token substring not Found
+    return false; // Access token substring not Found
 }
 
 /**

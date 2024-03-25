@@ -5,63 +5,69 @@
 #include "SpotifyInterface.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#define TIMER_TIME pdMS_TO_TICKS(500) // in millis
+
 // ****************************** GLobal Variables ****************************** //
 static const char *TAG = "Main";
-
-
+SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 // ****************************** GLobal Functions ****************************** //
-void CallbackTest(char *buffer)
+/**
+ * @brief Function to change colors based on a timer callback
+ */
+void SpotifyPeriodicTimer(TimerHandle_t xTimer)
 {
-    ESP_LOGW("Spotify_callback_test ", "%s", buffer);
+    bool CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying);
+    if (CommandResult == false)
+    {
+        ESP_LOGE(TAG, "Playback info update failed");
+        return;
+    }
+    GUI_UpdateSpotifyScreen(SpotifyInterfaceHandler.PlaybackInfo->ArtistName,
+                            SpotifyInterfaceHandler.PlaybackInfo->SongName,
+                            SpotifyInterfaceHandler.PlaybackInfo->AlbumName,
+                            SpotifyInterfaceHandler.PlaybackInfo->Duration,
+                            SpotifyInterfaceHandler.PlaybackInfo->Progress);
+    ESP_LOGI(TAG, "Playback info updated");
 }
 void app_main(void)
 {
-    LVGL_TaskInit();
+    GUI_TaskInit();
     GlobalInit();
     nvsFlashInit();
     SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
-    // WifiStationMode("Hardware", "87654321");
-    WifiStationMode("BELL789", "167271A164A9");
+    WifiStationMode("Hardware10", "87654321");
+    // WifiStationMode("BELL789", "167271A164A9");
 #else
     wifiConnectionModule();
 #endif
-    
+
 #ifdef SpotifyEnable
-    SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 
     SpotifyInterfaceHandler.IsSpotifyAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;
     SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
     Spotify_TaskInit(&SpotifyInterfaceHandler);
+
     // after this semaphore you can use playback command function in every where !
     if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
     {
         bool CommandResult = false;
         CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetUserInfo);
-        if (CommandResult == true)
+        if (CommandResult == false)
         {
-            ESP_LOGI(TAG, "User info updated");
+            ESP_LOGE(TAG, "User info update failed");
+            return;
         }
-
-        vTaskDelay((pdMS_TO_TICKS(SEC * 1)));
-        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying);
-        if (CommandResult == true)
+        ESP_LOGI(TAG, "User info updated");
+        TimerHandle_t xTimer = xTimerCreate("update", TIMER_TIME, pdTRUE, NULL, SpotifyPeriodicTimer);
+        xTimerStart(xTimer, 0);
+        if (xTimer != NULL)
         {
-            ESP_LOGI(TAG, "Playback info updated");
-
-            vTaskDelay((pdMS_TO_TICKS(SEC * 2)));
-            CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, Pause);
-
-            vTaskDelay((pdMS_TO_TICKS(SEC * 2)));
-            CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, Play);
-
-            vTaskDelay((pdMS_TO_TICKS(SEC * 2)));
-            CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, PlayPrev);
-
-            vTaskDelay((pdMS_TO_TICKS(SEC * 2)));
-            CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, PlayNext);
+            if (xTimerStart(xTimer, 0) == pdPASS)
+            {
+                ESP_LOGI(TAG, "Timer getting start");
+            }
         }
     }
-    Spotify_TaskDeinit(&SpotifyInterfaceHandler);
 #endif
 }

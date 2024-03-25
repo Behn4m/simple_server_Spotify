@@ -15,6 +15,9 @@
 #include "freemaster_client.h"
 #endif
 
+/**
+ *  @brief Handles events for the Spotify page.
+ */
 static void Spotify_Page_event_handler(lv_event_t *e)
 {
 	lv_event_code_t code = lv_event_get_code(e);
@@ -25,6 +28,10 @@ static void Spotify_Page_event_handler(lv_event_t *e)
 		break;
 	}
 }
+
+/**
+ *  @brief Handles events for the label displaying time on the Spotify page.
+ */
 static void Spotify_Page_label_time_event_handler(lv_event_t *e)
 {
 	lv_event_code_t code = lv_event_get_code(e);
@@ -43,6 +50,10 @@ static void Spotify_Page_label_time_event_handler(lv_event_t *e)
 		break;
 	}
 }
+
+/**
+ *  @brief Handles events for the progress bar on the Spotify page.
+ */
 static void Spotify_Page_bar_progress_event_handler(lv_event_t *e)
 {
 	lv_event_code_t code = lv_event_get_code(e);
@@ -60,6 +71,10 @@ static void Spotify_Page_bar_progress_event_handler(lv_event_t *e)
 		break;
 	}
 }
+
+/**
+ *  @brief Handles events for the label displaying album name on the Spotify page.
+ */
 static void Spotify_Page_Album_name_event_handler(lv_event_t *e)
 {
 	lv_event_code_t code = lv_event_get_code(e);
@@ -78,6 +93,10 @@ static void Spotify_Page_Album_name_event_handler(lv_event_t *e)
 		break;
 	}
 }
+
+/**
+ *  @brief Handles events for the label displaying song name on the Spotify page.
+ */
 static void Spotify_Page_Song_name_event_handler(lv_event_t *e)
 {
 	lv_event_code_t code = lv_event_get_code(e);
@@ -96,6 +115,10 @@ static void Spotify_Page_Song_name_event_handler(lv_event_t *e)
 		break;
 	}
 }
+
+/**
+ *  @brief  Handles events for the label displaying artist name on the Spotify page.
+ */
 static void Spotify_Page_Artist_name_event_handler(lv_event_t *e)
 {
 	lv_event_code_t code = lv_event_get_code(e);
@@ -114,6 +137,10 @@ static void Spotify_Page_Artist_name_event_handler(lv_event_t *e)
 		break;
 	}
 }
+
+/**
+ *  @brief Initializes event handlers for objects on the Spotify page.
+ */
 void events_init_Spotify_Page(lv_ui *ui)
 {
 	lv_obj_add_event_cb(ui->Spotify_Page, Spotify_Page_event_handler, LV_EVENT_ALL, NULL);
@@ -122,8 +149,4 @@ void events_init_Spotify_Page(lv_ui *ui)
 	lv_obj_add_event_cb(ui->Spotify_Page_Album_name, Spotify_Page_Album_name_event_handler, LV_EVENT_ALL, NULL);
 	lv_obj_add_event_cb(ui->Spotify_Page_Song_name, Spotify_Page_Song_name_event_handler, LV_EVENT_ALL, NULL);
 	lv_obj_add_event_cb(ui->Spotify_Page_Artist_name, Spotify_Page_Artist_name_event_handler, LV_EVENT_ALL, NULL);
-}
-
-void events_init(lv_ui *ui)
-{
 }

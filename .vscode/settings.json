@@ -82,7 +82,8 @@
         "string": "c",
         "string_view": "c",
         "lvgl_helpers.h": "c",
-        "esp_psram.h": "c"
+        "esp_psram.h": "c",
+        "events_init.h": "c"
     },
     "cSpell.words": [
         "Athurisiation",

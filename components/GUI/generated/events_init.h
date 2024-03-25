@@ -16,8 +16,9 @@ extern "C" {
 
 #include "gui_guider.h"
 
-void events_init(lv_ui *ui);
-
+/**
+ *  @brief Initializes event handlers for objects on the Spotify page.
+ */
 void events_init_Spotify_Page(lv_ui *ui);
 
 #ifdef __cplusplus

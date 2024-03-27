@@ -123,13 +123,13 @@ int ExtractUserInfoParamsfromJson(char *JsonUserInfo, UserInfo_t *userInfo)
         userInfo->Product[PRODUCT_STR_SIZE - 1] = '\0';
     }
 
-    ESP_LOGI(TAG, "** USER INFO: ");
-    ESP_LOGI(TAG,"DisplayName: %s", userInfo->DisplayName);
-    ESP_LOGI(TAG,"ProfileURL: %s", userInfo->ProfileURL);
-    ESP_LOGI(TAG,"UserID: %s", userInfo->UserID);
-    ESP_LOGI(TAG,"Country: %s", userInfo->Country);
-    ESP_LOGI(TAG,"Product: %s", userInfo->Product);
-    ESP_LOGI(TAG, "************** ");
+    // ESP_LOGI(TAG, "** USER INFO: ");
+    // ESP_LOGI(TAG,"DisplayName: %s", userInfo->DisplayName);
+    // ESP_LOGI(TAG,"ProfileURL: %s", userInfo->ProfileURL);
+    // ESP_LOGI(TAG,"UserID: %s", userInfo->UserID);
+    // ESP_LOGI(TAG,"Country: %s", userInfo->Country);
+    // ESP_LOGI(TAG,"Product: %s", userInfo->Product);
+    // ESP_LOGI(TAG, "************** ");
 
     cJSON_Delete(J_UserInfo);
     return 0;
@@ -203,17 +203,17 @@ int ExtractPlaybackInfoParamsfromJson(char *JsonPlaybackInfo, PlaybackInfo_t *pl
 
         }
     }
-    ESP_LOGI(TAG, "** PLAYBACK INFO: ");
-    ESP_LOGI(TAG, "IsPlaying: %d", playbackInfo->IsPlaying);
-    ESP_LOGI(TAG, "ArtistName: %s", playbackInfo->ArtistName);
-    ESP_LOGI(TAG, "AlbumName: %s", playbackInfo->AlbumName);
-    ESP_LOGI(TAG, "SongName: %s", playbackInfo->SongName);
-    ESP_LOGI(TAG, "Duration: %d", playbackInfo->Duration);
-    ESP_LOGI(TAG, "ProgressMS: %d", playbackInfo->Progress);
-    ESP_LOGI(TAG, "SongImageURL: %s", playbackInfo->SongImageURL);
-    ESP_LOGI(TAG, "************** ");
+    
+    // ESP_LOGI(TAG, "** PLAYBACK INFO: ");
+    // ESP_LOGI(TAG, "IsPlaying: %d", playbackInfo->IsPlaying);
+    // ESP_LOGI(TAG, "ArtistName: %s", playbackInfo->ArtistName);
+    // ESP_LOGI(TAG, "AlbumName: %s", playbackInfo->AlbumName);
+    // ESP_LOGI(TAG, "SongName: %s", playbackInfo->SongName);
+    // ESP_LOGI(TAG, "Duration: %d", playbackInfo->Duration);
+    // ESP_LOGI(TAG, "ProgressMS: %d", playbackInfo->Progress);
+    // ESP_LOGI(TAG, "SongImageURL: %s", playbackInfo->SongImageURL);
+    // ESP_LOGI(TAG, "************** ");
 
- 
     cJSON_Delete(J_PlaybackInfo);
     return 0;
 }

@@ -5,7 +5,7 @@
 #include "SpotifyInterface.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#define TIMER_TIME pdMS_TO_TICKS(500) // in millis
+#define TIMER_TIME pdMS_TO_TICKS(1000) // in millis
 
 // ****************************** GLobal Variables ****************************** //
 static const char *TAG = "Main";
@@ -29,6 +29,7 @@ void SpotifyPeriodicTimer(TimerHandle_t xTimer)
                             SpotifyInterfaceHandler.PlaybackInfo->Progress);
     ESP_LOGI(TAG, "Playback info updated");
 }
+
 void app_main(void)
 {
     GUI_TaskInit();
@@ -36,8 +37,8 @@ void app_main(void)
     nvsFlashInit();
     SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
-    WifiStationMode("Hardware10", "87654321");
-    // WifiStationMode("BELL789", "167271A164A9");
+    // WifiStationMode("Hardware10", "87654321");
+    WifiStationMode("BELL789", "167271A164A9");
 #else
     wifiConnectionModule();
 #endif

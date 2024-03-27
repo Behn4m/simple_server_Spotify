@@ -281,7 +281,7 @@ void Spotify_GetInfo(int Command, char *AccessToken)
     }
     SpotifyBuffer->status = esp_http_client_get_status_code(httpClient);
     SpotifyBuffer->ContentLength = esp_http_client_get_content_length(httpClient);
-    ESP_LOGI(TAG, "HTTP GET Status = %lld, content_length = %lld",
+    // ESP_LOGI(TAG, "HTTP GET Status = %lld, content_length = %lld",
             SpotifyBuffer->status,
             SpotifyBuffer->ContentLength);
     // Cleanup

@@ -186,7 +186,7 @@ void setup_scr_Spotify_Page(lv_ui *ui)
 	lv_obj_set_style_anim_time(ui->Spotify_Page_bar_progress, 1000, 0);
 	lv_bar_set_mode(ui->Spotify_Page_bar_progress, LV_BAR_MODE_NORMAL);
 	lv_bar_set_range(ui->Spotify_Page_bar_progress, 0, 100);
-	lv_bar_set_value(ui->Spotify_Page_bar_progress, 20, LV_ANIM_OFF);
+	lv_bar_set_value(ui->Spotify_Page_bar_progress, 1, LV_ANIM_OFF);
 	lv_obj_set_pos(ui->Spotify_Page_bar_progress, 235, 210);
 	lv_obj_set_size(ui->Spotify_Page_bar_progress, 275, 6);
 
@@ -205,7 +205,7 @@ void setup_scr_Spotify_Page(lv_ui *ui)
 
 	//Write codes Spotify_Page_Album_name
 	ui->Spotify_Page_Album_name = lv_label_create(ui->Spotify_Page_cont_Spotify);
-	lv_label_set_text(ui->Spotify_Page_Album_name, "Album test");
+	lv_label_set_text(ui->Spotify_Page_Album_name, "-");
 	lv_label_set_long_mode(ui->Spotify_Page_Album_name, LV_LABEL_LONG_WRAP);
 	lv_obj_set_pos(ui->Spotify_Page_Album_name, 299, 100);
 	lv_obj_set_size(ui->Spotify_Page_Album_name, 182, 18);
@@ -228,7 +228,7 @@ void setup_scr_Spotify_Page(lv_ui *ui)
 
 	//Write codes Spotify_Page_Song_name
 	ui->Spotify_Page_Song_name = lv_label_create(ui->Spotify_Page_cont_Spotify);
-	lv_label_set_text(ui->Spotify_Page_Song_name, "song test");
+	lv_label_set_text(ui->Spotify_Page_Song_name, "-");
 	lv_label_set_long_mode(ui->Spotify_Page_Song_name, LV_LABEL_LONG_WRAP);
 	lv_obj_set_pos(ui->Spotify_Page_Song_name, 298, 125);
 	lv_obj_set_size(ui->Spotify_Page_Song_name, 182, 18);
@@ -251,7 +251,7 @@ void setup_scr_Spotify_Page(lv_ui *ui)
 
 	//Write codes Spotify_Page_Artist_name
 	ui->Spotify_Page_Artist_name = lv_label_create(ui->Spotify_Page_cont_Spotify);
-	lv_label_set_text(ui->Spotify_Page_Artist_name, "artist test");
+	lv_label_set_text(ui->Spotify_Page_Artist_name, "-");
 	lv_label_set_long_mode(ui->Spotify_Page_Artist_name, LV_LABEL_LONG_WRAP);
 	lv_obj_set_pos(ui->Spotify_Page_Artist_name, 297, 155);
 	lv_obj_set_size(ui->Spotify_Page_Artist_name, 182, 18);

@@ -37,6 +37,7 @@ esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
         case HTTP_EVENT_ON_FINISH:
             SpotifyBuffer->MessageBuffer[totalLen] = '\0';
                                             // write 0 to the end of string
+            printf("%s\n", SpotifyBuffer->MessageBuffer);
             break;
         case HTTP_EVENT_DISCONNECTED:
             xSemaphoreGive(SpotifyBuffer->SpotifyResponseReadyFlag);                        // give semaphore to notify that data is ready  
@@ -240,10 +241,6 @@ void Spotify_GetInfo(int Command, char *AccessToken)
     {
         sprintf(clientPath, "/v1/me");
     }
-    else if(Command == GetUserTopItems)
-    {
-        sprintf(clientPath, "v1/me/top/artists");
-    }
     else
     {
         ESP_LOGE(TAG, "Incorrect function call - incompatible command code for 'Spotify_GetInfo'");
@@ -271,6 +268,46 @@ void Spotify_GetInfo(int Command, char *AccessToken)
     snprintf(authorizationHeader, sizeof(authorizationHeader), "Bearer %s", AccessToken);
     esp_http_client_set_header(httpClient, "Authorization", authorizationHeader);               // authorization set based on Spotify API
     esp_http_client_set_header(httpClient, "Content-Length", "0");                              // thess requests are not going to send any data to the host
+
+    // Perform the GET request
+    esp_err_t err = esp_http_client_perform(httpClient) == ESP_OK;                                        // perform http request
+    if (!err) 
+    {
+        ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
+        return;
+    }
+    SpotifyBuffer->status = esp_http_client_get_status_code(httpClient);
+    SpotifyBuffer->ContentLength = esp_http_client_get_content_length(httpClient);
+    ESP_LOGI(TAG, "HTTP GET Status = %lld, content_length = %lld",
+            SpotifyBuffer->status,
+            SpotifyBuffer->ContentLength);
+    // Cleanup
+    esp_http_client_cleanup(httpClient);                                                        // close all connection releated to this client object 
+}
+
+/**
+ * @brief This function sends a request to the Spotify API to get cover photo of now playing music.
+ * @param[in] url The url of the image.
+ * @param[in] AccessToken The Spotify access token.
+ * @return This function does not return a value.
+ */
+void Spotify_DownloadImage(char *url, char *AccessToken)
+{
+    // Configure client object  
+    esp_http_client_config_t clientConfig = {
+        .url = url,                                                                           // clientPath already filled based in API
+        .method = HTTP_METHOD_GET,                                                              // Get for all of this category requests  
+        .event_handler = HttpEventHandler,                                                      // Event handler function
+        .crt_bundle_attach = esp_crt_bundle_attach,
+    };
+
+    // Initialize HTTP client with custom configuration
+    esp_http_client_handle_t httpClient = esp_http_client_init(&clientConfig);                  // apply configuration to the client object
+    if (httpClient == NULL) 
+    {
+        ESP_LOGE(TAG, "Failed to create the HTTP client");
+        return;
+    }
 
     // Perform the GET request
     esp_err_t err = esp_http_client_perform(httpClient) == ESP_OK;                                        // perform http request

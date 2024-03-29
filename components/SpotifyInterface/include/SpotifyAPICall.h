@@ -51,6 +51,15 @@ void Spotify_ControlPlayback(int Command, char *AccessToken);
 */
 void Spotify_GetInfo(int Command, char *AccessToken);
 
+/**
+ * @brief This function sends a request to the Spotify API to get cover photo of now playing music.
+ * @param[in] url The url of the image.
+ * @param[in] AccessToken The Spotify access token.
+ * @return This function does not return a value.
+ */
+void Spotify_DownloadImage(char *url, char *AccessToken);
+
+
 #endif
 #ifdef __cplusplus
 }

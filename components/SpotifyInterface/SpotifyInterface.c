@@ -331,6 +331,7 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
             ESP_LOGI(TAG, "Command is sent successfully");
             retValue = true;
             break;
+
         case GetNowPlaying:
             Spotify_GetInfo(Command, PrivateHandler.token.AccessToken);
             IsSuccessfull = PrivateHandler.SpotifyBuffer.status == 200;
@@ -356,6 +357,15 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
             ExtractUserInfoParamsfromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, InterfaceHandler->UserInfo);
             retValue = true;
             break;
+
+        case GetCoverPhoto:
+            Spotify_DownloadImage(InterfaceHandler->PlaybackInfo->SongImageURL, PrivateHandler.token.AccessToken);
+            if (!IsSuccessfull)
+            {
+                ESP_LOGW(TAG, "No song is found");
+                retValue = false;
+                break;
+            }  
         default:
             break;
     }

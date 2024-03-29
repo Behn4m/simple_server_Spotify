@@ -44,7 +44,7 @@ typedef enum
     Pause = 6,
     GetNowPlaying = 7,
     GetUserInfo = 8,
-    GetUserTopItems = 9
+    GetCoverPhoto = 9
 } Command_t;
 
 typedef struct UserInfo_t

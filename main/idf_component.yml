@@ -1,5 +1,6 @@
 ## IDF Component Manager Manifest File
 dependencies:
+  espressif/esp_jpeg: "^1.0.5~2"
   espressif/button: "^3.2.0"
   lvgl/lvgl: "^8.3.11"
   espressif/mdns: "*"

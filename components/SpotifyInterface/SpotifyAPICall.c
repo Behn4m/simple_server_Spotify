@@ -37,7 +37,6 @@ esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
         case HTTP_EVENT_ON_FINISH:
             SpotifyBuffer->MessageBuffer[totalLen] = '\0';
                                             // write 0 to the end of string
-            printf("%s\n", SpotifyBuffer->MessageBuffer);
             break;
         case HTTP_EVENT_DISCONNECTED:
             xSemaphoreGive(SpotifyBuffer->SpotifyResponseReadyFlag);                        // give semaphore to notify that data is ready  

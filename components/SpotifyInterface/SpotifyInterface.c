@@ -7,6 +7,7 @@
 #include "JsonExtraction.h"
 #include "SpotifyTypedef.h"
 #include "rtc.h"
+#include "JpegDecode.h"
 
 // ****************************** Global Variables
 SpotifyInterfaceHandler_t *InterfaceHandler;
@@ -30,6 +31,7 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
     InterfaceHandler = SpotifyInterfaceHandler;
     InterfaceHandler->PlaybackInfo = (PlaybackInfo_t *)malloc(sizeof(PlaybackInfo_t));
     InterfaceHandler->UserInfo = (UserInfo_t *)malloc(sizeof(UserInfo_t));
+    InterfaceHandler->CoverPhoto = (uint8_t *)malloc(COVER_PHOTO_SIZE * sizeof(uint16_t));
     PrivateHandler.Status = INIT;
     if (InterfaceHandler->ConfigAddressInSpiffs != NULL &&
         InterfaceHandler->IsSpotifyAuthorizedSemaphore != NULL)
@@ -360,12 +362,16 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
 
         case GetCoverPhoto:
             Spotify_DownloadImage(InterfaceHandler->PlaybackInfo->SongImageURL, PrivateHandler.token.AccessToken);
+            IsSuccessfull = PrivateHandler.SpotifyBuffer.status == 200;
             if (!IsSuccessfull)
             {
                 ESP_LOGW(TAG, "No song is found");
                 retValue = false;
                 break;
-            }  
+            }
+            convertJpeg(PrivateHandler.SpotifyBuffer.MessageBuffer, PrivateHandler.SpotifyBuffer.ContentLength, InterfaceHandler->CoverPhoto, COVER_PHOTO_SIZE);
+            break;
+              
         default:
             break;
     }

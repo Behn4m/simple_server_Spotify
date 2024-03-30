@@ -31,6 +31,7 @@ extern "C"
 #define COUNTRY_STR_SIZE 100
 #define PRODUCT_STR_SIZE 100
 #define DISPLAY_NAME_STR_SIZE 100
+#define COVER_PHOTO_SIZE 10000
 
 
 typedef enum
@@ -72,6 +73,7 @@ typedef struct SpotifyInterfaceHandler_t
     UserInfo_t *UserInfo;                   // Nested struct for user information
     PlaybackInfo_t *PlaybackInfo;           // Nested struct for now playing song information
     char *ConfigAddressInSpiffs;
+    uint8_t *CoverPhoto;
     SemaphoreHandle_t *IsSpotifyAuthorizedSemaphore;
 } SpotifyInterfaceHandler_t;
 

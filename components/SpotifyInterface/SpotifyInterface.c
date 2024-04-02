@@ -31,7 +31,7 @@ bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
     InterfaceHandler = SpotifyInterfaceHandler;
     InterfaceHandler->PlaybackInfo = (PlaybackInfo_t *)malloc(sizeof(PlaybackInfo_t));
     InterfaceHandler->UserInfo = (UserInfo_t *)malloc(sizeof(UserInfo_t));
-    InterfaceHandler->CoverPhoto = (uint8_t *)malloc(COVER_PHOTO_SIZE * sizeof(uint16_t));
+    InterfaceHandler->CoverPhoto = (uint8_t *)malloc(COVER_PHOTO_SIZE * sizeof(uint8_t));
     PrivateHandler.Status = INIT;
     if (InterfaceHandler->ConfigAddressInSpiffs != NULL &&
         InterfaceHandler->IsSpotifyAuthorizedSemaphore != NULL)
@@ -285,8 +285,6 @@ static bool Spotify_TokenRenew(void)
     return true;
 }
 
-
-
 /**
  * @brief Sends a command to control Spotify.
  * This function sends various commands to control the Spotify application based on the given command value.
@@ -370,6 +368,7 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
                 break;
             }
             convertJpeg(PrivateHandler.SpotifyBuffer.MessageBuffer, PrivateHandler.SpotifyBuffer.ContentLength, InterfaceHandler->CoverPhoto, COVER_PHOTO_SIZE);
+            addAlphaPixeltoImage(InterfaceHandler->CoverPhoto, 64, 64, 0);
             break;
               
         default:

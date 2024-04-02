@@ -24,7 +24,7 @@ void GUI_TaskInit(void);
  * @param ProgressMS: Progress of the song in milliseconds
  * @return void
  */
-void GUI_UpdateSpotifyScreen(char *Artist, char *Song, char *Album, int DurationMS, int ProgressMS);
+void GUI_UpdateSpotifyScreen(char *Artist, char *Song, char *Album, int DurationMS, int ProgressMS, uint8_t *coverPhoto);
 
 #ifdef __cplusplus
 }

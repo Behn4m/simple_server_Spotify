@@ -199,7 +199,7 @@ void setup_scr_Spotify_Page(lv_ui *ui)
 
 	//Write style for Spotify_Page_bar_progress, Part: LV_PART_INDICATOR, State: LV_STATE_DEFAULT.
 	lv_obj_set_style_bg_opa(ui->Spotify_Page_bar_progress, 255, LV_PART_INDICATOR|LV_STATE_DEFAULT);
-	lv_obj_set_style_bg_color(ui->Spotify_Page_bar_progress, lv_color_hex(0xf34c94), LV_PART_INDICATOR|LV_STATE_DEFAULT);
+	lv_obj_set_style_bg_color(ui->Spotify_Page_bar_progress, lv_color_hex(0x00ff39), LV_PART_INDICATOR|LV_STATE_DEFAULT);
 	lv_obj_set_style_bg_grad_dir(ui->Spotify_Page_bar_progress, LV_GRAD_DIR_NONE, LV_PART_INDICATOR|LV_STATE_DEFAULT);
 	lv_obj_set_style_radius(ui->Spotify_Page_bar_progress, 10, LV_PART_INDICATOR|LV_STATE_DEFAULT);
 

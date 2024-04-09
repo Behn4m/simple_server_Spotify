@@ -31,12 +31,19 @@ void addAlphaPixeltoImage(uint8_t *image, uint16_t width, uint16_t height, uint8
 
     for (int i = 0; i < width * height; i++)
     {
-        buffer[i * 3 + 2] = image[i + 1];
-        buffer[i * 3 + 1] = image[i];
-        buffer[i * 3 + 0] = 0xff;
+        buffer[i * 3 + 0] = image[i * 2 + 0];
+        buffer[i * 3 + 1] = image[i * 2 + 1];
+        buffer[i * 3 + 2] = 0xff;
     }
 
     memcpy(image, buffer, width * height * 3);
+
+    // for (int i = 0; i < 100; i++)
+    // {
+    //     printf("0x%02x, 0x%02x, 0x%02x,\n", image[i * 3 + 0], image[i * 3 + 1], image[i * 3 + 2]);
+    // }
+
+
     free(buffer);
 }
 

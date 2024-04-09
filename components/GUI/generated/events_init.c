@@ -142,13 +142,17 @@ static void Spotify_Page_Song_cover_photo_Handler(lv_event_t *e)
 {
 	lv_event_code_t code = lv_event_get_code(e);
 	lv_obj_t *object = lv_event_get_current_target(e);
-	uint16_t *inputImage = (uint8_t *)lv_event_get_param(e);
+	uint8_t *inputImage = (uint8_t *)lv_event_get_param(e);
 	switch (code)
 	{
 	case LV_EVENT_VALUE_CHANGED:
 	{
-		memcpy(_artists_alpha_64x64.data, inputImage, 4096 * 3 * sizeof(uint8_t));
+		memcpy(_artists_alpha_64x64.data, inputImage, 4096 * 3);
 		lv_img_set_src(object, &_artists_alpha_64x64);
+		for (int i = 0; i < 100; i++)
+		{
+			printf("0x%02x, 0x%02x, 0x%02x,\n", _artists_alpha_64x64.data[i * 3 + 0], _artists_alpha_64x64.data[i * 3 + 1], _artists_alpha_64x64.data[i * 3 + 2]);
+		}
 		lv_refr_now(NULL);
 		break;
 	}

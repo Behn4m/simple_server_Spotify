@@ -163,7 +163,7 @@ void setup_scr_Spotify_Page(lv_ui *ui)
 	lv_obj_set_size(ui->Spotify_Page_img_artist, 64, 64);
 
 	//Write style for Spotify_Page_img_artist, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
-	lv_obj_set_style_img_recolor_opa(ui->Spotify_Page_img_artist, 255, LV_PART_MAIN|LV_STATE_DEFAULT);
+	// lv_obj_set_style_img_recolor_opa(ui->Spotify_Page_img_artist, 255, LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_img_recolor(ui->Spotify_Page_img_artist, lv_color_hex(0x000000), LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_img_opa(ui->Spotify_Page_img_artist, 255, LV_PART_MAIN|LV_STATE_DEFAULT);
 

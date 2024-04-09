@@ -367,7 +367,7 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
                 retValue = false;
                 break;
             }
-            convertJpeg(PrivateHandler.SpotifyBuffer.MessageBuffer, PrivateHandler.SpotifyBuffer.ContentLength, InterfaceHandler->CoverPhoto, COVER_PHOTO_SIZE);
+            convertJpeg(PrivateHandler.SpotifyBuffer.MessageBuffer, PrivateHandler.SpotifyBuffer.ContentLength, InterfaceHandler->CoverPhoto, 64 * 64 * 2);
             addAlphaPixeltoImage(InterfaceHandler->CoverPhoto, 64, 64, 0);
             break;
               

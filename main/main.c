@@ -16,17 +16,36 @@ SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
  */
 void SpotifyPeriodicTimer(TimerHandle_t xTimer)
 {
+    static char imgLink[100];
     bool CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying);
     if (CommandResult == false)
     {
         ESP_LOGE(TAG, "Playback info update failed");
         return;
     }
-    // GUI_UpdateSpotifyScreen(SpotifyInterfaceHandler.PlaybackInfo->ArtistName,
-    //                         SpotifyInterfaceHandler.PlaybackInfo->SongName,
-    //                         SpotifyInterfaceHandler.PlaybackInfo->AlbumName,
-    //                         SpotifyInterfaceHandler.PlaybackInfo->Duration,
-    //                         SpotifyInterfaceHandler.PlaybackInfo->Progress);
+
+    CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying);
+    vTaskDelay(pdMS_TO_TICKS(1000));
+    bool isNewSong = strcmp(SpotifyInterfaceHandler.PlaybackInfo->SongImageURL, &imgLink);
+    if (isNewSong)
+    {
+        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetCoverPhoto);
+        vTaskDelay(pdMS_TO_TICKS(100));
+        // if (CommandResult == false)
+        // {
+        //     ESP_LOGE(TAG, "Cover photo update failed");
+        //     return;
+        // }
+        strcpy(imgLink, SpotifyInterfaceHandler.PlaybackInfo->SongImageURL);
+    }
+
+    GUI_UpdateSpotifyScreen(isNewSong,
+                    SpotifyInterfaceHandler.PlaybackInfo->ArtistName,
+                    SpotifyInterfaceHandler.PlaybackInfo->SongName,
+                    SpotifyInterfaceHandler.PlaybackInfo->AlbumName,
+                    SpotifyInterfaceHandler.PlaybackInfo->Duration,
+                    SpotifyInterfaceHandler.PlaybackInfo->Progress,
+                    SpotifyInterfaceHandler.CoverPhoto);
     ESP_LOGI(TAG, "Playback info updated");
 }
 void app_main(void)
@@ -60,27 +79,15 @@ void app_main(void)
         }
         ESP_LOGI(TAG, "User info updated");
 
-        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying);
-        vTaskDelay(pdMS_TO_TICKS(1000));
-        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetCoverPhoto);
-        vTaskDelay(pdMS_TO_TICKS(100));
-
-        GUI_UpdateSpotifyScreen(SpotifyInterfaceHandler.PlaybackInfo->ArtistName,
-                        SpotifyInterfaceHandler.PlaybackInfo->SongName,
-                        SpotifyInterfaceHandler.PlaybackInfo->AlbumName,
-                        SpotifyInterfaceHandler.PlaybackInfo->Duration,
-                        SpotifyInterfaceHandler.PlaybackInfo->Progress,
-                        SpotifyInterfaceHandler.CoverPhoto);
-
-        // TimerHandle_t xTimer = xTimerCreate("update", TIMER_TIME, pdTRUE, NULL, SpotifyPeriodicTimer);
-        // xTimerStart(xTimer, 0);
-        // if (xTimer != NULL)
-        // {
-        //     if (xTimerStart(xTimer, 0) == pdPASS)
-        //     {
-        //         ESP_LOGI(TAG, "Timer getting start");
-        //     }
-        // }
+        TimerHandle_t xTimer = xTimerCreate("update", TIMER_TIME, pdTRUE, NULL, SpotifyPeriodicTimer);
+        xTimerStart(xTimer, 0);
+        if (xTimer != NULL)
+        {
+            if (xTimerStart(xTimer, 0) == pdPASS)
+            {
+                ESP_LOGI(TAG, "Timer getting start");
+            }
+        }
     }
 
     while(1)

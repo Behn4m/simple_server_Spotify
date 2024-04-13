@@ -367,8 +367,15 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
                 retValue = false;
                 break;
             }
-            convertJpeg(PrivateHandler.SpotifyBuffer.MessageBuffer, PrivateHandler.SpotifyBuffer.ContentLength, InterfaceHandler->CoverPhoto, 64 * 64 * 2);
-            addAlphaPixeltoImage(InterfaceHandler->CoverPhoto, 64, 64, 0);
+            bool convertedSuccesfully = convertJpeg(PrivateHandler.SpotifyBuffer.MessageBuffer, PrivateHandler.SpotifyBuffer.ContentLength, InterfaceHandler->CoverPhoto, 150 * 150 * 2);
+            if (!convertedSuccesfully)
+            {
+                ESP_LOGW(TAG, "Image is not converted successfully");
+                retValue = false;
+                break;
+            }
+            addAlphaPixeltoImage(InterfaceHandler->CoverPhoto, 150, 150, 0xFF);
+            retValue  = true;
             break;
               
         default:

@@ -191,7 +191,7 @@ int ExtractPlaybackInfoParamsfromJson(char *JsonPlaybackInfo, PlaybackInfo_t *pl
             // Extract song image URL
             cJSON *SongImageURLs = cJSON_GetObjectItemCaseSensitive(Album, "images");
             if (cJSON_IsArray(SongImageURLs) && cJSON_GetArraySize(SongImageURLs) > 0) {
-                cJSON *ThirdImage = cJSON_GetArrayItem(SongImageURLs, 2);
+                cJSON *ThirdImage = cJSON_GetArrayItem(SongImageURLs, 1);
                 cJSON *SongImageURL = cJSON_GetObjectItemCaseSensitive(ThirdImage, "url");
                 if (cJSON_IsString(SongImageURL) && SongImageURL->valuestring != NULL) {
                     strncpy(playbackInfo->SongImageURL, SongImageURL->valuestring, IMAGE_STR_SIZE - 1);

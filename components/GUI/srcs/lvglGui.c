@@ -75,20 +75,29 @@ void GUI_mainTask(void *pvParameter)
  * @param Album: Album name
  * @return void
  */
-void GUI_UpdateSpotifyScreen(char *Artist, char *Song, char *Album, int DurationMS, int ProgressMS, uint8_t *coverPhoto)
+void GUI_UpdateSpotifyScreen(bool songUpdated, char *Artist, char *Song, char *Album, int DurationMS, int ProgressMS, uint8_t *coverPhoto)
 {
-    lv_event_send(guider_ui.Spotify_Page_Artist_name, LV_EVENT_VALUE_CHANGED, Artist);
-    lv_event_send(guider_ui.Spotify_Page_Song_name, LV_EVENT_VALUE_CHANGED, Song);
-    lv_event_send(guider_ui.Spotify_Page_Album_name, LV_EVENT_VALUE_CHANGED, Album);
-
     int minutues = ProgressMS / 60000;
     int second = (ProgressMS % 60000) / 1000;
     char time[20];
     sprintf(time, "%d:%d", minutues, second);
     lv_event_send(guider_ui.Spotify_Page_label_time, LV_EVENT_VALUE_CHANGED, time);
 
+    if (DurationMS == 0)
+    {
+        ESP_LOGE(TAG, "Duration is zero");
+        return;
+    }
     int progress = (ProgressMS * 100) / DurationMS;
     lv_event_send(guider_ui.Spotify_Page_bar_progress, LV_EVENT_VALUE_CHANGED, progress);
 
-    lv_event_send(guider_ui.Spotify_Page_img_artist, LV_EVENT_VALUE_CHANGED, coverPhoto);
+    if (!songUpdated)
+    {
+        return;
+    }
+    lv_event_send(guider_ui.Spotify_Page_Artist_name, LV_EVENT_VALUE_CHANGED, Artist);
+    lv_event_send(guider_ui.Spotify_Page_Song_name, LV_EVENT_VALUE_CHANGED, Song);
+    lv_event_send(guider_ui.Spotify_Page_Album_name, LV_EVENT_VALUE_CHANGED, Album);
+    
+    lv_event_send(guider_ui.Spotify_Page_img_song, LV_EVENT_VALUE_CHANGED, coverPhoto);
 }

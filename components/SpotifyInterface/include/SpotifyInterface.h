@@ -31,7 +31,7 @@ extern "C"
 #define COUNTRY_STR_SIZE 100
 #define PRODUCT_STR_SIZE 100
 #define DISPLAY_NAME_STR_SIZE 100
-#define COVER_PHOTO_SIZE (uint16_t)64 * 64 * 3
+#define COVER_PHOTO_SIZE (uint32_t)(150 * 150 * 3)
 
 
 typedef enum

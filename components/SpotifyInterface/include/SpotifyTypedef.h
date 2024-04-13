@@ -26,7 +26,7 @@ extern "C"
 
 #define SEC                             1000
 #define HOUR                            3600
-#define SUPER_BUF                       10000
+#define SUPER_BUF                       50000
 #define LONG_BUF                        2500
 #define MEDIUM_BUF                      1000
 #define SMALL_BUF                       250

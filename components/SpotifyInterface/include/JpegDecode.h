@@ -19,7 +19,7 @@ extern "C" {
  * @param  out_img_buf_size: size of the output image buffer
  * @return void
 */
-void convertJpeg(char *jpeg_img_buf, size_t jpeg_img_buf_size, uint8_t *out_img_buf, uint16_t out_img_buf_size);
+bool convertJpeg(char *jpeg_img_buf, size_t jpeg_img_buf_size, uint8_t *out_img_buf, uint16_t out_img_buf_size);
 
 
 /*

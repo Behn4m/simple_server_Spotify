@@ -5,7 +5,7 @@
 #include "SpotifyInterface.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#define TIMER_TIME pdMS_TO_TICKS(500) // in millis
+#define TIMER_TIME pdMS_TO_TICKS(3000) // in millis
 
 // ****************************** GLobal Variables ****************************** //
 static const char *TAG = "Main";
@@ -24,18 +24,16 @@ void SpotifyPeriodicTimer(TimerHandle_t xTimer)
         return;
     }
 
-    CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying);
-    vTaskDelay(pdMS_TO_TICKS(1000));
     bool isNewSong = strcmp(SpotifyInterfaceHandler.PlaybackInfo->SongImageURL, &imgLink);
     if (isNewSong)
     {
         CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetCoverPhoto);
         vTaskDelay(pdMS_TO_TICKS(100));
-        // if (CommandResult == false)
-        // {
-        //     ESP_LOGE(TAG, "Cover photo update failed");
-        //     return;
-        // }
+        if (CommandResult == false)
+        {
+            ESP_LOGE(TAG, "Cover photo update failed");
+            return;
+        }
         strcpy(imgLink, SpotifyInterfaceHandler.PlaybackInfo->SongImageURL);
     }
 

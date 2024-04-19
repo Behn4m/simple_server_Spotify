@@ -161,6 +161,19 @@ void setup_scr_Spotify_Page(lv_ui *ui)
 	lv_obj_set_style_img_recolor(ui->Spotify_Page_img_2, lv_color_hex(0x00ff39), LV_PART_MAIN|LV_STATE_DEFAULT);
 	lv_obj_set_style_img_opa(ui->Spotify_Page_img_2, 166, LV_PART_MAIN|LV_STATE_DEFAULT);
 
+	//Write codes Matter_logo
+	ui->Matter_logo = lv_img_create(ui->Spotify_Page_cont_Spotify);
+	lv_obj_add_flag(ui->Matter_logo, LV_OBJ_FLAG_CLICKABLE);
+	lv_img_set_src(ui->Matter_logo, &_matter_logo_alpha_64x64);
+	lv_img_set_pivot(ui->Matter_logo, 50,50);
+	lv_img_set_angle(ui->Matter_logo, 0);
+	lv_obj_set_pos(ui->Matter_logo, 420, 30);
+	lv_obj_set_size(ui->Matter_logo, 64, 64);
+
+	//Write style for Matter_logo, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
+	lv_obj_set_style_img_opa(ui->Matter_logo, 100, LV_PART_MAIN|LV_STATE_DEFAULT);
+	lv_obj_set_style_shadow_width(ui->Matter_logo, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
+
 	//Write codes Spotify_Page_bar_progress
 	ui->Spotify_Page_bar_progress = lv_bar_create(ui->Spotify_Page_cont_Spotify);
 	lv_obj_set_style_anim_time(ui->Spotify_Page_bar_progress, 1000, 0);

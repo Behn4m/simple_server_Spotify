@@ -157,6 +157,23 @@ static void Spotify_Page_Song_cover_photo_Handler(lv_event_t *e)
 	}
 }
 
+static void Spotify_Page_Matter_logo_photo_Handler(lv_event_t *e)
+{
+	lv_event_code_t code = lv_event_get_code(e);
+	lv_obj_t *object = lv_event_get_current_target(e);
+	switch (code)
+	{
+	case LV_EVENT_VALUE_CHANGED:
+	{
+		lv_obj_set_style_img_opa(object, 255, LV_PART_MAIN|LV_STATE_DEFAULT);
+		lv_refr_now(NULL);
+		break;
+	}
+	default:
+		break;
+	}
+}
+
 
 /**
  *  @brief Initializes event handlers for objects on the Spotify page.
@@ -170,4 +187,5 @@ void events_init_Spotify_Page(lv_ui *ui)
 	lv_obj_add_event_cb(ui->Spotify_Page_Song_name, Spotify_Page_Song_name_event_handler, LV_EVENT_ALL, NULL);
 	lv_obj_add_event_cb(ui->Spotify_Page_Artist_name, Spotify_Page_Artist_name_event_handler, LV_EVENT_ALL, NULL);
 	lv_obj_add_event_cb(ui->Spotify_Page_img_song, Spotify_Page_Song_cover_photo_Handler, LV_EVENT_ALL, NULL);
+	lv_obj_add_event_cb(ui->Matter_logo, Spotify_Page_Matter_logo_photo_Handler, LV_EVENT_ALL, NULL);
 }

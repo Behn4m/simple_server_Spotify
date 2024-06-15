@@ -1,6 +1,5 @@
 #include "OauthHttpLocalServer.h"
-#include "Authorization.h"
-#include "SpotifyTypedef.h"
+#include "authorization.h"
 
 static const char *TAG = "OauthTask";
 // ******************************

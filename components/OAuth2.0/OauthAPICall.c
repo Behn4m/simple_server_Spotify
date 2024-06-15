@@ -1,13 +1,13 @@
 #include "OauthAPICall.h"
-#include "SpotifyTypedef.h"
+#include "authorization.h"
 
 static const char *TAG = "HTTP";
-SpotifyAPIBuffer_t *SpotifyBuffer;
+APIBuffer_t *ServiceBuffer;
 char Base64Credintials[SMALL_BUF] = {0};
 
-void APICallInit(SpotifyAPIBuffer_t *SpotifyAPIBuffer)
+void APICallInit(APIBuffer_t *APIBuffer)
 {
-    SpotifyBuffer = SpotifyAPIBuffer;   
+    ServiceBuffer = APIBuffer;
     sprintf(Base64Credintials, "Basic %s", BASE64_CREDINTIALS);
 }
 
@@ -30,16 +30,16 @@ esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
         case HTTP_EVENT_ON_DATA:
             if (totalLen + evt->data_len < SUPER_BUF)                                       // check if receved data is not larger than buffer size 
             {   
-                memcpy(SpotifyBuffer->MessageBuffer + totalLen, evt->data, evt->data_len);  // copy received data to the end of previous received data
+                memcpy(ServiceBuffer->MessageBuffer + totalLen, evt->data, evt->data_len);  // copy received data to the end of previous received data
                 totalLen += evt->data_len;                                                  // update pointer to the end of copied data
             }
             break;
         case HTTP_EVENT_ON_FINISH:
-            SpotifyBuffer->MessageBuffer[totalLen] = '\0';
+            ServiceBuffer->MessageBuffer[totalLen] = '\0';
                                             // write 0 to the end of string
             break;
         case HTTP_EVENT_DISCONNECTED:
-            xSemaphoreGive(SpotifyBuffer->SpotifyResponseReadyFlag);                        // give semaphore to notify that data is ready  
+            xSemaphoreGive(ServiceBuffer->SpotifyResponseReadyFlag);                        // give semaphore to notify that data is ready  
             totalLen = 0;                                                                   // reset contect length counter
             break;
         case HTTP_EVENT_REDIRECT:
@@ -216,11 +216,11 @@ void ControlPlayback(int Command, char *AccessToken)
         return;s
     }
 
-    SpotifyBuffer->status = esp_http_client_get_status_code(httpClient);
-    SpotifyBuffer->ContentLength = esp_http_client_get_content_length(httpClient);
+    ServiceBuffer->status = esp_http_client_get_status_code(httpClient);
+    ServiceBuffer->ContentLength = esp_http_client_get_content_length(httpClient);
     ESP_LOGI(TAG, "HTTP GET Status = %lld, content_length = %lld",
-            SpotifyBuffer->status,
-            SpotifyBuffer->ContentLength);
+            ServiceBuffer->status,
+            v->ContentLength);
     // Cleanup
     esp_http_client_cleanup(httpClient);                                                        // close all connection releated to this client object 
 }
@@ -279,11 +279,11 @@ void Spotify_GetInfo(int Command, char *AccessToken) //FIXME it is not for this 
         ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
         return;
     }
-    SpotifyBuffer->status = esp_http_client_get_status_code(httpClient);
-    SpotifyBuffer->ContentLength = esp_http_client_get_content_length(httpClient);
+    ServiceBuffer->status = esp_http_client_get_status_code(httpClient);
+    ServiceBuffer->ContentLength = esp_http_client_get_content_length(httpClient);
     ESP_LOGI(TAG, "HTTP GET Status = %lld, content_length = %lld",
-            SpotifyBuffer->status,
-            SpotifyBuffer->ContentLength);
+            ServiceBuffer->status,
+            ServiceBuffer->ContentLength);
     // Cleanup
     esp_http_client_cleanup(httpClient);                                                        // close all connection releated to this client object 
 }

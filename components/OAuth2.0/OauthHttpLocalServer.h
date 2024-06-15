@@ -4,7 +4,8 @@ extern "C"
 #endif
 #ifndef OAUTH_HTTP_SERVER
 #define OAUTH_HTTP_SERVER
-#include "SpotifyTypedef.h"
+
+#include "authorization.h"
 
 extern QueueHandle_t SendCodeFromHttpToTask;
 

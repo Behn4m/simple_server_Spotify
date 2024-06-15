@@ -1,9 +1,11 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "authorization.h"
-#include <SpotifyTypedef.h>
+#include "OauthHttpLocalServer.h"
+#include "cJSON.h"
 
 // ****************************** Global Variables //FIXME handler structs
-InterfaceHandler_t *InterfaceHandler;
+SpotifyInterfaceHandler_t *InterfaceHandler;
 PrivateHandler_t PrivateHandler;
 
 // ****************************** Local Variables
@@ -41,11 +43,11 @@ bool Oauth_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
             xTaskBuffer                          // Task control block
         );
 
-        // Allocate buffer and Initialize the Spotify API call //TODO change dynamic mem to static
-        PrivateHandler.SpotifyBuffer.MessageBuffer = 
+        // Allocate buffer and Initialize the service API call //TODO change dynamic mem to static
+        PrivateHandler.ServiceBuffer.MessageBuffer =
                 (char *)malloc(SUPER_BUF * sizeof(char));    
-        PrivateHandler.SpotifyBuffer.SpotifyResponseReadyFlag = xSemaphoreCreateBinary();    
-        APICallInit(&PrivateHandler.SpotifyBuffer);//FIXME func. name
+        PrivateHandler.ServiceBuffer.ResponseReadyFlag = xSemaphoreCreateBinary();
+        APICallInit(&PrivateHandler.ServiceBuffer);//FIXME func. name
 
         ESP_LOGI(TAG, "App initiated successfully");
     }
@@ -57,17 +59,16 @@ bool Oauth_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
     return true;
 }
 
-
 /**
  * @brief Run Http local service
  */
-bool Http_Server_Service_Init()
+bool HttpServerServiceInit()
 {
     SendCodeFromHttpToTask = 
-            xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF])); //FIXME send code name
+            xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF]));
     
-    httpd_handle_t spotifyLocalServer = Oauth_StartWebServer();
-    if (spotifyLocalServer == NULL)
+    httpd_handle_t serviceLocalServer = Oauth_StartWebServer();
+    if (serviceLocalServer == NULL)
     {
         ESP_LOGE(TAG, "Creating Service local server failed!");
         return false;
@@ -102,18 +103,18 @@ static bool Oauth_IsTokenExpired()
     return tokenExpired;
 }
 
-static const char *TAG = "JsonExTraction";
-
-
 /**
- * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a TokenParam structure.
+ * @brief This function extracts specific parameters from a JSON string and 
+ *         assigns them to corresponding fields in a TokenParam structure.
  * @param[in] Json The input JSON string.
  * @param[in] token address to save tokin extracted information.
  * @return false if fail, true if finish successful.
  */
 bool ExtractTokenJson(char *Json, Token_t *token) 
-    {
+{
+    const char *TAG = "JsonExTraction";
     cJSON *J_Token = cJSON_Parse(Json);
+
     if (J_Token == NULL) 
     {
         ESP_LOGE(TAG,"%s",Json);
@@ -155,12 +156,6 @@ bool ExtractTokenJson(char *Json, Token_t *token)
         token->GrantedScope[GRANTED_SCOP_STR_SIZE - 1] = '\0';
     }
 
-    // ESP_LOGI(TAG, "Access Token: %s", AccessToken);
-    // ESP_LOGI(TAG, "Token Type: %s", TokenType);
-    // ESP_LOGI(TAG, "Expires In: %d seconds\n", ExpiresInMS);
-    // ESP_LOGI(TAG, "Refresh Token: %s", RefreshToken);
-    // ESP_LOGI(TAG, "Scope: %s", GrantedScope);
-
     cJSON_Delete(J_Token);
     return true;
 }
@@ -178,7 +173,7 @@ static bool Oauth_TokenRenew(void)
     memset(receivedData, 0x0, LONG_BUF);
     
     bool IsResponseReady = 
-            xSemaphoreTake(PrivateHandler.SpotifyBuffer.SpotifyResponseReadyFlag, 
+            xSemaphoreTake(PrivateHandler.ServiceBuffer.ResponseReadyFlag, 
                             pdMS_TO_TICKS(SEC));
     if (!IsResponseReady)
     {
@@ -187,7 +182,7 @@ static bool Oauth_TokenRenew(void)
     }
 
     bool IsTokenExtracted = 
-            ExtractAccessTokenParamsTokenFromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, 
+            ExtractTokenJson(PrivateHandler.ServiceBuffer.MessageBuffer,
                                                     &PrivateHandler.token);
     if (!IsTokenExtracted)
     {
@@ -200,7 +195,7 @@ static bool Oauth_TokenRenew(void)
     return true;
 }
 
-void Oauth_MainTask(void *pvparameters)
+static void Oauth_MainTask(void *pvparameters)
 {
     while (1)
     {
@@ -243,15 +238,15 @@ void Oauth_MainTask(void *pvparameters)
             case AUTHENTICATED:
             {
                 ESP_LOGI(TAG, "AUTHENTICATED");
-                bool IsSpotifyResponded = xSemaphoreTake(PrivateHandler.SpotifyBuffer.SpotifyResponseReadyFlag, pdMS_TO_TICKS(SEC));              // Waiting for Token to be recieved by queue
-                if (!IsSpotifyResponded)
+                bool IsServiceResponded = xSemaphoreTake(PrivateHandler.ServiceBuffer.ResponseReadyFlag, pdMS_TO_TICKS(SEC));              // Waiting for Token to be recieved by queue
+                if (!IsServiceResponded)
                 {
                     PrivateHandler.Status = LOGIN;                                                                  // if the response did not come within the expected time, set Status back to LOGIN
                     ESP_LOGW(TAG, "Timeout - Service did not respond within the expected time.!");
                     break;
                 }
 
-                bool IsTokenExtracted = ExtractAccessTokenParamsTokenFromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, 
+                bool IsTokenExtracted = ExtractTokenJson(PrivateHandler.ServiceBuffer.MessageBuffer,
                                                                               &PrivateHandler.token
                                                                               );                       // extract all keys from Service server response
                 if (!IsTokenExtracted)

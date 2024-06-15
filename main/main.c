@@ -46,7 +46,7 @@ void app_main(void)
 
     SpotifyInterfaceHandler.IsSpotifyAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;
     SpotifyInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
-    Spotify_TaskInit(&SpotifyInterfaceHandler);
+    Spotify_TaskInit(&SpotifyInterfaceHandler);// TODO OAUTH
 
     // after this semaphore you can use playback command function in every where !
     if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)

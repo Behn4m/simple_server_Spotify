@@ -5,88 +5,14 @@
 #include "cJSON.h"
 
 // ****************************** Global Variables //FIXME handler structs
-SpotifyInterfaceHandler_t *InterfaceHandler;
+ServiceInterfaceHandler_t *InterfaceHandler;
 PrivateHandler_t PrivateHandler;
 
 // ****************************** Local Variables
 static const char *TAG = "OAuthTask";
 
 /**
- * @brief This function initiates the authorization process.
- * @param InterfaceHandler as the handler
- * @return true if task run to the end
- */
-bool Oauth_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
-{
-    InterfaceHandler = SpotifyInterfaceHandler;
-    PrivateHandler.Status = INIT;
-    if (InterfaceHandler->ConfigAddressInSpiffs != NULL &&
-        InterfaceHandler->IsSpotifyAuthorizedSemaphore != NULL)
-    {
-        StaticTask_t *xTaskBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
-        StackType_t *xStack = 
-                (StackType_t *)malloc(SPOTIFY_TASK_STACK_SIZE * sizeof(StackType_t));                 // Assuming a stack size of 400 words (adjust as needed)
-        if (xTaskBuffer == NULL || xStack == NULL)
-        {
-            ESP_LOGE(TAG, "Memory allocation failed!\n");
-            free(xTaskBuffer);
-            free(xStack);
-            return false; // Exit with an error code
-        }
-        xTaskCreateStatic(
-            Oauth_MainTask,                    // Task function
-            "Oauth_MainTask",                  // Task name (for debugging)
-            SPOTIFY_TASK_STACK_SIZE,             // Stack size (in words)
-            NULL,                                // Task parameters (passed to the task function)
-            tskIDLE_PRIORITY + SPOTIFY_PRIORITY, // Task priority (adjust as needed)
-            xStack,                              // Stack buffer
-            xTaskBuffer                          // Task control block
-        );
-
-        // Allocate buffer and Initialize the service API call //TODO change dynamic mem to static
-        PrivateHandler.ServiceBuffer.MessageBuffer =
-                (char *)malloc(SUPER_BUF * sizeof(char));    
-        PrivateHandler.ServiceBuffer.ResponseReadyFlag = xSemaphoreCreateBinary();
-        APICallInit(&PrivateHandler.ServiceBuffer);//FIXME func. name
-
-        ESP_LOGI(TAG, "App initiated successfully");
-    }
-    else
-    {
-        ESP_LOGE(TAG, "IntefaceHandler is is missing some pointers, can not run the app");
-        return false;
-    }
-    return true;
-}
-
-/**
- * @brief Run Http local service
- */
-bool HttpServerServiceInit()
-{
-    SendCodeFromHttpToTask = 
-            xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF]));
-    
-    httpd_handle_t serviceLocalServer = Oauth_StartWebServer();
-    if (serviceLocalServer == NULL)
-    {
-        ESP_LOGE(TAG, "Creating Service local server failed!");
-        return false;
-    }
-    
-    bool IsMdnsStarted = Oauth_StartMDNSService();
-    if (!IsMdnsStarted)
-    {
-        ESP_LOGE(TAG, "Running mDNS failed!");
-        return false;
-    };
-
-    ESP_LOGI(TAG, "** local server created, mDNS is running! **");
-    return true;
-}
-
-/**
- * @brief This function check Time for
+ * @brief This function check Time for token validation
  * @return true if token expired, false otherwise
  * */
 static bool Oauth_IsTokenExpired()
@@ -110,7 +36,7 @@ static bool Oauth_IsTokenExpired()
  * @param[in] token address to save tokin extracted information.
  * @return false if fail, true if finish successful.
  */
-bool ExtractTokenJson(char *Json, Token_t *token) 
+static bool ExtractTokenJson(char *Json, Token_t *token) 
 {
     const char *TAG = "JsonExTraction";
     cJSON *J_Token = cJSON_Parse(Json);
@@ -246,9 +172,9 @@ static void Oauth_MainTask(void *pvparameters)
                     break;
                 }
 
-                bool IsTokenExtracted = ExtractTokenJson(PrivateHandler.ServiceBuffer.MessageBuffer,
-                                                                              &PrivateHandler.token
-                                                                              );                       // extract all keys from Service server response
+                bool IsTokenExtracted =
+                 ExtractTokenJson(PrivateHandler.ServiceBuffer.MessageBuffer,
+                                     &PrivateHandler.token);                       // extract all keys from Service server response
                 if (!IsTokenExtracted)
                 {
                     ESP_LOGW(TAG, "Token not found!");
@@ -270,7 +196,7 @@ static void Oauth_MainTask(void *pvparameters)
                 SaveFileInSpiffsWithTxtFormat(InterfaceHandler->ConfigAddressInSpiffs,                              // Save new file in the directory
                                               "refresh_token", PrivateHandler.token.RefreshToken, 
                                               NULL, NULL);
-                xSemaphoreGive((*InterfaceHandler->IsSpotifyAuthorizedSemaphore));                                  // give IsSpotifyAuthorizedSemaphore semaphore in the IntefaceHandler                
+                xSemaphoreGive((*InterfaceHandler->IsServiceAuthorizedSemaphore));                                  // give IsServiceAuthorizedSemaphore semaphore in the IntefaceHandler                
                 PrivateHandler.Status = CHECK_TIME;                                                                 // set Status to CHECK_TIME     
                 break;
             }
@@ -296,7 +222,7 @@ static void Oauth_MainTask(void *pvparameters)
                     break;                                                                   // set Status to ILDLE if token renewed unsuccessfully
                 }
 
-                xSemaphoreGive((*InterfaceHandler->IsSpotifyAuthorizedSemaphore));                              // give IsSpotifyAuthorizedSemaphore semaphore in the IntefaceHandler
+                xSemaphoreGive((*InterfaceHandler->IsServiceAuthorizedSemaphore));                              // give IsServiceAuthorizedSemaphore semaphore in the IntefaceHandler
                 PrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                           // Save the time when the token was received
                 PrivateHandler.Status = CHECK_TIME;                                                             // set Status to CHECK_TIME if token renewed successfully
                 break;
@@ -304,4 +230,51 @@ static void Oauth_MainTask(void *pvparameters)
         }   
         vTaskDelay(pdMS_TO_TICKS(100)); //FIXME magic number                                                                            // Task delay at the end of while(1) loop
     }
+}
+
+/**
+ * @brief This function initiates the authorization process.
+ * @param InterfaceHandler as the handler
+ * @return true if task run to the end
+ */
+bool Oauth_TaskInit(void)
+{
+    PrivateHandler.Status = INIT;
+    if (InterfaceHandler->ConfigAddressInSpiffs != NULL &&
+        InterfaceHandler->IsServiceAuthorizedSemaphore != NULL)
+    {
+        StaticTask_t *xTaskBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
+        StackType_t *xStack = 
+                (StackType_t *)malloc(SERVICE_TASK_STACK_SIZE * sizeof(StackType_t));                 // Assuming a stack size of 400 words (adjust as needed)
+        if (xTaskBuffer == NULL || xStack == NULL)
+        {
+            ESP_LOGE(TAG, "Memory allocation failed!\n");
+            free(xTaskBuffer);
+            free(xStack);
+            return false; // Exit with an error code
+        }
+        xTaskCreateStatic(
+            Oauth_MainTask,                    // Task function
+            "Oauth_MainTask",                  // Task name (for debugging)
+            SERVICE_TASK_STACK_SIZE,             // Stack size (in words)
+            NULL,                                // Task parameters (passed to the task function)
+            tskIDLE_PRIORITY + SERVICE_PRIORITY, // Task priority (adjust as needed)
+            xStack,                              // Stack buffer
+            xTaskBuffer                          // Task control block
+        );
+
+        // Allocate buffer and Initialize the service API call //TODO change dynamic mem to static
+        PrivateHandler.ServiceBuffer.MessageBuffer =
+                (char *)malloc(SUPER_BUF * sizeof(char));    
+        PrivateHandler.ServiceBuffer.ResponseReadyFlag = xSemaphoreCreateBinary();
+        APICallInit(&PrivateHandler.ServiceBuffer);//FIXME func. name
+
+        ESP_LOGI(TAG, "App initiated successfully");
+    }
+    else
+    {
+        ESP_LOGE(TAG, "IntefaceHandler is is missing some pointers, can not run the app");
+        return false;
+    }
+    return true;
 }

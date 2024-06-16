@@ -1,65 +1,13 @@
 #include <stdio.h>
 #include "SpotifyInterface.h"
-#include "authorization.h"
-#include "OauthAPICall.h"
-#include "OauthHttpLocalServer.h"
 #include "JsonExtraction.h"
 #include "rtc.h"
 
 // ****************************** Global Variables
-SpotifyInterfaceHandler_t *InterfaceHandler;
-PrivateHandler_t PrivateHandler;
+SpotifyPrivateHandler_t SpotifyPrivateHandler;
 
 // ****************************** Local Variables
 static const char *TAG = "SpotifyTask";
-
-/**
- * @brief This function initiates the Spotify authorization process.
- * @param SpotifyInterfaceHandler as the handler
- * @return true if task run to the end
- */
-bool Spotify_TaskInit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
-{
-    InterfaceHandler = SpotifyInterfaceHandler;
-    InterfaceHandler->PlaybackInfo = (PlaybackInfo_t *)malloc(sizeof(PlaybackInfo_t));
-    InterfaceHandler->UserInfo = (UserInfo_t *)malloc(sizeof(UserInfo_t));
-    PrivateHandler.Status = INIT;
-    if (InterfaceHandler->ConfigAddressInSpiffs != NULL &&
-        InterfaceHandler->IsSpotifyAuthorizedSemaphore != NULL)
-    {
-        StaticTask_t *xTaskBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
-        StackType_t *xStack = (StackType_t *)malloc(SPOTIFY_TASK_STACK_SIZE * sizeof(StackType_t));                 // Assuming a stack size of 400 words (adjust as needed)
-        if (xTaskBuffer == NULL || xStack == NULL)
-        {
-            ESP_LOGE(TAG, "Memory allocation failed!\n");
-            free(xTaskBuffer);
-            free(xStack);
-            return false; // Exit with an error code
-        }
-        xTaskCreateStatic(
-            Spotify_MainTask,                    // Task function
-            "Spotify_MainTask",                  // Task name (for debugging)
-            SPOTIFY_TASK_STACK_SIZE,             // Stack size (in words)
-            NULL,                                // Task parameters (passed to the task function)
-            tskIDLE_PRIORITY + SPOTIFY_PRIORITY, // Task priority (adjust as needed)
-            xStack,                              // Stack buffer
-            xTaskBuffer                          // Task control block
-        );
-
-        // Allocate buffer and Initialize the Spotify API call
-        PrivateHandler.SpotifyBuffer.MessageBuffer = (char *)malloc(SUPER_BUF * sizeof(char));    
-        PrivateHandler.SpotifyBuffer.SpotifyResponseReadyFlag = xSemaphoreCreateBinary();    
-        SpotifyAPICallInit(&PrivateHandler.SpotifyBuffer);
-
-        ESP_LOGI(TAG, "Spotify app initiated successfully");
-    }
-    else
-    {
-        ESP_LOGE(TAG, "SpotifyIntefaceHandler is is missing some pointers, can not run the app");
-        return false;
-    }
-    return true;
-}
 
 // /**
 //  * @brief Deinitiate the Spotify app
@@ -110,8 +58,11 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
 {
     bool retValue = false;
 
+    SpotifyInterfaceHandler->PlaybackInfo = (PlaybackInfo_t *)malloc(sizeof(PlaybackInfo_t));
+    SpotifyInterfaceHandler->UserInfo = (UserInfo_t *)malloc(sizeof(UserInfo_t));
+
     ESP_LOGI(TAG, "user Command is %d", Command);
-    if (PrivateHandler.Status == LOGIN || PrivateHandler.Status == AUTHENTICATED)
+    if (SpotifyPrivateHandler.Status == LOGIN || SpotifyPrivateHandler.Status == AUTHENTICATED)
     {
         ESP_LOGE(TAG, "You are not authorized !");
         return false;
@@ -124,8 +75,8 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
         case Pause:
         case PlayNext:
         case PlayPrev:
-            Spotify_ControlPlayback(Command, PrivateHandler.token.AccessToken);
-            IsSuccessfull = PrivateHandler.SpotifyBuffer.status == 204;
+            Spotify_ControlPlayback(Command, SpotifyPrivateHandler.token.AccessToken);
+            IsSuccessfull = SpotifyPrivateHandler.SpotifyBuffer.status == 204;
             if(!IsSuccessfull)
             {
                 ESP_LOGW(TAG, "Command is not sent successfully");
@@ -136,28 +87,28 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
             retValue = true;
             break;
         case GetNowPlaying:
-            Spotify_GetInfo(Command, PrivateHandler.token.AccessToken);
-            IsSuccessfull = PrivateHandler.SpotifyBuffer.status == 200;
+            Spotify_GetInfo(Command, SpotifyPrivateHandler.token.AccessToken);
+            IsSuccessfull = SpotifyPrivateHandler.SpotifyBuffer.status == 200;
             if (!IsSuccessfull)
             {
                 ESP_LOGW(TAG, "No song is found");
                 retValue = false;
                 break;
             }
-            ExtractPlaybackInfoParamsfromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, InterfaceHandler->PlaybackInfo);
+            ExtractPlaybackInfoParamsfromJson(SpotifyPrivateHandler.SpotifyBuffer.MessageBuffer, SpotifyInterfaceHandler->PlaybackInfo);
             retValue = true;
             break;
 
         case GetUserInfo:
-            Spotify_GetInfo(Command, PrivateHandler.token.AccessToken);
-            IsSuccessfull = PrivateHandler.SpotifyBuffer.status == 200;
+            Spotify_GetInfo(Command, SpotifyPrivateHandler.token.AccessToken);
+            IsSuccessfull = SpotifyPrivateHandler.SpotifyBuffer.status == 200;
             if (!IsSuccessfull)
             {
                 ESP_LOGW(TAG, "No user is found");
                 retValue = false;
                 break;
             }
-            ExtractUserInfoParamsfromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, InterfaceHandler->UserInfo);
+            ExtractUserInfoParamsfromJson(SpotifyPrivateHandler.SpotifyBuffer.MessageBuffer, SpotifyInterfaceHandler->UserInfo);
             retValue = true;
             break;
         default:

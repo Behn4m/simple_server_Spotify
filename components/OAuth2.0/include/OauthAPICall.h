@@ -12,14 +12,6 @@ extern "C" {
 #include "esp_crt_bundle.h"
 
 /**
- * @brief This function sends a request to the Service login API to authorize the user.
- * @param[in,out] Buf The character buffer to store the request and receive the response.
- * @param[in] SizeBuf The size of the character buffer.
- * @return This function does not return a value.
- */
-void APICallInit(SpotifyAPIBuffer_t *SpotifyAPIBuffer);
-
-/**
  * @brief This function sends a request to the Service login API to exchange an authorization code for an access token.
  * @param[in,out] Buf The character buffer to store the request and receive the response.
  * @param[in] SizeBuf The size of the character buffer.

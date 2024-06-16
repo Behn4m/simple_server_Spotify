@@ -120,7 +120,7 @@ static const httpd_uri_t Response_Access_URI = {
  * @brief This function starts the web HttpdServerHandler for handling HTTPS requests.
  * @return Returns the HTTP HttpdServerHandler handle if it is started successfully, or NULL otherwise.
  */
-httpd_handle_t StartWebServer()
+static httpd_handle_t Oauth_StartWebServer()
 {
     httpd_handle_t httpdHandler = NULL;
     httpd_config_t httpdConfig = HTTPD_DEFAULT_CONFIG();
@@ -153,7 +153,7 @@ esp_err_t StopWebServer(httpd_handle_t HttpdServerHandler)
 /**
  * @brief This function starts the mDNS service.
  */
-bool StartMDNSService()
+static bool Oauth_StartMDNSService()
 {
     esp_err_t err;
     err = mdns_init();
@@ -185,5 +185,31 @@ bool StartMDNSService()
     }
     
     ESP_LOGI(TAG, "MDNS Init done");
+    return true;
+}
+
+/**
+ * @brief Run Http local service
+ */
+bool HttpServerServiceInit()
+{
+    SendCodeFromHttpToTask = 
+            xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF]));
+    
+    httpd_handle_t serviceLocalServer = Oauth_StartWebServer();
+    if (serviceLocalServer == NULL)
+    {
+        ESP_LOGE(TAG, "Creating Service local server failed!");
+        return false;
+    }
+    
+    bool IsMdnsStarted = Oauth_StartMDNSService();
+    if (!IsMdnsStarted)
+    {
+        ESP_LOGE(TAG, "Running mDNS failed!");
+        return false;
+    };
+
+    ESP_LOGI(TAG, "** local server created, mDNS is running! **");
     return true;
 }

@@ -5,7 +5,7 @@ static const char *TAG = "HTTP";
 APIBuffer_t *ServiceBuffer;
 char Base64Credintials[SMALL_BUF] = {0};
 
-void APICallInit(APIBuffer_t *APIBuffer)
+static void APICallInit(APIBuffer_t *APIBuffer)
 {
     ServiceBuffer = APIBuffer;
     sprintf(Base64Credintials, "Basic %s", BASE64_CREDINTIALS);
@@ -39,7 +39,7 @@ esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
                                             // write 0 to the end of string
             break;
         case HTTP_EVENT_DISCONNECTED:
-            xSemaphoreGive(ServiceBuffer->SpotifyResponseReadyFlag);                        // give semaphore to notify that data is ready  
+            xSemaphoreGive(ServiceBuffer->ResponseReadyFlag);                        // give semaphore to notify that data is ready  
             totalLen = 0;                                                                   // reset contect length counter
             break;
         case HTTP_EVENT_REDIRECT:

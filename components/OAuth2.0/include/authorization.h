@@ -21,8 +21,8 @@ extern "C"
 #include "esp_psram.h"
 #include "SpotifyWebAppInfo.h"
 
-#define SPOTIFY_TASK_STACK_SIZE (uint32_t)(30*1000U)
-#define SPOTIFY_PRIORITY 4
+#define SERVICE_TASK_STACK_SIZE (uint32_t)(30*1000U)
+#define SERVICE_PRIORITY 4
 
 #define SEC                             1000
 #define HOUR                            3600
@@ -79,13 +79,18 @@ typedef struct
     APIBuffer_t ServiceBuffer;            // Buffer for https request
 } PrivateHandler_t;
 
+typedef struct ServiceInterfaceHandler_t
+{
+    char *ConfigAddressInSpiffs;
+    SemaphoreHandle_t *IsServiceAuthorizedSemaphore;
+} ServiceInterfaceHandler_t;
+
 /**
- * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a TokenParam structure.
- * @param[in] Json The input JSON string.
- * @param[in] token address to save tokin extracted information.
- * @return fasle if fail, true if finish successfull.
+ * @brief This function initiates the Spotify authorization process.
+ * @param SpotifyInterfaceHandler as the handler
+ * @return true if task run to the end
  */
-bool ExtractTokenJson(char *Json, Token_t *token) ;
+bool Oauth_TaskInit(void);
 
 #endif //file
 

@@ -6,7 +6,7 @@
 #include "OauthAPICall.h"
 #include "cJSON.h"
 
-// ****************************** Global Variables //FIXME handler structs
+// ****************************** Global Variables
 ServiceInterfaceHandler_t *InterfaceHandler;
 PrivateHandler_t PrivateHandler;
 
@@ -270,7 +270,7 @@ bool Oauth_TaskInit(ServiceInterfaceHandler_t *serviceInterfaceHandler)
         PrivateHandler.ServiceBuffer.MessageBuffer =
                 (char *)malloc(SUPER_BUF * sizeof(char));    
         PrivateHandler.ServiceBuffer.ResponseReadyFlag = xSemaphoreCreateBinary();
-       // APICallInit(&PrivateHandler.ServiceBuffer);//FIXME func. name
+        APICallInit(&PrivateHandler.ServiceBuffer);
 
         ESP_LOGI(TAG, "App initiated successfully");
     }

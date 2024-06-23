@@ -5,7 +5,7 @@ static const char *TAG = "HTTP";
 APIBuffer_t *ServiceBuffer;
 char Base64Credintials[SMALL_BUF] = {0};
 
-static void APICallInit(APIBuffer_t *APIBuffer)
+void APICallInit(APIBuffer_t *APIBuffer)
 {
     ServiceBuffer = APIBuffer;
     sprintf(Base64Credintials, "Basic %s", BASE64_CREDINTIALS);

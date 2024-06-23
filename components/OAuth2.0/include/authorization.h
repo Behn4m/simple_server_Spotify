@@ -19,7 +19,11 @@ extern "C"
 #include "mdns.h"
 #include "freertos/queue.h"
 #include "esp_psram.h"
-#include "SpotifyWebAppInfo.h"
+//#include "SpotifyWebAppInfo.h"
+#define CLIENT_ID "2c2dadbd46244f2cb9f71251bc004caa"
+#define BASE64_CREDINTIALS "MmMyZGFkYmQ0NjI0NGYyY2I5ZjcxMjUxYmMwMDRjYWE6MTE3MTFiZDBiNmQ0NGIzNDhhOGRlMDdjYjJjMzgzZGM="
+#define REDIRECT_URI "http%3A%2F%2Fdeskhub.local%2Fcallback%2f"
+
 
 #define SERVICE_TASK_STACK_SIZE (uint32_t)(30*1000U)
 #define SERVICE_PRIORITY 4
@@ -90,7 +94,7 @@ typedef struct ServiceInterfaceHandler_t
  * @param SpotifyInterfaceHandler as the handler
  * @return true if task run to the end
  */
-bool Oauth_TaskInit(void);
+bool Oauth_TaskInit(ServiceInterfaceHandler_t InterfaceHandler);
 
 #endif //file
 

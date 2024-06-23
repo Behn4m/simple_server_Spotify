@@ -33,7 +33,7 @@ void SendTokenRequest(char *Code);
 * @param[in] AcessToken the Service authorized AccessToken.
 * @return This function does not return a value.
 */
-void ControlPlayback(int Command, char *AccessToken);
+//void ControlPlayback(int Command, char *AccessToken);
 
 /**
 * @brief This function sends a request to the Service API to give Curent playing information 

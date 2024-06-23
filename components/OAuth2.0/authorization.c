@@ -2,10 +2,12 @@
 #include <stdlib.h>
 #include "authorization.h"
 #include "OauthHttpLocalServer.h"
+#include "SpiffsManger.h"
+#include "OauthAPICall.h"
 #include "cJSON.h"
 
 // ****************************** Global Variables //FIXME handler structs
-ServiceInterfaceHandler_t *InterfaceHandler;
+ServiceInterfaceHandler_t InterfaceHandler;
 PrivateHandler_t PrivateHandler;
 
 // ****************************** Local Variables
@@ -93,7 +95,7 @@ static bool ExtractTokenJson(char *Json, Token_t *token)
 static bool Oauth_TokenRenew(void)
 {
     char receivedData[LONG_BUF];
-    ReadTxtFileFromSpiffs(InterfaceHandler->ConfigAddressInSpiffs, 
+    ReadTxtFileFromSpiffs(InterfaceHandler.ConfigAddressInSpiffs, 
                             "refresh_token", receivedData, NULL, NULL);
     SendRequest_ExchangeTokenWithRefreshToken(receivedData);
     memset(receivedData, 0x0, LONG_BUF);
@@ -137,7 +139,7 @@ static void Oauth_MainTask(void *pvparameters)
                     break;
                 }
 
-                bool IsSpiffExists = SpiffsExistenceCheck(InterfaceHandler->ConfigAddressInSpiffs);                      // Check if the refresh token exists in the spiffs
+                bool IsSpiffExists = SpiffsExistenceCheck(InterfaceHandler.ConfigAddressInSpiffs);                      // Check if the refresh token exists in the spiffs
                 if (!IsSpiffExists)
                 {
                     ESP_LOGE(TAG, "Autorization is needed");
@@ -190,19 +192,19 @@ static void Oauth_MainTask(void *pvparameters)
             case AUTHORIZED:
             {
                 ESP_LOGI(TAG, "AUTHORIZED");
-                SpiffsRemoveFile(InterfaceHandler->ConfigAddressInSpiffs);                                          // Delete old value at the directory
+                SpiffsRemoveFile(InterfaceHandler.ConfigAddressInSpiffs);                                          // Delete old value at the directory
                                                                                                                     // so applicaiton can know the Service Module is authorized 
                                                                                                                     // and ready for sending commands 
-                SaveFileInSpiffsWithTxtFormat(InterfaceHandler->ConfigAddressInSpiffs,                              // Save new file in the directory
+                SaveFileInSpiffsWithTxtFormat(InterfaceHandler.ConfigAddressInSpiffs,                              // Save new file in the directory
                                               "refresh_token", PrivateHandler.token.RefreshToken, 
                                               NULL, NULL);
-                xSemaphoreGive((*InterfaceHandler->IsServiceAuthorizedSemaphore));                                  // give IsServiceAuthorizedSemaphore semaphore in the IntefaceHandler                
+                xSemaphoreGive((InterfaceHandler.IsServiceAuthorizedSemaphore));                                  // give IsServiceAuthorizedSemaphore semaphore in the IntefaceHandler                
                 PrivateHandler.Status = CHECK_TIME;                                                                 // set Status to CHECK_TIME     
                 break;
             }
             case CHECK_TIME:
             {
-                bool IsTokenExpired = IsTokenExpired();                                                               // Check if the expiration time has elapsed since the last received token
+                bool IsTokenExpired = Oauth_IsTokenExpired();                                                               // Check if the expiration time has elapsed since the last received token
                 if (!IsTokenExpired)
                 {
                     // keep state
@@ -215,14 +217,14 @@ static void Oauth_MainTask(void *pvparameters)
             case EXPIRED:
             {
                 ESP_LOGW(TAG, "token is expired");
-                bool IsTokenRenewed = TokenRenew();
+                bool IsTokenRenewed = Oauth_TokenRenew();
                 if (!IsTokenRenewed)                                                                   // Run function to renew the token
                 {
                     PrivateHandler.Status = LOGIN;
                     break;                                                                   // set Status to ILDLE if token renewed unsuccessfully
                 }
 
-                xSemaphoreGive((*InterfaceHandler->IsServiceAuthorizedSemaphore));                              // give IsServiceAuthorizedSemaphore semaphore in the IntefaceHandler
+                xSemaphoreGive((InterfaceHandler.IsServiceAuthorizedSemaphore));                              // give IsServiceAuthorizedSemaphore semaphore in the IntefaceHandler
                 PrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                           // Save the time when the token was received
                 PrivateHandler.Status = CHECK_TIME;                                                             // set Status to CHECK_TIME if token renewed successfully
                 break;
@@ -237,11 +239,12 @@ static void Oauth_MainTask(void *pvparameters)
  * @param InterfaceHandler as the handler
  * @return true if task run to the end
  */
-bool Oauth_TaskInit(void)
+bool Oauth_TaskInit(ServiceInterfaceHandler_t serviceInterfaceHandler)
 {
+    InterfaceHandler = serviceInterfaceHandler;
     PrivateHandler.Status = INIT;
-    if (InterfaceHandler->ConfigAddressInSpiffs != NULL &&
-        InterfaceHandler->IsServiceAuthorizedSemaphore != NULL)
+    if (InterfaceHandler.ConfigAddressInSpiffs != NULL &&
+        InterfaceHandler.IsServiceAuthorizedSemaphore != NULL)
     {
         StaticTask_t *xTaskBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
         StackType_t *xStack = 
@@ -267,7 +270,7 @@ bool Oauth_TaskInit(void)
         PrivateHandler.ServiceBuffer.MessageBuffer =
                 (char *)malloc(SUPER_BUF * sizeof(char));    
         PrivateHandler.ServiceBuffer.ResponseReadyFlag = xSemaphoreCreateBinary();
-        APICallInit(&PrivateHandler.ServiceBuffer);//FIXME func. name
+       // APICallInit(&PrivateHandler.ServiceBuffer);//FIXME func. name
 
         ESP_LOGI(TAG, "App initiated successfully");
     }

@@ -145,10 +145,10 @@ static httpd_handle_t Oauth_StartWebServer()
  * @brief This function stops the web HttpdServerHandler for handling HTTPS requests.
  * @return Returns the HTTP HttpdServerHandler handle if it is started successfully, or NULL otherwise.
  */
-esp_err_t StopWebServer(httpd_handle_t HttpdServerHandler)
-{
-    return httpd_stop(HttpdServerHandler);
-}
+// esp_err_t StopWebServer(httpd_handle_t HttpdServerHandler)
+// {
+//     return httpd_stop(HttpdServerHandler);
+// }
 
 /**
  * @brief This function starts the mDNS service.

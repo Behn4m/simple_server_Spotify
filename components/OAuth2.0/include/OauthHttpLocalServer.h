@@ -13,7 +13,7 @@ extern QueueHandle_t SendCodeFromHttpToTask;
  * @brief This function stops the web server for handling HTTPS requests.
  * @return Returns the HTTP server handle if it is started successfully, or NULL otherwise.
  */
-esp_err_t StopWebServer(httpd_handle_t server);
+//esp_err_t StopWebServer(httpd_handle_t server);
 
 bool HttpServerServiceInit();
 #endif

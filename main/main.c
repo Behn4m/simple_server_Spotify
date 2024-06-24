@@ -33,12 +33,12 @@ ServiceInterfaceHandler_t InterfaceHandler;
 // }
 void app_main(void)
 {
-    GUI_TaskInit();
+    //GUI_TaskInit();
     GlobalInit();
     nvsFlashInit();
     SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
-    WifiStationMode("Hardware10", "87654321");
+    WifiStationMode("Done_IOT_1", "87654321@");
     // WifiStationMode("BELL789", "167271A164A9");
 #else
     wifiConnectionModule();

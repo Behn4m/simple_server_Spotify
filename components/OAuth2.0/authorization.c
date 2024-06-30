@@ -198,7 +198,7 @@ static void Oauth_MainTask(void *pvparameters)
                 SaveFileInSpiffsWithTxtFormat(pInterfaceHandler->ConfigAddressInSpiffs,                              // Save new file in the directory
                                               "refresh_token", PrivateHandler.token.RefreshToken, 
                                               NULL, NULL);
-                xSemaphoreGive((pInterfaceHandler->IsServiceAuthorizedSemaphore));                                  // give IsServiceAuthorizedSemaphore semaphore in the IntefaceHandler                
+                xSemaphoreGive((*pInterfaceHandler->IsServiceAuthorizedSemaphore));                                  // give IsServiceAuthorizedSemaphore semaphore in the IntefaceHandler                
                 PrivateHandler.Status = CHECK_TIME;                                                                 // set Status to CHECK_TIME     
                 break;
             }
@@ -224,7 +224,7 @@ static void Oauth_MainTask(void *pvparameters)
                     break;                                                                   // set Status to ILDLE if token renewed unsuccessfully
                 }
 
-                xSemaphoreGive((pInterfaceHandler->IsServiceAuthorizedSemaphore));                              // give IsServiceAuthorizedSemaphore semaphore in the IntefaceHandler
+                xSemaphoreGive((*pInterfaceHandler->IsServiceAuthorizedSemaphore));                              // give IsServiceAuthorizedSemaphore semaphore in the IntefaceHandler
                 PrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                           // Save the time when the token was received
                 PrivateHandler.Status = CHECK_TIME;                                                             // set Status to CHECK_TIME if token renewed successfully
                 break;

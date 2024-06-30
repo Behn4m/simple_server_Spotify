@@ -29,21 +29,6 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken_);
 */
 void SendTokenRequest(char *Code);
 
-/**
-* @brief This function sends a request to the Service API to perform a player command.
-* @param[in] Command The specific player command to be executed (e.g., "next", "previous", "play", "pause").
-* @param[in] AcessToken the Service authorized AccessToken.
-* @return This function does not return a value.
-*/
-//void ControlPlayback(int Command, char *AccessToken);
-
-/**
-* @brief This function sends a request to the Service API to give Curent playing information 
-* @param[in]  Token is the access token received from Service during authorization progress 
-* @param[in]  Command is the specific player command to be executed (e.g., "next", "previous", "play", "pause").
-*/
-void Spotify_GetInfo(int Command, char *AccessToken); //FIXME
-
 #endif
 #ifdef __cplusplus
 }

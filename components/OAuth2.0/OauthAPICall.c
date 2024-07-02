@@ -11,7 +11,7 @@ void APICallInit(APIBuffer_t *APIBuffer)
     sprintf(Base64Credintials, "Basic %s", BASE64_CREDINTIALS);
 }
 
-esp_err_t HttpEventHandler(esp_http_client_event_t *evt) 
+static esp_err_t HttpEventHandler(esp_http_client_event_t *evt) 
 {
     static int totalLen = 0;
     // Create the queue and semaphore

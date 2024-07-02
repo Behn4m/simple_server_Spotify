@@ -1,18 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+//#include "cJSON.h"
+#include "esp_http_client.h"
+#include "esp_crt_bundle.h"
 #include "SpotifyTypedef.h"
 #include "SpotifyInterface.h"
 #include "JsonExtraction.h"
 #include "SpotifyTypedef.h"
 #include "rtc.h"
-#include "cJSON.h"
-#include "esp_http_client.h"
-#include "esp_crt_bundle.h"
 
 // ****************************** Global Variables
 
-APIBuffer_t *ServiceBuffer;
+SpotifyAPIBuffer_t *SpotifyBuffer;
 SpotifyInterfaceHandler_t *InterfaceHandler;
 SpotifyPrivateHandler_t PrivateHandler;
 
@@ -46,6 +46,45 @@ static const char *TAG = "SpotifyTask";
 //     }
 //     ESP_LOGI(TAG, "Spotify app deinitiated successfully");
 // }
+
+//FIXME share this function or the handler
+static esp_err_t HttpEventHandler(esp_http_client_event_t *evt) 
+{
+    static int totalLen = 0;
+    // Create the queue and semaphore
+
+    switch (evt->event_id) 
+    {
+        case HTTP_EVENT_ERROR:
+            break;
+        case HTTP_EVENT_ON_CONNECTED:
+            break;
+        case HTTP_EVENT_HEADER_SENT:
+            break;
+        case HTTP_EVENT_ON_HEADER:
+            // Handle HTTP header received, if needed
+            break;
+        case HTTP_EVENT_ON_DATA:
+            if (totalLen + evt->data_len < SUPER_BUF)                                       // check if receved data is not larger than buffer size 
+            {   
+                memcpy(SpotifyBuffer->MessageBuffer + totalLen, evt->data, evt->data_len);  // copy received data to the end of previous received data
+                totalLen += evt->data_len;                                                  // update pointer to the end of copied data
+            }
+            break;
+        case HTTP_EVENT_ON_FINISH:
+            SpotifyBuffer->MessageBuffer[totalLen] = '\0';
+                                            // write 0 to the end of string
+            break;
+        case HTTP_EVENT_DISCONNECTED:
+            xSemaphoreGive(SpotifyBuffer->SpotifyResponseReadyFlag);                        // give semaphore to notify that data is ready  
+            totalLen = 0;                                                                   // reset contect length counter
+            break;
+        case HTTP_EVENT_REDIRECT:
+            ESP_LOGI(TAG, "redirected");
+            break;
+    }
+    return ESP_OK;
+}
 
 /**
 * @brief This function sends a request to the Service API to give Curent playing information 

@@ -13,7 +13,7 @@
 // ****************************** Global Variables
 
 SpotifyAPIBuffer_t *SpotifyBuffer;
-SpotifyInterfaceHandler_t *InterfaceHandler;
+//SpotifyInterfaceHandler_t *InterfaceHandler;
 SpotifyPrivateHandler_t PrivateHandler;
 
 // ****************************** Local Variables
@@ -283,7 +283,7 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
                 retValue = false;
                 break;
             }
-            ExtractPlaybackInfoParamsfromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, InterfaceHandler->PlaybackInfo);
+            ExtractPlaybackInfoParamsfromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, SpotifyInterfaceHandler.PlaybackInfo);
             retValue = true;
             break;
 
@@ -296,7 +296,7 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
                 retValue = false;
                 break;
             }
-            ExtractUserInfoParamsfromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, InterfaceHandler->UserInfo);
+            ExtractUserInfoParamsfromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, SpotifyInterfaceHandler.UserInfo);
             retValue = true;
             break;
         default:

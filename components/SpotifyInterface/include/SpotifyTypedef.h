@@ -69,7 +69,7 @@ typedef void (*EventHandlerCallBackPtr)(char *Buffer);
 
 typedef struct
 {
-    char *Code;                                    // code received from Apotify api
+    //char *Code;                                    // code received from Apotify api
     Token_t token;                                   // Nested struct for token information
     TickType_t TokenLastUpdate;                    // System Tick of last token update
     Status_t Status;                              // state machine

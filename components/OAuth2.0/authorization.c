@@ -7,7 +7,7 @@
 #include "cJSON.h"
 
 // ****************************** Global Variables
-ServiceInterfaceHandler_t *pInterfaceHandler;
+InterfaceHandler_t *pInterfaceHandler;
 PrivateHandler_t PrivateHandler;
 
 // ****************************** Local Variables
@@ -239,7 +239,7 @@ static void Oauth_MainTask(void *pvparameters)
  * @param InterfaceHandler as the handler
  * @return true if task run to the end
  */
-bool Oauth_TaskInit(ServiceInterfaceHandler_t *serviceInterfaceHandler)
+bool Oauth_TaskInit(InterfaceHandler_t *InterfaceHandler)
 {
     pInterfaceHandler = serviceInterfaceHandler;
     PrivateHandler.Status = INIT;

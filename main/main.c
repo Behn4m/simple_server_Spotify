@@ -10,7 +10,7 @@
 
 // ****************************** GLobal Variables ****************************** //
 static const char *TAG = "Main";
-ServiceInterfaceHandler_t InterfaceHandler;
+InterfaceHandler_t InterfaceHandler;
 SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 // ****************************** GLobal Functions ****************************** //
 /**

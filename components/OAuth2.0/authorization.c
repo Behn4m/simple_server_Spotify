@@ -8,7 +8,7 @@
 
 // ****************************** Global Variables //FIXME merge structs
 ServiceInterfaceHandler_t *pInterfaceHandler;
-//ServiceInterfaceHandler_t ServiceInterfaceHandler;
+ServiceInterfaceHandler_t ServiceInterfaceHandler;
 
 // ****************************** Local Variables
 static const char *TAG = "OAuthTask";
@@ -242,7 +242,7 @@ static void Oauth_MainTask(void *pvparameters)
 bool Oauth_TaskInit(ServiceInterfaceHandler_t *InterfaceHandler)
 {
     pInterfaceHandler = InterfaceHandler;
-    ServiceInterfaceHandler.Status = INIT;
+    pInterfaceHandler->Status = INIT;
     if (pInterfaceHandler->ConfigAddressInSpiffs != NULL &&
         pInterfaceHandler->IsServiceAuthorizedSemaphore != NULL)
     {
@@ -267,10 +267,10 @@ bool Oauth_TaskInit(ServiceInterfaceHandler_t *InterfaceHandler)
         );
 
         // Allocate buffer and Initialize the service API call //TODO change dynamic mem to static
-        ServiceInterfaceHandler.ServiceBuffer.MessageBuffer =
+        pInterfaceHandler->ServiceBuffer.MessageBuffer =
                 (char *)malloc(SUPER_BUF * sizeof(char));    
-        ServiceInterfaceHandler.ServiceBuffer.ResponseReadyFlag = xSemaphoreCreateBinary();
-        APICallInit(&ServiceInterfaceHandler.ServiceBuffer);
+        pInterfaceHandler->ServiceBuffer.ResponseReadyFlag = xSemaphoreCreateBinary();
+        APICallInit(&pInterfaceHandler->ServiceBuffer);
 
         ESP_LOGI(TAG, "App initiated successfully");
     }

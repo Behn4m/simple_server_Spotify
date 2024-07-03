@@ -65,8 +65,6 @@ typedef enum
     CHECK_TIME_USER = 5
 } Status_t;
 
-typedef void (*EventHandlerCallBackPtr)(char *Buffer);
-
 typedef struct
 {
     //char *Code;                                    // code received from Apotify api

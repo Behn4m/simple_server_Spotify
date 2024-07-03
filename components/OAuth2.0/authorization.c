@@ -6,9 +6,9 @@
 #include "OauthAPICall.h"
 #include "cJSON.h"
 
-// ****************************** Global Variables
-InterfaceHandler_t *pInterfaceHandler;
-ServiceInterfaceHandler_t ServiceInterfaceHandler;
+// ****************************** Global Variables //FIXME merge structs
+ServiceInterfaceHandler_t *pInterfaceHandler;
+//ServiceInterfaceHandler_t ServiceInterfaceHandler;
 
 // ****************************** Local Variables
 static const char *TAG = "OAuthTask";
@@ -239,7 +239,7 @@ static void Oauth_MainTask(void *pvparameters)
  * @param InterfaceHandler as the handler
  * @return true if task run to the end
  */
-bool Oauth_TaskInit(InterfaceHandler_t *InterfaceHandler)
+bool Oauth_TaskInit(ServiceInterfaceHandler_t *InterfaceHandler)
 {
     pInterfaceHandler = InterfaceHandler;
     ServiceInterfaceHandler.Status = INIT;

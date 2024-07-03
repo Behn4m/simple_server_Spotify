@@ -73,24 +73,26 @@ typedef struct APIBuffer_t
 typedef struct
 {
     //char *Code;                                    // code received from Apotify api
+    char *ConfigAddressInSpiffs;
+    SemaphoreHandle_t *IsServiceAuthorizedSemaphore;
     Token_t token;                                   // Nested struct for token information
     TickType_t TokenLastUpdate;                    // System Tick of last token update
     Status_t Status;                              // state machine
     APIBuffer_t ServiceBuffer;            // Buffer for https request
 } ServiceInterfaceHandler_t;
 
-typedef struct InterfaceHandler_t
-{
-    char *ConfigAddressInSpiffs;
-    SemaphoreHandle_t *IsServiceAuthorizedSemaphore;
-} InterfaceHandler_t;
+// typedef struct InterfaceHandler_t
+// {
+//     char *ConfigAddressInSpiffs;
+//     SemaphoreHandle_t *IsServiceAuthorizedSemaphore;
+// } InterfaceHandler_t;
 
 /**
  * @brief This function initiates the Spotify authorization process.
  * @param SpotifyInterfaceHandler as the handler
  * @return true if task run to the end
  */
-bool Oauth_TaskInit(InterfaceHandler_t *InterfaceHandler);
+bool Oauth_TaskInit(ServiceInterfaceHandler_t *InterfaceHandler);
 
 #endif //file
 

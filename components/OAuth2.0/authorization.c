@@ -241,7 +241,7 @@ static void Oauth_MainTask(void *pvparameters)
  */
 bool Oauth_TaskInit(InterfaceHandler_t *InterfaceHandler)
 {
-    pInterfaceHandler = serviceInterfaceHandler;
+    pInterfaceHandler = InterfaceHandler;
     PrivateHandler.Status = INIT;
     if (pInterfaceHandler->ConfigAddressInSpiffs != NULL &&
         pInterfaceHandler->IsServiceAuthorizedSemaphore != NULL)

@@ -4,7 +4,6 @@
 //#include "cJSON.h"
 #include "esp_http_client.h"
 #include "esp_crt_bundle.h"
-#include "SpotifyTypedef.h"
 #include "SpotifyInterface.h"
 #include "JsonExtraction.h"
 #include "SpotifyTypedef.h"
@@ -12,9 +11,9 @@
 
 // ****************************** Global Variables
 
-SpotifyAPIBuffer_t *SpotifyBuffer;
+APIBuffer_t *ServiceBuffer;
 //SpotifyInterfaceHandler_t *InterfaceHandler;
-SpotifyPrivateHandler_t PrivateHandler;
+//SpotifyPrivateHandler_t PrivateHandler;
 
 // ****************************** Local Variables
 static const char *TAG = "SpotifyTask";
@@ -67,16 +66,16 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
         case HTTP_EVENT_ON_DATA:
             if (totalLen + evt->data_len < SUPER_BUF)                                       // check if receved data is not larger than buffer size 
             {   
-                memcpy(SpotifyBuffer->MessageBuffer + totalLen, evt->data, evt->data_len);  // copy received data to the end of previous received data
+                memcpy(ServiceBuffer->MessageBuffer + totalLen, evt->data, evt->data_len);  // copy received data to the end of previous received data
                 totalLen += evt->data_len;                                                  // update pointer to the end of copied data
             }
             break;
         case HTTP_EVENT_ON_FINISH:
-            SpotifyBuffer->MessageBuffer[totalLen] = '\0';
+            ServiceBuffer->MessageBuffer[totalLen] = '\0';
                                             // write 0 to the end of string
             break;
         case HTTP_EVENT_DISCONNECTED:
-            xSemaphoreGive(SpotifyBuffer->SpotifyResponseReadyFlag);                        // give semaphore to notify that data is ready  
+            xSemaphoreGive(ServiceBuffer->ResponseReadyFlag);                        // give semaphore to notify that data is ready  
             totalLen = 0;                                                                   // reset contect length counter
             break;
         case HTTP_EVENT_REDIRECT:
@@ -142,11 +141,11 @@ static void Spotify_GetInfo(int Command, char *AccessToken)
         ESP_LOGE(TAG, "HTTP GET request failed: %s", esp_err_to_name(err));
         return;
     }
-    SpotifyBuffer->status = esp_http_client_get_status_code(httpClient);
-    SpotifyBuffer->ContentLength = esp_http_client_get_content_length(httpClient);
+    ServiceBuffer->status = esp_http_client_get_status_code(httpClient);
+    ServiceBuffer->ContentLength = esp_http_client_get_content_length(httpClient);
     ESP_LOGI(TAG, "HTTP GET Status = %lld, content_length = %lld",
-            SpotifyBuffer->status,
-            SpotifyBuffer->ContentLength);
+            ServiceBuffer->status,
+            ServiceBuffer->ContentLength);
     // Cleanup
     esp_http_client_cleanup(httpClient);                                                        // close all connection releated to this client object 
 }
@@ -220,10 +219,10 @@ static void Spotify_ControlPlayback(int Command, char *AccessToken)
         return;
     }
 
-    SpotifyBuffer->status = esp_http_client_get_status_code(httpClient);
-    SpotifyBuffer->ContentLength = esp_http_client_get_content_length(httpClient);
+    ServiceBuffer->status = esp_http_client_get_status_code(httpClient);
+    ServiceBuffer->ContentLength = esp_http_client_get_content_length(httpClient);
     ESP_LOGI(TAG, "HTTP GET Status = %lld, content_length = %lld",
-            SpotifyBuffer->status, SpotifyBuffer->ContentLength);
+            ServiceBuffer->status, ServiceBuffer->ContentLength);
     // Cleanup
     esp_http_client_cleanup(httpClient);                                                        // close all connection releated to this client object 
 }
@@ -245,12 +244,13 @@ static void Spotify_ControlPlayback(int Command, char *AccessToken)
  * - GET_SONG_IMAGE_URL: Sends the GET_SONG_IMAGE_URL command to Spotify.
  * - GET_ARTIST_IMAGE_URL: Sends the GET_ARTIST_IMAGE_URL command to Spotify.
  */
-bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int Command)
+bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int Command, 
+         int ServiceStatus, char *AccessToken, int64_t BufferStatus, char *MessageBuffer)
 {
     bool retValue = false;
 
     ESP_LOGI(TAG, "user Command is %d", Command);
-    if (PrivateHandler.Status == LOGIN || PrivateHandler.Status == AUTHENTICATED)
+    if (ServiceStatus == LOGIN ||ServiceStatus == AUTHENTICATED)
     {
         ESP_LOGE(TAG, "You are not authorized !");
         return false;
@@ -263,8 +263,8 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
         case Pause:
         case PlayNext:
         case PlayPrev:
-            Spotify_ControlPlayback(Command, PrivateHandler.token.AccessToken);
-            IsSuccessfull = PrivateHandler.SpotifyBuffer.status == 204;
+            Spotify_ControlPlayback(Command, AccessToken);
+            IsSuccessfull = BufferStatus == 204;
             if(!IsSuccessfull)
             {
                 ESP_LOGW(TAG, "Command is not sent successfully");
@@ -275,28 +275,28 @@ bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int 
             retValue = true;
             break;
         case GetNowPlaying:
-            Spotify_GetInfo(Command, PrivateHandler.token.AccessToken);
-            IsSuccessfull = PrivateHandler.SpotifyBuffer.status == 200;
+            Spotify_GetInfo(Command, AccessToken);
+            IsSuccessfull = BufferStatus == 200;
             if (!IsSuccessfull)
             {
                 ESP_LOGW(TAG, "No song is found");
                 retValue = false;
                 break;
             }
-            ExtractPlaybackInfoParamsfromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, SpotifyInterfaceHandler.PlaybackInfo);
+            ExtractPlaybackInfoParamsfromJson(MessageBuffer, SpotifyInterfaceHandler.PlaybackInfo);
             retValue = true;
             break;
 
         case GetUserInfo:
-            Spotify_GetInfo(Command, PrivateHandler.token.AccessToken);
-            IsSuccessfull = PrivateHandler.SpotifyBuffer.status == 200;
+            Spotify_GetInfo(Command, AccessToken);
+            IsSuccessfull = BufferStatus == 200;
             if (!IsSuccessfull)
             {
                 ESP_LOGW(TAG, "No user is found");
                 retValue = false;
                 break;
             }
-            ExtractUserInfoParamsfromJson(PrivateHandler.SpotifyBuffer.MessageBuffer, SpotifyInterfaceHandler.UserInfo);
+            ExtractUserInfoParamsfromJson(MessageBuffer, SpotifyInterfaceHandler.UserInfo);
             retValue = true;
             break;
         default:

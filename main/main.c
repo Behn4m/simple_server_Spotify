@@ -18,7 +18,10 @@ SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
  */
 void SpotifyPeriodicTimer(TimerHandle_t xTimer)
 {
-    bool CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying);
+    bool CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying, 
+                         InterfaceHandler.Status, InterfaceHandler.token.AccessToken,
+                         InterfaceHandler.ServiceBuffer.status, 
+                         InterfaceHandler.ServiceBuffer.MessageBuffer);
     if (CommandResult == false)
     {
         ESP_LOGE(TAG, "Playback info update failed");
@@ -55,7 +58,10 @@ void app_main(void)
     if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
     {
         bool CommandResult = false;
-        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetUserInfo);
+        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetUserInfo, 
+                         InterfaceHandler.Status, InterfaceHandler.token.AccessToken,
+                         InterfaceHandler.ServiceBuffer.status, 
+                         InterfaceHandler.ServiceBuffer.MessageBuffer);
         if (CommandResult == false)
         {
             ESP_LOGE(TAG, "User info update failed");

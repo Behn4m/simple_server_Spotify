@@ -32,7 +32,6 @@ extern "C"
 #define PRODUCT_STR_SIZE 100
 #define DISPLAY_NAME_STR_SIZE 100
 
-
 typedef enum
 {
     NoCommand = 0,
@@ -86,7 +85,8 @@ typedef struct SpotifyInterfaceHandler_t
  * @param command could be play, pause, stop, next, previous, user_info, song_img, artist_img, etc.
  * @return true if function successfully sent the command to Spotify
  */
-bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int Command);
+bool Spotify_SendCommand(SpotifyInterfaceHandler_t SpotifyInterfaceHandler, int Command, 
+         int ServiceStatus, char *AccessToken, int64_t BufferStatus, char *MessageBuffer);
 #endif
 
 #ifdef __cplusplus

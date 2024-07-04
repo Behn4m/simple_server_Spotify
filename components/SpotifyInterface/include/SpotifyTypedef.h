@@ -38,43 +38,6 @@ extern "C"
 #define EXPIRED                         4
 #define CHECK_TIME                      5
 
-typedef struct Token_t
-{
-    char AccessToken[ACCESS_TOKEN_STR_SIZE];
-    char TokenType[TOKEN_TYPE_STR_SIZE];
-    char RefreshToken[REFRESH_TOKEN_STP_SIZE];
-    char GrantedScope[GRANTED_SCOP_STR_SIZE];
-    int ExpiresInMS;
-} Token_t;
-
-typedef struct SpotifyAPIBuffer_t
-{
-    char *MessageBuffer;
-    int64_t status;
-    int64_t ContentLength;
-    SemaphoreHandle_t SpotifyResponseReadyFlag;
-} SpotifyAPIBuffer_t;
-
-typedef enum
-{
-    INIT_SERVICE = 0,
-    LOGIN_USER = 1,
-    AUTHENTICATED_USER = 2,
-    AUTHORIZED_USER = 3,
-    EXPIRED_USER = 4,
-    CHECK_TIME_USER = 5
-} Status_t;
-
-typedef struct
-{
-    //char *Code;                                    // code received from Apotify api
-    Token_t token;                                   // Nested struct for token information
-    TickType_t TokenLastUpdate;                    // System Tick of last token update
-    Status_t Status;                              // state machine
-    SpotifyAPIBuffer_t SpotifyBuffer;            // Buffer for https request
-} SpotifyPrivateHandler_t;
-
-
 #endif
 #ifdef __cplusplus
 }

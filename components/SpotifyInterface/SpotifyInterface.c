@@ -12,8 +12,6 @@
 // ****************************** Global Variables
 
 APIBuffer_t *ServiceBuffer;
-//SpotifyInterfaceHandler_t *InterfaceHandler;
-//SpotifyPrivateHandler_t PrivateHandler;
 
 // ****************************** Local Variables
 static const char *TAG = "SpotifyTask";

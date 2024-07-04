@@ -72,8 +72,6 @@ typedef struct SpotifyInterfaceHandler_t
 {
     UserInfo_t *UserInfo;                   // Nested struct for user information
     PlaybackInfo_t *PlaybackInfo;           // Nested struct for now playing song information
-    // char *ConfigAddressInSpiffs;
-    // SemaphoreHandle_t *IsSpotifyAuthorizedSemaphore;
 } SpotifyInterfaceHandler_t;
 
 /**

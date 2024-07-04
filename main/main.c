@@ -6,6 +6,7 @@
 #include "SpotifyInterface.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+
 #define TIMER_TIME pdMS_TO_TICKS(500) // in millis
 
 // ****************************** GLobal Variables ****************************** //

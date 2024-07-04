@@ -79,13 +79,8 @@ typedef struct
     TickType_t TokenLastUpdate;                    // System Tick of last token update
     Status_t Status;                              // state machine
     APIBuffer_t ServiceBuffer;            // Buffer for https request
+    //esp_http_client_config_t config;
 } ServiceInterfaceHandler_t;
-
-// typedef struct InterfaceHandler_t
-// {
-//     char *ConfigAddressInSpiffs;
-//     SemaphoreHandle_t *IsServiceAuthorizedSemaphore;
-// } InterfaceHandler_t;
 
 /**
  * @brief This function initiates the Spotify authorization process.

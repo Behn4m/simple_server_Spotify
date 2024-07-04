@@ -73,6 +73,14 @@ typedef struct SpotifyInterfaceHandler_t
     PlaybackInfo_t *PlaybackInfo;           // Nested struct for now playing song information
 } SpotifyInterfaceHandler_t;
 
+typedef struct SpotifyAPIBuffer_t
+{
+    char *MessageBuffer;
+    int64_t status;
+    int64_t ContentLength;
+    SemaphoreHandle_t ResponseReadyFlag;
+} SpotifyAPIBuffer_t;
+
 /**
  * @brief This function deinitiates the Spotify authorization process.
  * @param SpotifyInterfaceHandler as the handler

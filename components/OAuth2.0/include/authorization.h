@@ -11,6 +11,7 @@ extern "C"
 #include <sys/param.h>
 #include "esp_netif.h"
 #include <esp_http_server.h>
+#include "esp_http_client.h"
 #include "esp_tls.h"
 #include "mdns.h"
 #include "freertos/queue.h"
@@ -78,7 +79,7 @@ typedef struct
     TickType_t TokenLastUpdate;                    // System Tick of last token update
     Status_t Status;                              // state machine
     APIBuffer_t OAuthBuffer;            // Buffer for https request
-    //esp_http_client_config_t config;
+    esp_http_client_config_t ClientConfig;
 } OAuthInterfaceHandler_t;
 
 /**

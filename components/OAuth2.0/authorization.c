@@ -97,7 +97,7 @@ static bool Oauth_TokenRenew(void)
     char receivedData[LONG_BUF];
     ReadTxtFileFromSpiffs(pInterfaceHandler->ConfigAddressInSpiffs, 
                             "refresh_token", receivedData, NULL, NULL);
-    SendRequest_ExchangeTokenWithRefreshToken(receivedData);
+    SendRequest_ExchangeTokenWithRefreshToken(receivedData, OAuthInterfaceHandler.ClientConfig);
     memset(receivedData, 0x0, LONG_BUF);
     
     bool IsResponseReady = 
@@ -159,7 +159,7 @@ static void Oauth_MainTask(void *pvparameters)
                     // stay in this state until receive the Code
                     break;
                 }
-                SendTokenRequest(receivedData);                                                         // send request for Token
+                SendTokenRequest(receivedData, OAuthInterfaceHandler.ClientConfig);                                                         // send request for Token
                 OAuthInterfaceHandler.Status = AUTHENTICATED;                                                          // Code received and checked, so update Status to AUTHENTICATED         
                 break;
             }

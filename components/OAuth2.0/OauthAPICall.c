@@ -55,7 +55,7 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
  * @param[in] SizeCode The size of the authorization code.
  * @return This function does not return a value.
  */
-void SendTokenRequest(char *Code)
+void SendTokenRequest(char *Code, esp_http_client_config_t ClientConfig)
 {  
     esp_http_client_config_t clientConfig = {
         .url = "https://accounts.spotify.com/api/token",                            
@@ -106,7 +106,7 @@ void SendTokenRequest(char *Code)
  * @brief This function sends a request to the Service login API to exchange an authorization code for an access token.
  * @return This function does not return a value.
  */
-void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken)
+void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken, esp_http_client_config_t ClientConfig)
 {
     esp_http_client_config_t clientConfig = {
         .url = "https://accounts.spotify.com/api/token",

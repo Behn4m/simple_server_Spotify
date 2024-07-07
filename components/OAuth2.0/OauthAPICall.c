@@ -2,12 +2,12 @@
 #include "authorization.h"
 
 static const char *TAG = "HTTP";
-APIBuffer_t *ServiceBuffer;
+APIBuffer_t *OAuthBuffer;
 char Base64Credintials[SMALL_BUF] = {0};
 
 void APICallInit(APIBuffer_t *APIBuffer)
 {
-    ServiceBuffer = APIBuffer;
+    OAuthBuffer = APIBuffer;
     sprintf(Base64Credintials, "Basic %s", BASE64_CREDINTIALS);
 }
 
@@ -30,16 +30,16 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
         case HTTP_EVENT_ON_DATA:
             if (totalLen + evt->data_len < SUPER_BUF)                                       // check if receved data is not larger than buffer size 
             {   
-                memcpy(ServiceBuffer->MessageBuffer + totalLen, evt->data, evt->data_len);  // copy received data to the end of previous received data
+                memcpy(OAuthBuffer->MessageBuffer + totalLen, evt->data, evt->data_len);  // copy received data to the end of previous received data
                 totalLen += evt->data_len;                                                  // update pointer to the end of copied data
             }
             break;
         case HTTP_EVENT_ON_FINISH:
-            ServiceBuffer->MessageBuffer[totalLen] = '\0';
+            OAuthBuffer->MessageBuffer[totalLen] = '\0';
                                             // write 0 to the end of string
             break;
         case HTTP_EVENT_DISCONNECTED:
-            xSemaphoreGive(ServiceBuffer->ResponseReadyFlag);                        // give semaphore to notify that data is ready  
+            xSemaphoreGive(OAuthBuffer->ResponseReadyFlag);                        // give semaphore to notify that data is ready  
             totalLen = 0;                                                                   // reset contect length counter
             break;
         case HTTP_EVENT_REDIRECT:

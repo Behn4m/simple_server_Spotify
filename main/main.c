@@ -11,7 +11,7 @@
 
 // ****************************** GLobal Variables ****************************** //
 static const char *TAG = "Main";
-ServiceInterfaceHandler_t InterfaceHandler;
+OAuthInterfaceHandler_t InterfaceHandler;
 SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 // ****************************** GLobal Functions ****************************** //
 /**
@@ -21,8 +21,8 @@ void SpotifyPeriodicTimer(TimerHandle_t xTimer)
 {
     bool CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying, 
                          InterfaceHandler.Status, InterfaceHandler.token.AccessToken,
-                         InterfaceHandler.ServiceBuffer.status, 
-                         InterfaceHandler.ServiceBuffer.MessageBuffer);
+                         InterfaceHandler.OAuthBuffer.status, 
+                         InterfaceHandler.OAuthBuffer.MessageBuffer);
     if (CommandResult == false)
     {
         ESP_LOGE(TAG, "Playback info update failed");
@@ -61,8 +61,8 @@ void app_main(void)
         bool CommandResult = false;
         CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetUserInfo, 
                          InterfaceHandler.Status, InterfaceHandler.token.AccessToken,
-                         InterfaceHandler.ServiceBuffer.status, 
-                         InterfaceHandler.ServiceBuffer.MessageBuffer);
+                         InterfaceHandler.OAuthBuffer.status, 
+                         InterfaceHandler.OAuthBuffer.MessageBuffer);
         if (CommandResult == false)
         {
             ESP_LOGE(TAG, "User info update failed");

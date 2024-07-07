@@ -6,6 +6,7 @@
 #include "SpotifyInterface.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_http_client.h"
 
 #define TIMER_TIME pdMS_TO_TICKS(500) // in millis
 
@@ -53,6 +54,15 @@ void app_main(void)
 
     InterfaceHandler.IsServiceAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;
     InterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
+    esp_http_client_config_t spotifyclientconfig = {
+        .url = "https://accounts.spotify.com/api/token",                            
+        .host = "accounts.spotify.com",
+        .path = "/api/token",
+        .method = HTTP_METHOD_POST,
+    };
+    
+    InterfaceHandler.ClientConfig = spotifyclientconfig;
+
     Oauth_TaskInit(&InterfaceHandler);
 
     //after this semaphore you can use playback command function in every where !

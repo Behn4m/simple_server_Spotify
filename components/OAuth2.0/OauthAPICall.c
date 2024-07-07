@@ -57,18 +57,18 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
  */
 void SendTokenRequest(char *Code, esp_http_client_config_t ClientConfig)
 {  
-    esp_http_client_config_t clientConfig = {
-        .url = "https://accounts.spotify.com/api/token",                            
-        .host = "accounts.spotify.com",
-        .path = "/api/token",
-        .method = HTTP_METHOD_POST,
+    ClientConfig = {
+        // .url = "https://accounts.spotify.com/api/token",                            
+        // .host = "accounts.spotify.com",
+        // .path = "/api/token",
+        // .method = HTTP_METHOD_POST,
         .event_handler = HttpEventHandler,
         .disable_auto_redirect = false,
         .crt_bundle_attach = esp_crt_bundle_attach,
         };
 
     // Initialize HTTP client with custom configuration
-    esp_http_client_handle_t httpClient = esp_http_client_init(&clientConfig);
+    esp_http_client_handle_t httpClient = esp_http_client_init(&ClientConfig);
 
     if (httpClient == NULL) 
     {
@@ -108,18 +108,18 @@ void SendTokenRequest(char *Code, esp_http_client_config_t ClientConfig)
  */
 void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken, esp_http_client_config_t ClientConfig)
 {
-    esp_http_client_config_t clientConfig = {
-        .url = "https://accounts.spotify.com/api/token",
-        .host = "accounts.spotify.com",
-        .path = "/api/token",
-        .method = HTTP_METHOD_POST,
+    ClientConfig = {
+        // .url = "https://accounts.spotify.com/api/token",                            
+        // .host = "accounts.spotify.com",
+        // .path = "/api/token",
+        // .method = HTTP_METHOD_POST,
         .event_handler = HttpEventHandler,
         .disable_auto_redirect = false,
         .crt_bundle_attach = esp_crt_bundle_attach,
-    };
+        };
 
     // Initialize HTTP client with custom configuration
-    esp_http_client_handle_t httpClient = esp_http_client_init(&clientConfig);
+    esp_http_client_handle_t httpClient = esp_http_client_init(&ClientConfig);
     if (httpClient == NULL) 
     {
         ESP_LOGE(TAG, "Failed to refresh the token client");

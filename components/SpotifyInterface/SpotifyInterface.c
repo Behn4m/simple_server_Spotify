@@ -2,12 +2,12 @@
 #include <stdlib.h>
 #include <string.h>
 //#include "cJSON.h"
-#include "esp_http_client.h"
 #include "esp_crt_bundle.h"
 #include "SpotifyInterface.h"
 #include "JsonExtraction.h"
 #include "SpotifyTypedef.h"
 #include "rtc.h"
+#include "esp_crt_bundle.h"
 
 // ****************************** Global Variables
 
@@ -81,6 +81,21 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
             break;
     }
     return ESP_OK;
+}
+
+esp_http_client_config_t Spotify_ClientConfigInit(void)
+{
+    esp_http_client_config_t SpotifyClientConfig = {
+        .url = "https://accounts.spotify.com/api/token",                            
+        .host = "accounts.spotify.com",
+        .path = "/api/token",
+        .method = HTTP_METHOD_POST,
+        .event_handler = HttpEventHandler,
+        .disable_auto_redirect = false,
+        .crt_bundle_attach = esp_crt_bundle_attach,
+        };
+
+    return SpotifyClientConfig;
 }
 
 /**

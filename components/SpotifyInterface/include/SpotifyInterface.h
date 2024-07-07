@@ -11,6 +11,7 @@ extern "C"
 #include <sys/param.h>
 #include "freertos/queue.h"
 #include "esp_psram.h"
+#include "esp_http_client.h"
 
 #define NO_COMMAND 0
 #define PLAY_PAUSE 1
@@ -87,6 +88,8 @@ typedef struct SpotifyAPIBuffer_t
  * @return true if task run to the end
  */
 //void Spotify_TaskDeinit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler);
+
+esp_http_client_config_t Spotify_ClientConfigInit(void);
 
 /**
  * @brief This function get and apply the command to Spotify service.

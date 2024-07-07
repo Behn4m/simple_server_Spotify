@@ -54,14 +54,7 @@ void app_main(void)
 
     InterfaceHandler.IsServiceAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;
     InterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
-    esp_http_client_config_t spotifyclientconfig = {
-        .url = "https://accounts.spotify.com/api/token",                            
-        .host = "accounts.spotify.com",
-        .path = "/api/token",
-        .method = HTTP_METHOD_POST,
-    };
-    
-    InterfaceHandler.ClientConfig = spotifyclientconfig;
+    InterfaceHandler.ClientConfig = Spotify_ClientConfigInit();
 
     Oauth_TaskInit(&InterfaceHandler);
 

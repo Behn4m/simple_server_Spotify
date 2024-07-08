@@ -84,11 +84,12 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
 }
 
 esp_http_client_config_t Spotify_ClientConfigInit(void)
-{
+{//FIXME
     esp_http_client_config_t SpotifyClientConfig = {
-        .url = "https://accounts.spotify.com/api/token",                            
-        .host = "accounts.spotify.com",
-        .path = "/api/token",
+        //.url = "https://accounts.spotify.com/api/token",                            
+        .url = "https://github.com/login/oauth/access_token",
+        .host = "github.com/user",//"accounts.spotify.com",
+        //.path = "/api/token",//FIXME
         .method = HTTP_METHOD_POST,
         .event_handler = HttpEventHandler,
         .disable_auto_redirect = false,
@@ -126,7 +127,7 @@ static void Spotify_GetInfo(int Command, char *AccessToken)
 
    // Configure client object  
     esp_http_client_config_t clientConfig = {
-        .host = "api.spotify.com",                                                          // host for Service api call
+        .host = "api.github.com/user",//"api.spotify.com",    //FIXME                                                      // host for Service api call
         .path = clientPath,                                                                 // clientPath already filled based in API
         .method = HTTP_METHOD_GET,                                                          // Get for all of this category requests  
         .event_handler = HttpEventHandler,                                                  // Event handler function
@@ -201,7 +202,7 @@ static void Spotify_ControlPlayback(int Command, char *AccessToken)
     
     // Configure client object  
     esp_http_client_config_t clientConfig = {
-        .host = "api.spotify.com",                                                              // host for Service api call
+        .host = "api.github.com/user",//"api.spotify.com",//FIXME                                                              // host for Service api call
         .path = clientPath,                                                                     // clientPath already filled based in API
         .method = clientMethod,                                                                 // method variable already filled based on API 
         .event_handler = HttpEventHandler,                                                      // Event handler function

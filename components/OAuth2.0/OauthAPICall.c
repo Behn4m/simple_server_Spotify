@@ -86,11 +86,9 @@ ESP_LOGE(TAG, "state5");
         ESP_LOGE(TAG, "HTTP client perform failed: %s", esp_err_to_name(err));
         return;
     } 
-    ESP_LOGI(TAG, "HTTP client performed successfully");
-//ESP_LOGE(TAG, "state6");    
+    ESP_LOGI(TAG, "HTTP client performed successfully"); 
     // Cleanup HTTP client
     esp_http_client_cleanup(httpClient);
-//ESP_LOGE(TAG, "state7");
 }
 
 /**

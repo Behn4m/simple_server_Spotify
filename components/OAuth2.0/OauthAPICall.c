@@ -55,10 +55,10 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
  * @param[in] SizeCode The size of the authorization code.
  * @return This function does not return a value.
  */
-void SendTokenRequest(char *Code, esp_http_client_config_t ClientConfig)
+void SendTokenRequest(char *Code, esp_http_client_config_t *ClientConfig)
 {
     // Initialize HTTP client with custom configuration
-    esp_http_client_handle_t httpClient = esp_http_client_init(&ClientConfig);
+    esp_http_client_handle_t httpClient = esp_http_client_init(ClientConfig);
 
     if (httpClient == NULL) 
     {
@@ -72,24 +72,25 @@ void SendTokenRequest(char *Code, esp_http_client_config_t ClientConfig)
     esp_http_client_set_header(httpClient, "Cookie", "__Host-device_id=AQAwmp7jxagopcWw89BjSDAA530mHwIieOZdJ9Im8nI0-70oEsSInx3jkeSO09YQ7sPgPaIUyMEvZ-tct7I6OlshJrzVYOqcgo0; sp_tr=false");
 
     // Set the request body (POST data)
-    char Grand[MEDIUM_BUF] = {0};
+    char Grand[MEDIUM_BUF] = {0};    
     sprintf(Grand, "grant_type=authorization_code&redirect_uri=%s&%s", REDIRECT_URI, Code);
     esp_http_client_set_post_field(httpClient, Grand, strlen(Grand));
-
+ESP_LOGE(TAG, "state4");
     // Enable detailed logging for debugging
     // esp_http_client_set_debug(client, true);
 
     // Perform HTTP request
     esp_err_t err = esp_http_client_perform(httpClient);
-
+ESP_LOGE(TAG, "state5");
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "HTTP client perform failed: %s", esp_err_to_name(err));
         return;
     } 
     ESP_LOGI(TAG, "HTTP client performed successfully");
-    
+//ESP_LOGE(TAG, "state6");    
     // Cleanup HTTP client
     esp_http_client_cleanup(httpClient);
+//ESP_LOGE(TAG, "state7");
 }
 
 /**

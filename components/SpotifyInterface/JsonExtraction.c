@@ -33,7 +33,7 @@ int ExtractUserInfoParamsfromJson(char *JsonUserInfo, UserInfo_t *userInfo)
     cJSON *spotifyProfileURLItem = cJSON_GetObjectItemCaseSensitive(J_UserInfo, "external_urls");
     if (cJSON_IsObject(spotifyProfileURLItem))
     {
-        cJSON *spotifyItem = cJSON_GetObjectItemCaseSensitive(spotifyProfileURLItem, "github");//"spotify");//FIXME
+        cJSON *spotifyItem = cJSON_GetObjectItemCaseSensitive(spotifyProfileURLItem, "spotify");
         if (cJSON_IsString(spotifyItem) && (spotifyItem->valuestring != NULL))
         {
             strncpy(userInfo->ProfileURL, spotifyItem->valuestring, PROFILE_STR_SIZE - 1);

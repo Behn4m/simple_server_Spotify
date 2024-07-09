@@ -27,7 +27,7 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken, esp_http_clie
 * @param[in] code is parameter recived from Service api.
 * @return This function does not return a value.
 */
-void SendTokenRequest(char *Code, esp_http_client_config_t ClientConfig);
+void SendTokenRequest(char *Code, esp_http_client_config_t *ClientConfig);
 
 #endif
 #ifdef __cplusplus

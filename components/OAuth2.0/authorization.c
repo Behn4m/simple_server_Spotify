@@ -8,7 +8,6 @@
 
 // ****************************** Global Variables //FIXME merge structs
 OAuthInterfaceHandler_t *pInterfaceHandler;
-OAuthInterfaceHandler_t OAuthInterfaceHandler;
 
 // ****************************** Local Variables
 static const char *TAG = "OAuthTask";
@@ -21,7 +20,7 @@ static bool Oauth_IsTokenExpired()
 {
     bool tokenExpired = false;
     uint32_t elapsedTime = 
-            (xTaskGetTickCount() - OAuthInterfaceHandler.TokenLastUpdate) * portTICK_PERIOD_MS;             // Calculate the elapsed time since the last token was received
+            (xTaskGetTickCount() - pInterfaceHandler->TokenLastUpdate) * portTICK_PERIOD_MS;             // Calculate the elapsed time since the last token was received
     elapsedTime = elapsedTime / 1000;                                                                               // Convert the elapsed time to seconds                                             
     if (elapsedTime > (HOUR - 300))
     {
@@ -97,11 +96,11 @@ static bool Oauth_TokenRenew(void)
     char receivedData[LONG_BUF];
     ReadTxtFileFromSpiffs(pInterfaceHandler->ConfigAddressInSpiffs, 
                             "refresh_token", receivedData, NULL, NULL);
-    SendRequest_ExchangeTokenWithRefreshToken(receivedData, OAuthInterfaceHandler.ClientConfig);
+    SendRequest_ExchangeTokenWithRefreshToken(receivedData, pInterfaceHandler->ClientConfig);
     memset(receivedData, 0x0, LONG_BUF);
     
     bool IsResponseReady = 
-            xSemaphoreTake(OAuthInterfaceHandler.OAuthBuffer.ResponseReadyFlag, 
+            xSemaphoreTake(pInterfaceHandler->OAuthBuffer.ResponseReadyFlag, 
                             pdMS_TO_TICKS(SEC));
     if (!IsResponseReady)
     {
@@ -110,8 +109,8 @@ static bool Oauth_TokenRenew(void)
     }
 
     bool IsTokenExtracted = 
-            ExtractTokenJson(OAuthInterfaceHandler.OAuthBuffer.MessageBuffer,
-                                                    &OAuthInterfaceHandler.token);
+            ExtractTokenJson(pInterfaceHandler->OAuthBuffer.MessageBuffer,
+                                                    &pInterfaceHandler->token);
     if (!IsTokenExtracted)
     {
         ESP_LOGW(TAG, "new Token not found!");
@@ -119,7 +118,7 @@ static bool Oauth_TokenRenew(void)
     }
 
     ESP_LOGI(TAG, "new Token found!");
-    OAuthInterfaceHandler.TokenLastUpdate = xTaskGetTickCount();
+    pInterfaceHandler->TokenLastUpdate = xTaskGetTickCount();
     return true;
 }
 
@@ -128,7 +127,7 @@ static void Oauth_MainTask(void *pvparameters)
     while (1)
     {
         char receivedData[MEDIUM_BUF];
-        switch (OAuthInterfaceHandler.Status)
+        switch (pInterfaceHandler->Status)
         {
             case INIT:
             {
@@ -140,53 +139,56 @@ static void Oauth_MainTask(void *pvparameters)
                 }
 
                 bool IsSpiffExists = SpiffsExistenceCheck(pInterfaceHandler->ConfigAddressInSpiffs);                      // Check if the refresh token exists in the spiffs
+                //ESP_LOGI(TAG, "file is %d", IsSpiffExists);
                 if (!IsSpiffExists)
                 {
                     ESP_LOGE(TAG, "Autorization is needed");
-                    OAuthInterfaceHandler.Status = LOGIN;                                                              // If the refresh token does not exist, set the status to LOGIN 
+                    pInterfaceHandler->Status = LOGIN;                                                              // If the refresh token does not exist, set the status to LOGIN 
                     break;
                 }
 
                 ESP_LOGI(TAG, "RefreshToken found");
-                OAuthInterfaceHandler.Status = EXPIRED;                                                            // If the refresh token exists, set the status to EXPIRED
+                pInterfaceHandler->Status = EXPIRED;                                                            // If the refresh token exists, set the status to EXPIRED
                 break;
             }
             case LOGIN:
             {
                 bool IsCodeReceived = xQueueReceive(SendCodeFromHttpToTask, receivedData, pdMS_TO_TICKS(SEC));       // Waiting for Code to be recieved by queue
+                //ESP_LOGI(TAG, "is code recieved %d", IsCodeReceived);
                 if (!IsCodeReceived)
                 {
                     // stay in this state until receive the Code
                     break;
                 }
-                SendTokenRequest(receivedData, OAuthInterfaceHandler.ClientConfig);                                                         // send request for Token
-                OAuthInterfaceHandler.Status = AUTHENTICATED;                                                          // Code received and checked, so update Status to AUTHENTICATED         
+                SendTokenRequest(receivedData, &pInterfaceHandler->ClientConfig);                                                         // send request for Token
+                pInterfaceHandler->Status = AUTHENTICATED;                                                          // Code received and checked, so update Status to AUTHENTICATED         
+                ESP_LOGI(TAG, "token status %d", pInterfaceHandler->Status);
                 break;
             }
             case AUTHENTICATED:
             {
                 ESP_LOGI(TAG, "AUTHENTICATED");
-                bool IsServiceResponded = xSemaphoreTake(OAuthInterfaceHandler.OAuthBuffer.ResponseReadyFlag, pdMS_TO_TICKS(SEC));              // Waiting for Token to be recieved by queue
+                bool IsServiceResponded = xSemaphoreTake(pInterfaceHandler->OAuthBuffer.ResponseReadyFlag, pdMS_TO_TICKS(SEC));              // Waiting for Token to be recieved by queue
                 if (!IsServiceResponded)
                 {
-                    OAuthInterfaceHandler.Status = LOGIN;                                                                  // if the response did not come within the expected time, set Status back to LOGIN
+                    pInterfaceHandler->Status = LOGIN;                                                                  // if the response did not come within the expected time, set Status back to LOGIN
                     ESP_LOGW(TAG, "Timeout - Service did not respond within the expected time.!");
                     break;
                 }
 
                 bool IsTokenExtracted =
-                 ExtractTokenJson(OAuthInterfaceHandler.OAuthBuffer.MessageBuffer,
-                                     &OAuthInterfaceHandler.token);                       // extract all keys from Service server response
+                 ExtractTokenJson(pInterfaceHandler->OAuthBuffer.MessageBuffer,
+                                     &pInterfaceHandler->token);                       // extract all keys from Service server response
                 if (!IsTokenExtracted)
                 {
                     ESP_LOGW(TAG, "Token not found!");
-                    OAuthInterfaceHandler.Status = LOGIN;                                                               // the reponse did not include all needed keys, so set Status back to LOGIN
+                    pInterfaceHandler->Status = LOGIN;                                                               // the reponse did not include all needed keys, so set Status back to LOGIN
                     break;
                 }
 
                 ESP_LOGI(TAG, "Token found!");
-                OAuthInterfaceHandler.TokenLastUpdate = xTaskGetTickCount();                                       // Save the time when the token was received
-                OAuthInterfaceHandler.Status = AUTHORIZED;                                                         // Token recieved and checked, so update Status to AUTHORIZED
+                pInterfaceHandler->TokenLastUpdate = xTaskGetTickCount();                                       // Save the time when the token was received
+                pInterfaceHandler->Status = AUTHORIZED;                                                         // Token recieved and checked, so update Status to AUTHORIZED
                 break;
             }
             case AUTHORIZED:
@@ -196,10 +198,10 @@ static void Oauth_MainTask(void *pvparameters)
                                                                                                                     // so applicaiton can know the Service Module is authorized 
                                                                                                                     // and ready for sending commands 
                 SaveFileInSpiffsWithTxtFormat(pInterfaceHandler->ConfigAddressInSpiffs,                              // Save new file in the directory
-                                              "refresh_token", OAuthInterfaceHandler.token.RefreshToken, 
+                                              "refresh_token", pInterfaceHandler->token.RefreshToken, 
                                               NULL, NULL);
                 xSemaphoreGive((*pInterfaceHandler->IsServiceAuthorizedSemaphore));                                  // give IsServiceAuthorizedSemaphore semaphore in the IntefaceHandler                
-                OAuthInterfaceHandler.Status = CHECK_TIME;                                                                 // set Status to CHECK_TIME     
+                pInterfaceHandler->Status = CHECK_TIME;                                                                 // set Status to CHECK_TIME     
                 break;
             }
             case CHECK_TIME:
@@ -210,7 +212,7 @@ static void Oauth_MainTask(void *pvparameters)
                     // keep state
                     break;
                 }  
-                OAuthInterfaceHandler.Status = EXPIRED;                                                                // set Status to EXPIRED if token expired
+                pInterfaceHandler->Status = EXPIRED;                                                                // set Status to EXPIRED if token expired
           
                 break;
             }
@@ -220,13 +222,13 @@ static void Oauth_MainTask(void *pvparameters)
                 bool IsTokenRenewed = Oauth_TokenRenew();
                 if (!IsTokenRenewed)                                                                   // Run function to renew the token
                 {
-                    OAuthInterfaceHandler.Status = LOGIN;
+                    pInterfaceHandler->Status = LOGIN;
                     break;                                                                   // set Status to ILDLE if token renewed unsuccessfully
                 }
 
                 xSemaphoreGive((*pInterfaceHandler->IsServiceAuthorizedSemaphore));                              // give IsServiceAuthorizedSemaphore semaphore in the IntefaceHandler
-                OAuthInterfaceHandler.TokenLastUpdate = xTaskGetTickCount();                                           // Save the time when the token was received
-                OAuthInterfaceHandler.Status = CHECK_TIME;                                                             // set Status to CHECK_TIME if token renewed successfully
+                pInterfaceHandler->TokenLastUpdate = xTaskGetTickCount();                                           // Save the time when the token was received
+                pInterfaceHandler->Status = CHECK_TIME;                                                             // set Status to CHECK_TIME if token renewed successfully
                 break;
             }
         }   

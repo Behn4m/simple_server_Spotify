@@ -11,31 +11,32 @@
 #define TIMER_TIME pdMS_TO_TICKS(500) // in millis
 
 // ****************************** GLobal Variables ****************************** //
-static const char *TAG = "Main";
+//static const char *TAG = "Main";
 OAuthInterfaceHandler_t InterfaceHandler;
 SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
+HttpInfo_t ClientInfo;
 // ****************************** GLobal Functions ****************************** //
 /**
  * @brief Function to change colors based on a timer callback
  */
-void SpotifyPeriodicTimer(TimerHandle_t xTimer)
-{
-    bool CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying, 
-                         InterfaceHandler.Status, InterfaceHandler.token.AccessToken,
-                         InterfaceHandler.OAuthBuffer.status, 
-                         InterfaceHandler.OAuthBuffer.MessageBuffer);
-    if (CommandResult == false)
-    {
-        ESP_LOGE(TAG, "Playback info update failed");
-        return;
-    }
-    GUI_UpdateSpotifyScreen(SpotifyInterfaceHandler.PlaybackInfo->ArtistName,
-                            SpotifyInterfaceHandler.PlaybackInfo->SongName,
-                            SpotifyInterfaceHandler.PlaybackInfo->AlbumName,
-                            SpotifyInterfaceHandler.PlaybackInfo->Duration,
-                            SpotifyInterfaceHandler.PlaybackInfo->Progress);
-    ESP_LOGI(TAG, "Playback info updated");
-}
+// void SpotifyPeriodicTimer(TimerHandle_t xTimer)
+// {
+//     bool CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying, 
+//                          InterfaceHandler.Status, InterfaceHandler.token.AccessToken,
+//                          InterfaceHandler.OAuthBuffer.status, 
+//                          InterfaceHandler.OAuthBuffer.MessageBuffer);
+//     if (CommandResult == false)
+//     {
+//         ESP_LOGE(TAG, "Playback info update failed");
+//         return;
+//     }
+//     GUI_UpdateSpotifyScreen(SpotifyInterfaceHandler.PlaybackInfo->ArtistName,
+//                             SpotifyInterfaceHandler.PlaybackInfo->SongName,
+//                             SpotifyInterfaceHandler.PlaybackInfo->AlbumName,
+//                             SpotifyInterfaceHandler.PlaybackInfo->Duration,
+//                             SpotifyInterfaceHandler.PlaybackInfo->Progress);
+//     ESP_LOGI(TAG, "Playback info updated");
+// }
 
 void app_main(void)
 {
@@ -54,33 +55,36 @@ void app_main(void)
 
     InterfaceHandler.IsServiceAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;
     InterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
-    InterfaceHandler.ClientConfig = Spotify_ClientConfigInit();
+    ClientInfo = Spotify_ClientConfigInit();
+    InterfaceHandler.ClientConfig.url = ClientInfo.url;
+    InterfaceHandler.ClientConfig.host = ClientInfo.host;
+    InterfaceHandler.ClientConfig.path = ClientInfo.path; 
 
     Oauth_TaskInit(&InterfaceHandler);
 
     //after this semaphore you can use playback command function in every where !
-    if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
-    {
-        bool CommandResult = false;
-        CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetUserInfo, 
-                         InterfaceHandler.Status, InterfaceHandler.token.AccessToken,
-                         InterfaceHandler.OAuthBuffer.status, 
-                         InterfaceHandler.OAuthBuffer.MessageBuffer);
-        if (CommandResult == false)
-        {
-            ESP_LOGE(TAG, "User info update failed");
-            return;
-        }
-        ESP_LOGI(TAG, "User info updated");
-        TimerHandle_t xTimer = xTimerCreate("update", TIMER_TIME, pdTRUE, NULL, SpotifyPeriodicTimer);
-        xTimerStart(xTimer, 0);
-        if (xTimer != NULL)
-        {
-            if (xTimerStart(xTimer, 0) == pdPASS)
-            {
-                ESP_LOGI(TAG, "Timer getting start");
-            }
-        }
-    }
+    // if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
+    // {
+    //     bool CommandResult = false;
+    //     CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetUserInfo, 
+    //                      InterfaceHandler.Status, InterfaceHandler.token.AccessToken,
+    //                      InterfaceHandler.OAuthBuffer.status, 
+    //                      InterfaceHandler.OAuthBuffer.MessageBuffer);
+    //     if (CommandResult == false)
+    //     {
+    //         ESP_LOGE(TAG, "User info update failed");
+    //         return;
+    //     }
+    //     ESP_LOGI(TAG, "User info updated");
+    //     TimerHandle_t xTimer = xTimerCreate("update", TIMER_TIME, pdTRUE, NULL, SpotifyPeriodicTimer);
+    //     xTimerStart(xTimer, 0);
+    //     if (xTimer != NULL)
+    //     {
+    //         if (xTimerStart(xTimer, 0) == pdPASS)
+    //         {
+    //             ESP_LOGI(TAG, "Timer getting start");
+    //         }
+    //     }
+    // }
 #endif
 }

@@ -71,7 +71,13 @@ typedef struct APIBuffer_t
     SemaphoreHandle_t ResponseReadyFlag;
 } APIBuffer_t;
 
-typedef struct
+typedef struct HttpClientInfo_t
+{
+    char *url;
+    char *host;
+    char *path;
+} HttpClientInfo_t;
+typedef struct OAuthInterfaceHandler_t
 {
     char *ConfigAddressInSpiffs;
     SemaphoreHandle_t *IsServiceAuthorizedSemaphore;
@@ -79,7 +85,7 @@ typedef struct
     TickType_t TokenLastUpdate;                    // System Tick of last token update
     Status_t Status;                              // state machine
     APIBuffer_t OAuthBuffer;            // Buffer for https request
-    esp_http_client_config_t ClientConfig;
+    HttpClientInfo_t ClientConfig;
 } OAuthInterfaceHandler_t;
 
 /**

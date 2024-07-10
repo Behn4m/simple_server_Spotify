@@ -55,10 +55,19 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
  * @param[in] SizeCode The size of the authorization code.
  * @return This function does not return a value.
  */
-void SendTokenRequest(char *Code, esp_http_client_config_t *ClientConfig)
+void SendTokenRequest(char *Code, HttpClientInfo_t *ClientConfig)
 {
+    esp_http_client_config_t clientConfig = {
+        .url = ClientConfig->url,
+        .host = ClientConfig->host,
+        .path = ClientConfig->path,
+        .method = HTTP_METHOD_POST,
+        .event_handler = HttpEventHandler,
+        .disable_auto_redirect = false,
+        .crt_bundle_attach = esp_crt_bundle_attach,
+    };
     // Initialize HTTP client with custom configuration
-    esp_http_client_handle_t httpClient = esp_http_client_init(ClientConfig);
+    esp_http_client_handle_t httpClient = esp_http_client_init(&clientConfig);
 
     if (httpClient == NULL) 
     {
@@ -75,13 +84,13 @@ void SendTokenRequest(char *Code, esp_http_client_config_t *ClientConfig)
     char Grand[MEDIUM_BUF] = {0};    
     sprintf(Grand, "grant_type=authorization_code&redirect_uri=%s&%s", REDIRECT_URI, Code);
     esp_http_client_set_post_field(httpClient, Grand, strlen(Grand));
-ESP_LOGE(TAG, "state4");
+
     // Enable detailed logging for debugging
     // esp_http_client_set_debug(client, true);
 
     // Perform HTTP request
     esp_err_t err = esp_http_client_perform(httpClient);
-ESP_LOGE(TAG, "state5");
+
     if (err != ESP_OK) {
         ESP_LOGE(TAG, "HTTP client perform failed: %s", esp_err_to_name(err));
         return;
@@ -95,10 +104,19 @@ ESP_LOGE(TAG, "state5");
  * @brief This function sends a request to the Service login API to exchange an authorization code for an access token.
  * @return This function does not return a value.
  */
-void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken, esp_http_client_config_t ClientConfig)
+void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken, HttpClientInfo_t *ClientConfig)
 {
+    esp_http_client_config_t clientConfig = {
+        .url = ClientConfig->url,
+        .host = ClientConfig->host,
+        .path = ClientConfig->path,
+        .method = HTTP_METHOD_POST,
+        .event_handler = HttpEventHandler,
+        .disable_auto_redirect = false,
+        .crt_bundle_attach = esp_crt_bundle_attach,
+    };
     // Initialize HTTP client with custom configuration
-    esp_http_client_handle_t httpClient = esp_http_client_init(&ClientConfig);
+    esp_http_client_handle_t httpClient = esp_http_client_init(&clientConfig);
     if (httpClient == NULL) 
     {
         ESP_LOGE(TAG, "Failed to refresh the token client");

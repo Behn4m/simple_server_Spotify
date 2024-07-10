@@ -96,7 +96,7 @@ static bool Oauth_TokenRenew(void)
     char receivedData[LONG_BUF];
     ReadTxtFileFromSpiffs(pInterfaceHandler->ConfigAddressInSpiffs, 
                             "refresh_token", receivedData, NULL, NULL);
-    SendRequest_ExchangeTokenWithRefreshToken(receivedData, pInterfaceHandler->ClientConfig);
+    SendRequest_ExchangeTokenWithRefreshToken(receivedData, &pInterfaceHandler->ClientConfig);
     memset(receivedData, 0x0, LONG_BUF);
     
     bool IsResponseReady = 
@@ -162,7 +162,6 @@ static void Oauth_MainTask(void *pvparameters)
                 }
                 SendTokenRequest(receivedData, &pInterfaceHandler->ClientConfig);                                                         // send request for Token
                 pInterfaceHandler->Status = AUTHENTICATED;                                                          // Code received and checked, so update Status to AUTHENTICATED         
-                ESP_LOGI(TAG, "token status %d", pInterfaceHandler->Status);
                 break;
             }
             case AUTHENTICATED:

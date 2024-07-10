@@ -20,14 +20,14 @@ void APICallInit(APIBuffer_t *APIBuffer);
  * @param[in] code is parameter that we give it before .
  * @return This function does not return a value.
  */
-void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken, esp_http_client_config_t ClientConfig);
+void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken, HttpClientInfo_t *ClientConfig);
 
 /**
 * @brief This function sends a request to the Service login API to exchange an authorization code for an access token.
 * @param[in] code is parameter recived from Service api.
 * @return This function does not return a value.
 */
-void SendTokenRequest(char *Code, esp_http_client_config_t *ClientConfig);
+void SendTokenRequest(char *Code, HttpClientInfo_t *ClientConfig);
 
 #endif
 #ifdef __cplusplus

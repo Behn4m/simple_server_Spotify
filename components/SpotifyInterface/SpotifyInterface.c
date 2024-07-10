@@ -83,16 +83,12 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
     return ESP_OK;
 }
 
-esp_http_client_config_t Spotify_ClientConfigInit(void)
+HttpInfo_t Spotify_ClientConfigInit(void)
 {
-    esp_http_client_config_t SpotifyClientConfig = {
+    HttpInfo_t SpotifyClientConfig = {
         .url = "https://accounts.spotify.com/api/token",
         .host = "accounts.spotify.com",
         .path = "/api/token",
-        .method = HTTP_METHOD_POST,
-        .event_handler = HttpEventHandler,
-        .disable_auto_redirect = false,
-        .crt_bundle_attach = esp_crt_bundle_attach,
         };
 
     return SpotifyClientConfig;

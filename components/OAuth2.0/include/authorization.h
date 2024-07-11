@@ -93,7 +93,7 @@ typedef struct OAuthInterfaceHandler_t
  * @param SpotifyInterfaceHandler as the handler
  * @return true if task run to the end
  */
-bool Oauth_TaskInit(OAuthInterfaceHandler_t *InterfaceHandler);
+bool Oauth_TaskInit(OAuthInterfaceHandler_t *OAuthInterfaceHandler);
 
 #endif //file
 

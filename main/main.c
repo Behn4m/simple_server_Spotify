@@ -12,7 +12,7 @@
 
 // ****************************** GLobal Variables ****************************** //
 //static const char *TAG = "Main";
-OAuthInterfaceHandler_t InterfaceHandler;
+OAuthInterfaceHandler_t OAuthInterfaceHandler;
 SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
 HttpInfo_t ClientInfo;
 // ****************************** GLobal Functions ****************************** //
@@ -22,9 +22,9 @@ HttpInfo_t ClientInfo;
 // void SpotifyPeriodicTimer(TimerHandle_t xTimer)
 // {
 //     bool CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetNowPlaying, 
-//                          InterfaceHandler.Status, InterfaceHandler.token.AccessToken,
-//                          InterfaceHandler.OAuthBuffer.status, 
-//                          InterfaceHandler.OAuthBuffer.MessageBuffer);
+//                          OAuthInterfaceHandler.Status, OAuthInterfaceHandler.token.AccessToken,
+//                          OAuthInterfaceHandler.OAuthBuffer.status, 
+//                          OAuthInterfaceHandler.OAuthBuffer.MessageBuffer);
 //     if (CommandResult == false)
 //     {
 //         ESP_LOGE(TAG, "Playback info update failed");
@@ -53,23 +53,23 @@ void app_main(void)
 
 #ifdef SpotifyEnable
 
-    InterfaceHandler.IsServiceAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;
-    InterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
+    OAuthInterfaceHandler.IsServiceAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;
+    OAuthInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
     ClientInfo = Spotify_ClientConfigInit();
-    InterfaceHandler.ClientConfig.url = ClientInfo.url;
-    InterfaceHandler.ClientConfig.host = ClientInfo.host;
-    InterfaceHandler.ClientConfig.path = ClientInfo.path; 
+    OAuthInterfaceHandler.ClientConfig.url = ClientInfo.url;
+    OAuthInterfaceHandler.ClientConfig.host = ClientInfo.host;
+    OAuthInterfaceHandler.ClientConfig.path = ClientInfo.path; 
 
-    Oauth_TaskInit(&InterfaceHandler);
+    Oauth_TaskInit(&OAuthInterfaceHandler);
 
     //after this semaphore you can use playback command function in every where !
     // if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
     // {
     //     bool CommandResult = false;
     //     CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetUserInfo, 
-    //                      InterfaceHandler.Status, InterfaceHandler.token.AccessToken,
-    //                      InterfaceHandler.OAuthBuffer.status, 
-    //                      InterfaceHandler.OAuthBuffer.MessageBuffer);
+    //                      OAuthInterfaceHandler.Status, OAuthInterfaceHandler.token.AccessToken,
+    //                      OAuthInterfaceHandler.OAuthBuffer.status, 
+    //                      OAuthInterfaceHandler.OAuthBuffer.MessageBuffer);
     //     if (CommandResult == false)
     //     {
     //         ESP_LOGE(TAG, "User info update failed");

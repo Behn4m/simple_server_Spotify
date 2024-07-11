@@ -6,7 +6,7 @@
 #include "OauthAPICall.h"
 #include "cJSON.h"
 
-// ****************************** Global Variables //FIXME merge structs
+// ****************************** Global Variables
 OAuthInterfaceHandler_t *pInterfaceHandler;
 
 // ****************************** Local Variables

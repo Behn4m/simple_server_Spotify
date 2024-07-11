@@ -44,7 +44,6 @@ static const char *TAG = "SpotifyTask";
 //     ESP_LOGI(TAG, "Spotify app deinitiated successfully");
 // }
 
-//FIXME share this function or the handler
 static esp_err_t HttpEventHandler(esp_http_client_event_t *evt) 
 {
     static int totalLen = 0;

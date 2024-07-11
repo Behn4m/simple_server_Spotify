@@ -197,7 +197,7 @@ static void Spotify_ControlPlayback(int Command, char *AccessToken)
     
     // Configure client object  
     esp_http_client_config_t clientConfig = {
-        .host = "api.spotify.com", //"api.github.com/user",                                                              // host for Service api call
+        .host = "api.spotify.com",                                                              // host for Service api call
         .path = clientPath,                                                                     // clientPath already filled based in API
         .method = clientMethod,                                                                 // method variable already filled based on API 
         .event_handler = HttpEventHandler,                                                      // Event handler function

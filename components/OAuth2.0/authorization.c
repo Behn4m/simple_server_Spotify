@@ -139,7 +139,6 @@ static void Oauth_MainTask(void *pvparameters)
                 }
 
                 bool IsSpiffExists = SpiffsExistenceCheck(pInterfaceHandler->ConfigAddressInSpiffs);                      // Check if the refresh token exists in the spiffs
-                //ESP_LOGI(TAG, "file is %d", IsSpiffExists);
                 if (!IsSpiffExists)
                 {
                     ESP_LOGE(TAG, "Autorization is needed");
@@ -154,7 +153,6 @@ static void Oauth_MainTask(void *pvparameters)
             case LOGIN:
             {
                 bool IsCodeReceived = xQueueReceive(SendCodeFromHttpToTask, receivedData, pdMS_TO_TICKS(SEC));       // Waiting for Code to be recieved by queue
-                //ESP_LOGI(TAG, "is code recieved %d", IsCodeReceived);
                 if (!IsCodeReceived)
                 {
                     // stay in this state until receive the Code

@@ -124,7 +124,7 @@ static bool Oauth_TokenRenew(void)
 
 static void Oauth_MainTask(void *pvparameters)
 {
-    while (1)
+    while (true)
     {
         char receivedData[MEDIUM_BUF];
         switch (AuthInterfaceHandler->Status)

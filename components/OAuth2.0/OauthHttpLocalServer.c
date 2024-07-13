@@ -112,7 +112,7 @@ static const httpd_uri_t Request_Access_URI = {
  * this strcut is http URL handler if receive "/callback" HttpsUserCallBackFunc getting run
  */
 static const httpd_uri_t Response_Access_URI = {
-    .uri = "/callback/",
+    .uri = "/callback/", //TODO make it configurable
     .method = HTTP_GET,
     .handler = HttpsCallbackHandler};
 
@@ -153,7 +153,7 @@ static httpd_handle_t Oauth_StartWebServer()
 /**
  * @brief This function starts the mDNS service.
  */
-static bool Oauth_StartMDNSService()
+static bool Oauth_StartMDNSService(char *hostname)
 {
     esp_err_t err;
     err = mdns_init();
@@ -170,7 +170,7 @@ static bool Oauth_StartMDNSService()
         return false;
     }
 
-    err = mdns_instance_name_set("spotify");
+    err = mdns_instance_name_set(hostname);
     if (err != ESP_OK)
     {
         ESP_LOGE(TAG, "mdns_instance_name_set  failed: %d", err);
@@ -191,7 +191,7 @@ static bool Oauth_StartMDNSService()
 /**
  * @brief Run Http local service
  */
-bool HttpServerServiceInit()
+bool HttpServerServiceInit(char *hostname)
 {
     SendCodeFromHttpToTask = 
             xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF]));
@@ -203,13 +203,13 @@ bool HttpServerServiceInit()
         return false;
     }
     
-    bool IsMdnsStarted = Oauth_StartMDNSService();
+    bool IsMdnsStarted = Oauth_StartMDNSService(hostname); //TODO pass the mdns name
     if (!IsMdnsStarted)
     {
         ESP_LOGE(TAG, "Running mDNS failed!");
         return false;
     };
 
-    ESP_LOGI(TAG, "** local server created, mDNS is running! **");
+    ESP_LOGI(TAG, "** local server created, mDNS is running! **"); //TODO add mdns name
     return true;
 }

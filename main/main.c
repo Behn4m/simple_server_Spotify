@@ -58,7 +58,11 @@ void app_main(void)
     Spotify_ClientInfo = Spotify_ClientConfigInit();
     OAuthInterfaceHandler.ClientConfig.url = Spotify_ClientInfo.url;
     OAuthInterfaceHandler.ClientConfig.host = Spotify_ClientInfo.host;
-    OAuthInterfaceHandler.ClientConfig.path = Spotify_ClientInfo.path; 
+    OAuthInterfaceHandler.ClientConfig.path = Spotify_ClientInfo.path;
+    OAuthInterfaceHandler.ClientConfig.requestURI = Spotify_ClientInfo.requestURI;
+    OAuthInterfaceHandler.ClientConfig.responseURI = Spotify_ClientInfo.responseURI;
+    OAuthInterfaceHandler.ClientConfig.hostname = Spotify_ClientInfo.hostname;
+    OAuthInterfaceHandler.ClientConfig.requestURL = Spotify_ClientInfo.requestURL; 
 
     Oauth_TaskInit(&OAuthInterfaceHandler);
 

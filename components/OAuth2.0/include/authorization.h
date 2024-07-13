@@ -76,17 +76,27 @@ typedef struct HttpClientInfo_t
     char *url;
     char *host;
     char *path;
+    char * requestURI;
+    char *responseURI;
+    char *hostname;
+    char *requestURL;
 } HttpClientInfo_t;
+
 typedef struct OAuthInterfaceHandler_t
 {
     char *ConfigAddressInSpiffs;
     SemaphoreHandle_t *IsServiceAuthorizedSemaphore;
+    HttpClientInfo_t ClientConfig;
+} OAuthInterfaceHandler_t;
+
+//FIXME
+typedef struct OAuthPrivateHandler_t
+{
     Token_t token;                                   // Nested struct for token information
     TickType_t TokenLastUpdate;                    // System Tick of last token update
     Status_t Status;                              // state machine
     APIBuffer_t OAuthBuffer;            // Buffer for https request
-    HttpClientInfo_t ClientConfig;
-} OAuthInterfaceHandler_t;
+} OAuthPrivateHandler_t;
 
 /**
  * @brief This function initiates the Spotify authorization process.

@@ -15,7 +15,7 @@ extern QueueHandle_t SendCodeFromHttpToTask;
  */
 //esp_err_t StopWebServer(httpd_handle_t server);
 
-bool HttpServerServiceInit();
+bool HttpServerServiceInit(char *hostname);
 #endif
 #ifdef __cplusplus
 }

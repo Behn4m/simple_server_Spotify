@@ -88,6 +88,10 @@ SpotifyHttpInfo_t Spotify_ClientConfigInit(void)
         .url = "https://accounts.spotify.com/api/token",
         .host = "accounts.spotify.com",
         .path = "/api/token",
+        .requestURI = "/",
+        .responseURI = "/callback/",
+        .hostname = "spotify",
+        .requestURL = "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state",
         };
 
     return SpotifyClientConfig;

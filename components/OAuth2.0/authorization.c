@@ -14,6 +14,22 @@ OAuthPrivateHandler_t *AuthPrivateHandler;
 static const char *TAG = "OAuthTask";
 
 /**
+ * this strcut is http URL handler if receive "/" RequestDataAccess getting run
+ */
+const httpd_uri_t Request_Access_URI = {
+    .uri = AuthInterfaceHandler.ClientConfig.requestURI, //TODO make it configurable
+    .method = HTTP_GET,
+    .handler = RequestDataAccess};
+
+/**
+ * this strcut is http URL handler if receive "/callback" HttpsUserCallBackFunc getting run
+ */
+const httpd_uri_t Response_Access_URI = {
+    .uri = AuthInterfaceHandler.ClientConfig.responseURI, //TODO make it configurable
+    .method = HTTP_GET,
+    .handler = HttpsCallbackHandler};
+
+/**
  * @brief This function check Time for token validation
  * @return true if token expired, false otherwise
  * */

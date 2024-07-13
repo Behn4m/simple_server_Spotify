@@ -76,7 +76,7 @@ typedef struct HttpClientInfo_t
     char *url;
     char *host;
     char *path;
-    char * requestURI;
+    char *requestURI;
     char *responseURI;
     char *hostname;
     char *requestURL;

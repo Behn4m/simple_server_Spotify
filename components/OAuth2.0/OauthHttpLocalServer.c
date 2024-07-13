@@ -101,22 +101,6 @@ static esp_err_t HttpsCallbackHandler(httpd_req_t *HttpdRequest)
 }
 
 /**
- * this strcut is http URL handler if receive "/" RequestDataAccess getting run
- */
-static const httpd_uri_t Request_Access_URI = {
-    .uri = "/",
-    .method = HTTP_GET,
-    .handler = RequestDataAccess};
-
-/**
- * this strcut is http URL handler if receive "/callback" HttpsUserCallBackFunc getting run
- */
-static const httpd_uri_t Response_Access_URI = {
-    .uri = "/callback/", //TODO make it configurable
-    .method = HTTP_GET,
-    .handler = HttpsCallbackHandler};
-
-/**
  * @brief This function starts the web HttpdServerHandler for handling HTTPS requests.
  * @return Returns the HTTP HttpdServerHandler handle if it is started successfully, or NULL otherwise.
  */

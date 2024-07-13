@@ -82,12 +82,12 @@ typedef struct SpotifyAPIBuffer_t
     SemaphoreHandle_t ResponseReadyFlag;
 } SpotifyAPIBuffer_t;
 
-typedef struct HttpInfo_t
+typedef struct SpotifyHttpInfo_t
 {
     char *url;
     char *host;
     char *path;
-} HttpInfo_t;
+} SpotifyHttpInfo_t;
 
 /**
  * @brief This function deinitiates the Spotify authorization process.
@@ -96,7 +96,7 @@ typedef struct HttpInfo_t
  */
 //void Spotify_TaskDeinit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler);
 
-HttpInfo_t Spotify_ClientConfigInit(void);
+SpotifyHttpInfo_t Spotify_ClientConfigInit(void);
 
 /**
  * @brief This function get and apply the command to Spotify service.

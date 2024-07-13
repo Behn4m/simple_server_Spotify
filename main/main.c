@@ -14,7 +14,7 @@
 //static const char *TAG = "Main";
 OAuthInterfaceHandler_t OAuthInterfaceHandler;
 SpotifyInterfaceHandler_t SpotifyInterfaceHandler;
-HttpInfo_t ClientInfo;
+SpotifyHttpInfo_t Spotify_ClientInfo;
 // ****************************** GLobal Functions ****************************** //
 /**
  * @brief Function to change colors based on a timer callback
@@ -55,10 +55,10 @@ void app_main(void)
 
     OAuthInterfaceHandler.IsServiceAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;
     OAuthInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
-    ClientInfo = Spotify_ClientConfigInit();
-    OAuthInterfaceHandler.ClientConfig.url = ClientInfo.url;
-    OAuthInterfaceHandler.ClientConfig.host = ClientInfo.host;
-    OAuthInterfaceHandler.ClientConfig.path = ClientInfo.path; 
+    Spotify_ClientInfo = Spotify_ClientConfigInit();
+    OAuthInterfaceHandler.ClientConfig.url = Spotify_ClientInfo.url;
+    OAuthInterfaceHandler.ClientConfig.host = Spotify_ClientInfo.host;
+    OAuthInterfaceHandler.ClientConfig.path = Spotify_ClientInfo.path; 
 
     Oauth_TaskInit(&OAuthInterfaceHandler);
 

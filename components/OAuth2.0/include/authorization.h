@@ -89,7 +89,6 @@ typedef struct OAuthInterfaceHandler_t
     HttpClientInfo_t ClientConfig;
 } OAuthInterfaceHandler_t;
 
-//FIXME
 typedef struct OAuthPrivateHandler_t
 {
     Token_t token;                                   // Nested struct for token information

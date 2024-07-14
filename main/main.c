@@ -53,6 +53,7 @@ void app_main(void)
 
 #ifdef SpotifyEnable
 
+//TODO merge all in a static function
     OAuthInterfaceHandler.IsServiceAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;
     OAuthInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
     Spotify_ClientInfo = Spotify_ClientConfigInit();
@@ -63,6 +64,9 @@ void app_main(void)
     OAuthInterfaceHandler.ClientConfig.responseURI = Spotify_ClientInfo.responseURI;
     OAuthInterfaceHandler.ClientConfig.hostname = Spotify_ClientInfo.hostname;
     OAuthInterfaceHandler.ClientConfig.requestURL = Spotify_ClientInfo.requestURL; 
+    OAuthInterfaceHandler.ClientConfig.clientID = Spotify_ClientInfo.clientID;
+    OAuthInterfaceHandler.ClientConfig.base64Credintials = Spotify_ClientInfo.base64Credintials;
+    OAuthInterfaceHandler.ClientConfig.redirectURL = Spotify_ClientInfo.redirectURL;
 
     Oauth_TaskInit(&OAuthInterfaceHandler);
 

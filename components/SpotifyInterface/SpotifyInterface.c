@@ -92,6 +92,9 @@ SpotifyHttpInfo_t Spotify_ClientConfigInit(void)
         .responseURI = "/callback/",
         .hostname = "spotify",
         .requestURL = "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state",
+        .clientID = "2c2dadbd46244f2cb9f71251bc004caa",
+        .base64Credintials = "MmMyZGFkYmQ0NjI0NGYyY2I5ZjcxMjUxYmMwMDRjYWE6MTE3MTFiZDBiNmQ0NGIzNDhhOGRlMDdjYjJjMzgzZGM=",
+        .redirectURL = "http%3A%2F%2Fdeskhub.local%2Fcallback%2f",
         };
 
     return SpotifyClientConfig;

@@ -11,7 +11,7 @@ extern "C" {
 #include "authorization.h"
 #include "esp_crt_bundle.h"
 
-void APICallInit(APIBuffer_t *APIBuffer);
+void APICallInit(APIBuffer_t *APIBuffer, char *base64Cred);
 
 /**
  * @brief This function sends a request to the Service login API to exchange an authorization code for an access token.

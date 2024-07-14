@@ -17,11 +17,6 @@ extern "C"
 #include "freertos/queue.h"
 #include "esp_psram.h"
 
-#define CLIENT_ID "2c2dadbd46244f2cb9f71251bc004caa"
-#define BASE64_CREDINTIALS "MmMyZGFkYmQ0NjI0NGYyY2I5ZjcxMjUxYmMwMDRjYWE6MTE3MTFiZDBiNmQ0NGIzNDhhOGRlMDdjYjJjMzgzZGM="
-#define REDIRECT_URI "http%3A%2F%2Fdeskhub.local%2Fcallback%2f"
-
-
 #define SERVICE_TASK_STACK_SIZE (uint32_t)(30*1000U)
 #define SERVICE_PRIORITY 4
 
@@ -80,6 +75,9 @@ typedef struct HttpClientInfo_t
     char *responseURI;
     char *hostname;
     char *requestURL;
+    char *clientID;
+    char *base64Credintials;
+    char *redirectURL;
 } HttpClientInfo_t;
 
 typedef struct OAuthInterfaceHandler_t

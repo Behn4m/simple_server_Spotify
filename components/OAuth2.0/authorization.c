@@ -64,7 +64,7 @@ static esp_err_t RequestDataAccess(httpd_req_t *HttpdRequest)
     }
     memset(localURL, 0x0, SMALL_BUF * 2);
     ESP_LOGI(TAG, "Starting authorization, sending request for TOKEN");
-    sprintf(localURL, "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state", CLIENT_ID, REDIRECT_URI);
+    sprintf(localURL, AuthInterfaceHandler->ClientConfig.requestURL, AuthInterfaceHandler->ClientConfig.clientID, AuthInterfaceHandler->ClientConfig.redirectURL);
     httpd_resp_set_hdr(HttpdRequest, "Location", localURL);
     httpd_resp_set_type(HttpdRequest, "text/plain");
     httpd_resp_set_status(HttpdRequest, "302");
@@ -389,7 +389,7 @@ bool Oauth_TaskInit(OAuthInterfaceHandler_t *InterfaceHandler)
         AuthPrivateHandler.OAuthBuffer.MessageBuffer =
                 (char *)malloc(SUPER_BUF * sizeof(char));    
         AuthPrivateHandler.OAuthBuffer.ResponseReadyFlag = xSemaphoreCreateBinary();
-        APICallInit(&AuthPrivateHandler.OAuthBuffer);
+        APICallInit(&AuthPrivateHandler.OAuthBuffer, AuthInterfaceHandler->ClientConfig.base64Credintials);
 
         ESP_LOGI(TAG, "App initiated successfully");
     }

@@ -301,7 +301,6 @@ static void Oauth_MainTask(void *pvparameters)
                 }
 
                 ESP_LOGI(TAG, "Token found!");
-                ESP_LOGE(TAG,"%s", AuthPrivateHandler.token.AccessToken);
                 AuthPrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                       // Save the time when the token was received
                 AuthPrivateHandler.Status = AUTHORIZED;                                                         // Token recieved and checked, so update Status to AUTHORIZED
                 break;
@@ -309,7 +308,6 @@ static void Oauth_MainTask(void *pvparameters)
             case AUTHORIZED:
             {
                 ESP_LOGI(TAG, "AUTHORIZED");
-                ESP_LOGE(TAG,"%s", AuthPrivateHandler.token.AccessToken);
                 SpiffsRemoveFile(AuthInterfaceHandler->ConfigAddressInSpiffs);                                          // Delete old value at the directory
                                                                                                                     // so applicaiton can know the Service Module is authorized 
                                                                                                                     // and ready for sending commands 

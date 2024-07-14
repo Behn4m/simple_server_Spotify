@@ -75,7 +75,6 @@ typedef struct HttpClientInfo_t
     char *responseURI;
     char *hostname;
     char *requestURL;
-    char *clientID;
     char *base64Credintials;
     char *redirectURL;
 } HttpClientInfo_t;

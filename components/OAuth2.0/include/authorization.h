@@ -102,6 +102,13 @@ typedef struct OAuthPrivateHandler_t
  */
 bool Oauth_TaskInit(OAuthInterfaceHandler_t *OAuthInterfaceHandler);
 
+/**
+ * @brief This function returns the access token.
+ * @param OAuthInterfaceHandler as the handler
+ * @return the access token
+ */
+char* Oauth_GetAccessToken(void);
+
 #endif //file
 
 #ifdef __cplusplus

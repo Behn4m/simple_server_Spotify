@@ -398,3 +398,13 @@ bool Oauth_TaskInit(OAuthInterfaceHandler_t *InterfaceHandler)
     }
     return true;
 }
+
+/**
+ * @brief This function returns the access token.
+ * @param OAuthInterfaceHandler as the handler
+ * @return the access token
+ */
+char* Oauth_GetAccessToken(void)
+{
+    return AuthPrivateHandler.token.AccessToken;
+}

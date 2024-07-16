@@ -8,6 +8,7 @@
 #include "freertos/task.h"
 #include "esp_http_client.h"
 
+#define TAG "MAIN"
 #define TIMER_TIME pdMS_TO_TICKS(500) // in millis
 
 // ****************************** GLobal Variables ****************************** //
@@ -38,15 +39,28 @@ SpotifyHttpInfo_t Spotify_ClientInfo;
 //     ESP_LOGI(TAG, "Playback info updated");
 // }
 
-void app_main(void)
+void app_main(void)//                          OAuthInterfaceHandler.OAuthBuffer.status, 
+//                          OAuthInterfaceHandler.OAuthBuffer.MessageBuffer);
+//     if (CommandResult == false)
+//     {
+//         ESP_LOGE(TAG, "Playback info update failed");
+//         return;
+//     }
+//     GUI_UpdateSpotifyScreen(SpotifyInterfaceHandler.PlaybackInfo->ArtistName,
+//                             SpotifyInterfaceHandler.PlaybackInfo->SongName,
+//                             SpotifyInterfaceHandler.PlaybackInfo->AlbumName,
+//                             SpotifyInterfaceHandler.PlaybackInfo->Duration,
+//                             SpotifyInterfaceHandler.PlaybackInfo->Progress);
+//     ESP_LOGI(TAG, "Playback info updated");
+// }
 {
     //GUI_TaskInit();
     GlobalInit();
     nvsFlashInit();
     SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
-    WifiStationMode("Done_IOT_1", "87654321@");
-    // WifiStationMode("BELL789", "167271A164A9");
+    // WifiStationMode("Done_IOT_1", "87654321@");
+    WifiStationMode("BELL789", "167271A164A9");
 #else
     wifiConnectionModule();
 #endif
@@ -71,8 +85,9 @@ void app_main(void)
     Oauth_TaskInit(&OAuthInterfaceHandler);
 
     //after this semaphore you can use playback command function in every where !
-    // if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
-    // {
+    if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
+    {
+        ESP_LOGW(TAG, "Access Token: %s", Oauth_GetAccessToken());
     //     bool CommandResult = false;
     //     CommandResult = Spotify_SendCommand(SpotifyInterfaceHandler, GetUserInfo, 
     //                      OAuthInterfaceHandler.Status, OAuthInterfaceHandler.token.AccessToken,
@@ -93,6 +108,6 @@ void app_main(void)
     //             ESP_LOGI(TAG, "Timer getting start");
     //         }
     //     }
-    // }
+    }
 #endif
 }

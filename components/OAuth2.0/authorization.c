@@ -64,7 +64,7 @@ static esp_err_t RequestDataAccess(httpd_req_t *HttpdRequest)
     }
     memset(localURL, 0x0, SMALL_BUF * 2);
     ESP_LOGI(TAG, "Starting authorization, sending request for TOKEN");
-    sprintf(localURL, AuthInterfaceHandler->ClientConfig.requestURL);
+    sprintf(localURL, AuthInterfaceHandler->ClientConfig.requestURL, AuthInterfaceHandler->ClientConfig.clientID, AuthInterfaceHandler->ClientConfig.redirectURL);
     httpd_resp_set_hdr(HttpdRequest, "Location", localURL);
     httpd_resp_set_type(HttpdRequest, "text/plain");
     httpd_resp_set_status(HttpdRequest, "302");

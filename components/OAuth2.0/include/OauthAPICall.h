@@ -14,19 +14,21 @@ extern "C" {
 void APICallInit(APIBuffer_t *APIBuffer, char *base64Cred);
 
 /**
- * @brief This function sends a request to the Service login API to exchange an authorization code for an access token.
- * @param[in,out] Buf The character buffer to store the request and receive the response.
- * @param[in] SizeBuf The size of the character buffer.
- * @param[in] code is parameter that we give it before .
+ * @brief  This function sends a request to the Service login API 
+ *         to exchange an authorization code for an access token.
+ * @param  RefreshToken The refresh token.
+ * @param  ClientConfig The client configuration.
  * @return This function does not return a value.
  */
 void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken, HttpClientInfo_t *ClientConfig);
 
 /**
-* @brief This function sends a request to the Service login API to exchange an authorization code for an access token.
-* @param[in] code is parameter recived from Service api.
-* @return This function does not return a value.
-*/
+ * @brief  This function sends a request to the Service login API 
+ *         to exchange an authorization code for an access token.
+ * @param  Code The authorization code.
+ * @param  ClientConfig The client configuration.
+ * @return This function does not return a value.
+ */
 void SendTokenRequest(char *Code, HttpClientInfo_t *ClientConfig);
 
 #endif

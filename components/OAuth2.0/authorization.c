@@ -14,8 +14,10 @@ OAuthPrivateHandler_t AuthPrivateHandler;
 static const char *TAG = "OAuthTask";
 
 /**
- * @brief This function searches for specific patterns ('code' and 'state') within a character array and returns a boolean value indicating if either pattern was Found.
- * @param[in] Response The character array to search within, and Response is response from first stage from Service athurisiation
+ * @brief This function searches for specific patterns ('code' and 'state') within a character 
+ *        array and returns a boolean value indicating if either pattern was Found.
+ * @param[in] Response The character array to search within, 
+ *            and Response is response from first stage from Service athurisiation
  * @param[in] SizeRes The size of the character array.
  * @return Returns true if either the 'code' or 'state' pattern was Found, and false otherwise.
  */
@@ -50,7 +52,8 @@ static bool FindCode(char *Response, uint16_t SizeRes)
 }
 
 /**
- * @brief This function handles the first HTTPS request to Service and redirects the user to the authorization page.
+ * @brief This function handles the first HTTPS request to Service and 
+ *        redirects the user to the authorization page.
  * @param[in] req The HTTP request object.
  * @return Returns ESP_OK if the request is processed successfully.
  */
@@ -64,7 +67,8 @@ static esp_err_t RequestDataAccess(httpd_req_t *HttpdRequest)
     }
     memset(localURL, 0x0, SMALL_BUF * 2);
     ESP_LOGI(TAG, "Starting authorization, sending request for TOKEN");
-    sprintf(localURL, AuthInterfaceHandler->ClientConfig.requestURL, AuthInterfaceHandler->ClientConfig.clientID, AuthInterfaceHandler->ClientConfig.redirectURL);
+    sprintf(localURL, AuthInterfaceHandler->ClientConfig.requestURL, 
+            AuthInterfaceHandler->ClientConfig.clientID, AuthInterfaceHandler->ClientConfig.redirectURL);
     httpd_resp_set_hdr(HttpdRequest, "Location", localURL);
     httpd_resp_set_type(HttpdRequest, "text/plain");
     httpd_resp_set_status(HttpdRequest, "302");
@@ -107,6 +111,11 @@ static esp_err_t HttpsCallbackHandler(httpd_req_t *HttpdRequest)
     return ESP_OK;
 }
 
+/**
+ * @brief Initialize and return an httpd_uri_t structure for the request URI.
+ * @param none
+ * @return An initialized httpd_uri_t structure with the specified URI, method, and handler.
+*/
 static httpd_uri_t RequestURIInit(void)
 {
     const httpd_uri_t Request_Access_URI = {
@@ -118,6 +127,11 @@ static httpd_uri_t RequestURIInit(void)
     return Request_Access_URI;
 }
 
+/**
+ * @brief Initialize and return an httpd_uri_t structure for the response URI.
+ * @param none
+ * @return An initialized httpd_uri_t structure with the specified URI, method, and handler.
+ */
 static httpd_uri_t ResponseURIInit(void)
 {
     const httpd_uri_t Response_Access_URI = {
@@ -136,13 +150,13 @@ static httpd_uri_t ResponseURIInit(void)
 static bool Oauth_IsTokenExpired()
 {
     bool tokenExpired = false;
-    uint32_t elapsedTime = 
-            (xTaskGetTickCount() - AuthPrivateHandler.TokenLastUpdate) * portTICK_PERIOD_MS;             // Calculate the elapsed time since the last token was received
-    elapsedTime = elapsedTime / 1000;                                                                               // Convert the elapsed time to seconds                                             
+    uint32_t elapsedTime = (xTaskGetTickCount() - AuthPrivateHandler.TokenLastUpdate) 
+                            * portTICK_PERIOD_MS;             
+    elapsedTime = elapsedTime / 1000;                                           
     if (elapsedTime > (HOUR - 300))
     {
         tokenExpired = true;  
-        ESP_LOGW(TAG , "Token is Expired");                                                                 // If the elapsed time is greater than the expiration time, set tokenExpired to true
+        ESP_LOGW(TAG , "Token is Expired");
     }
     return tokenExpired;
 }
@@ -239,6 +253,12 @@ static bool Oauth_TokenRenew(void)
     return true;
 }
 
+/**
+ * @brief This function sends the token request to the Service server.
+ * @param[in] Code The authorization code to be sent.
+ * @param[in] ClientConfig The client configuration.
+ * @return This function does not return a value.
+*/
 static void Oauth_MainTask(void *pvparameters)
 {
     while (true)
@@ -248,112 +268,109 @@ static void Oauth_MainTask(void *pvparameters)
         {
             case INIT:
             {
-                bool IsServerInit = HttpServerServiceInit(AuthInterfaceHandler->ClientConfig.hostname, RequestURIInit(), ResponseURIInit());                                                     // Init the webserver in initialization
+                bool IsServerInit = HttpServerServiceInit(AuthInterfaceHandler->ClientConfig.hostname, 
+                                                          RequestURIInit(), ResponseURIInit());
                 if (!IsServerInit)
                 {
                     ESP_LOGE(TAG, "Authorization initialization failed!");
                     break;
                 }
-
-                bool IsSpiffExists = SpiffsExistenceCheck(AuthInterfaceHandler->ConfigAddressInSpiffs);                      // Check if the refresh token exists in the spiffs
+                bool IsSpiffExists = SpiffsExistenceCheck(AuthInterfaceHandler->ConfigAddressInSpiffs);
                 if (!IsSpiffExists)
                 {
                     ESP_LOGE(TAG, "Autorization is needed");
-                    AuthPrivateHandler.Status = LOGIN;                                                              // If the refresh token does not exist, set the status to LOGIN 
+                    AuthPrivateHandler.Status = LOGIN;
                     break;
                 }
-
                 ESP_LOGI(TAG, "RefreshToken found");
-                AuthPrivateHandler.Status = EXPIRED;                                                            // If the refresh token exists, set the status to EXPIRED
+                AuthPrivateHandler.Status = EXPIRED;
                 break;
             }
             case LOGIN:
             {
-                bool IsCodeReceived = xQueueReceive(SendCodeFromHttpToTask, receivedData, pdMS_TO_TICKS(SEC));       // Waiting for Code to be recieved by queue
+                bool IsCodeReceived = xQueueReceive(SendCodeFromHttpToTask, receivedData, 
+                                                    pdMS_TO_TICKS(SEC));
                 if (!IsCodeReceived)
                 {
                     // stay in this state until receive the Code
                     break;
                 }
-                SendTokenRequest(receivedData, &AuthInterfaceHandler->ClientConfig);                                                         // send request for Token
-                AuthPrivateHandler.Status = AUTHENTICATED;                                                          // Code received and checked, so update Status to AUTHENTICATED         
+                SendTokenRequest(receivedData, &AuthInterfaceHandler->ClientConfig);
+                AuthPrivateHandler.Status = AUTHENTICATED;         
                 break;
             }
             case AUTHENTICATED:
             {
                 ESP_LOGI(TAG, "AUTHENTICATED");
-                bool IsServiceResponded = xSemaphoreTake(AuthPrivateHandler.OAuthBuffer.ResponseReadyFlag, pdMS_TO_TICKS(SEC));              // Waiting for Token to be recieved by queue
+                bool IsServiceResponded = xSemaphoreTake(AuthPrivateHandler.OAuthBuffer.ResponseReadyFlag, 
+                                                         pdMS_TO_TICKS(SEC));
                 if (!IsServiceResponded)
                 {
-                    AuthPrivateHandler.Status = LOGIN;                                                                  // if the response did not come within the expected time, set Status back to LOGIN
+                    AuthPrivateHandler.Status = LOGIN;
                     ESP_LOGW(TAG, "Timeout - Service did not respond within the expected time.!");
                     break;
                 }
 
                 bool IsTokenExtracted =
-                 ExtractTokenJson(AuthPrivateHandler.OAuthBuffer.MessageBuffer,
-                                     &AuthPrivateHandler.token);                       // extract all keys from Service server response
+                 ExtractTokenJson(AuthPrivateHandler.OAuthBuffer.MessageBuffer,&AuthPrivateHandler.token);
                 if (!IsTokenExtracted)
                 {
                     ESP_LOGW(TAG, "Token not found!");
-                    AuthPrivateHandler.Status = LOGIN;                                                               // the reponse did not include all needed keys, so set Status back to LOGIN
+                    AuthPrivateHandler.Status = LOGIN;
                     break;
                 }
 
                 ESP_LOGI(TAG, "Token found!");
-                AuthPrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                       // Save the time when the token was received
-                AuthPrivateHandler.Status = AUTHORIZED;                                                         // Token recieved and checked, so update Status to AUTHORIZED
+                AuthPrivateHandler.TokenLastUpdate = xTaskGetTickCount();
+                AuthPrivateHandler.Status = AUTHORIZED;
                 break;
             }
             case AUTHORIZED:
             {
                 ESP_LOGI(TAG, "AUTHORIZED");
-                SpiffsRemoveFile(AuthInterfaceHandler->ConfigAddressInSpiffs);                                          // Delete old value at the directory
-                                                                                                                    // so applicaiton can know the Service Module is authorized 
-                                                                                                                    // and ready for sending commands 
-                SaveFileInSpiffsWithTxtFormat(AuthInterfaceHandler->ConfigAddressInSpiffs,                              // Save new file in the directory
+                SpiffsRemoveFile(AuthInterfaceHandler->ConfigAddressInSpiffs);
+                SaveFileInSpiffsWithTxtFormat(AuthInterfaceHandler->ConfigAddressInSpiffs,
                                               "refresh_token", AuthPrivateHandler.token.RefreshToken, 
                                               NULL, NULL);
-                xSemaphoreGive((*AuthInterfaceHandler->IsServiceAuthorizedSemaphore));                                  // give IsServiceAuthorizedSemaphore semaphore in the IntefaceHandler                
-                AuthPrivateHandler.Status = CHECK_TIME;                                                                 // set Status to CHECK_TIME     
+                xSemaphoreGive((*AuthInterfaceHandler->IsServiceAuthorizedSemaphore));                 
+                AuthPrivateHandler.Status = CHECK_TIME;   
                 break;
             }
             case CHECK_TIME:
             {
-                bool IsTokenExpired = Oauth_IsTokenExpired();                                                               // Check if the expiration time has elapsed since the last received token
+                bool IsTokenExpired = Oauth_IsTokenExpired(); 
                 if (!IsTokenExpired)
                 {
                     // keep state
                     break;
                 }  
-                AuthPrivateHandler.Status = EXPIRED;                                                                // set Status to EXPIRED if token expired
-          
+                AuthPrivateHandler.Status = EXPIRED;
                 break;
             }
             case EXPIRED:
             {
                 ESP_LOGW(TAG, "token is expired");
                 bool IsTokenRenewed = Oauth_TokenRenew();
-                if (!IsTokenRenewed)                                                                   // Run function to renew the token
+                if (!IsTokenRenewed)
                 {
                     AuthPrivateHandler.Status = LOGIN;
-                    break;                                                                   // set Status to ILDLE if token renewed unsuccessfully
+                    break;
                 }
 
-                xSemaphoreGive((*AuthInterfaceHandler->IsServiceAuthorizedSemaphore));                              // give IsServiceAuthorizedSemaphore semaphore in the IntefaceHandler
-                AuthPrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                           // Save the time when the token was received
-                AuthPrivateHandler.Status = CHECK_TIME;                                                             // set Status to CHECK_TIME if token renewed successfully
+                xSemaphoreGive((*AuthInterfaceHandler->IsServiceAuthorizedSemaphore));                              
+                AuthPrivateHandler.TokenLastUpdate = xTaskGetTickCount();                                           
+                AuthPrivateHandler.Status = CHECK_TIME;                                                            
                 break;
             }
         }   
-        vTaskDelay(pdMS_TO_TICKS(100)); //FIXME magic number                                                                            // Task delay at the end of while(1) loop
+        vTaskDelay(pdMS_TO_TICKS(100));            // Task delay at the end of while(1) loop
     }
 }
 
 /**
  * @brief This function initiates the authorization process.
  * @param InterfaceHandler as the handler
- * @return true if task run to the end
+ * @return true if task run to the end, false if any error occurs
  */
 bool Oauth_TaskInit(OAuthInterfaceHandler_t *InterfaceHandler)
 {
@@ -363,8 +380,7 @@ bool Oauth_TaskInit(OAuthInterfaceHandler_t *InterfaceHandler)
         AuthInterfaceHandler->IsServiceAuthorizedSemaphore != NULL)
     {
         StaticTask_t *xTaskBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
-        StackType_t *xStack = 
-                (StackType_t *)malloc(SERVICE_TASK_STACK_SIZE * sizeof(StackType_t));                 // Assuming a stack size of 400 words (adjust as needed)
+        StackType_t *xStack = (StackType_t *)malloc(SERVICE_TASK_STACK_SIZE * sizeof(StackType_t));                 
         if (xTaskBuffer == NULL || xStack == NULL)
         {
             ESP_LOGE(TAG, "Memory allocation failed!\n");
@@ -372,20 +388,17 @@ bool Oauth_TaskInit(OAuthInterfaceHandler_t *InterfaceHandler)
             free(xStack);
             return false; // Exit with an error code
         }
-
         xTaskCreateStatic(
-            Oauth_MainTask,                    // Task function
-            "Oauth_MainTask",                  // Task name (for debugging)
-            SERVICE_TASK_STACK_SIZE,             // Stack size (in words)
-            NULL,                                // Task parameters (passed to the task function)
-            tskIDLE_PRIORITY + SERVICE_PRIORITY, // Task priority (adjust as needed)
-            xStack,                              // Stack buffer
-            xTaskBuffer                          // Task control block
+            Oauth_MainTask,                         // Task function
+            "Oauth_MainTask",                       // Task name (for debugging)
+            SERVICE_TASK_STACK_SIZE,                // Stack size (in words)
+            NULL,                                   // Task parameters (passed to the task function)
+            tskIDLE_PRIORITY + SERVICE_PRIORITY,    // Task priority (adjust as needed)
+            xStack,                                 // Stack buffer
+            xTaskBuffer                             // Task control block
         );
-
         // Allocate buffer and Initialize the service API call //TODO change dynamic mem to static
-        AuthPrivateHandler.OAuthBuffer.MessageBuffer =
-                (char *)malloc(SUPER_BUF * sizeof(char));    
+        AuthPrivateHandler.OAuthBuffer.MessageBuffer = (char *)malloc(SUPER_BUF * sizeof(char));    
         AuthPrivateHandler.OAuthBuffer.ResponseReadyFlag = xSemaphoreCreateBinary();
         APICallInit(&AuthPrivateHandler.OAuthBuffer, AuthInterfaceHandler->ClientConfig.base64Credintials);
 

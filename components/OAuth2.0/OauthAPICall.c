@@ -11,6 +11,11 @@ void APICallInit(APIBuffer_t *APIBuffer, char *Base64Cred)
     sprintf(Base64Credintials, "Basic %s", Base64Cred);
 }
 
+/**
+ * @brief  This function is the event handler for the HTTP client.
+ * @param  evt The event handler for the HTTP client.
+ * @return ESP_OK if the event is handled successfully, or ESP_FAIL otherwise.
+ */
 static esp_err_t HttpEventHandler(esp_http_client_event_t *evt) 
 {
     static int totalLen = 0;
@@ -28,10 +33,10 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
             // Handle HTTP header received, if needed
             break;
         case HTTP_EVENT_ON_DATA:
-            if (totalLen + evt->data_len < SUPER_BUF)                                       // check if receved data is not larger than buffer size 
+            if (totalLen + evt->data_len < SUPER_BUF)
             {   
-                memcpy(OAuthBuffer->MessageBuffer + totalLen, evt->data, evt->data_len);  // copy received data to the end of previous received data
-                totalLen += evt->data_len;                                                  // update pointer to the end of copied data
+                memcpy(OAuthBuffer->MessageBuffer + totalLen, evt->data, evt->data_len);
+                totalLen += evt->data_len;
             }
             break;
         case HTTP_EVENT_ON_FINISH:
@@ -39,8 +44,8 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
                                             // write 0 to the end of string
             break;
         case HTTP_EVENT_DISCONNECTED:
-            xSemaphoreGive(OAuthBuffer->ResponseReadyFlag);                        // give semaphore to notify that data is ready  
-            totalLen = 0;                                                                   // reset contect length counter
+            xSemaphoreGive(OAuthBuffer->ResponseReadyFlag);
+            totalLen = 0;
             break;
         case HTTP_EVENT_REDIRECT:
             ESP_LOGI(TAG, "redirected");
@@ -50,9 +55,10 @@ static esp_err_t HttpEventHandler(esp_http_client_event_t *evt)
 }
 
 /**
- * @brief This function sends a request to the Service login API to exchange an authorization code for an access token.
- * @param[in] Code is parameter that we give it before .
- * @param[in] SizeCode The size of the authorization code.
+ * @brief  This function sends a request to the Service login API 
+ *         to exchange an authorization code for an access token.
+ * @param  Code The authorization code.
+ * @param  ClientConfig The client configuration.
  * @return This function does not return a value.
  */
 void SendTokenRequest(char *Code, HttpClientInfo_t *ClientConfig)
@@ -101,7 +107,10 @@ void SendTokenRequest(char *Code, HttpClientInfo_t *ClientConfig)
 }
 
 /**
- * @brief This function sends a request to the Service login API to exchange an authorization code for an access token.
+ * @brief  This function sends a request to the Service login API 
+ *         to exchange an authorization code for an access token.
+ * @param  RefreshToken The refresh token.
+ * @param  ClientConfig The client configuration.
  * @return This function does not return a value.
  */
 void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken, HttpClientInfo_t *ClientConfig)
@@ -141,5 +150,5 @@ void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken, HttpClientInf
     }
     ESP_LOGI(TAG, "HTTP client performed successfully");
     
-    esp_http_client_cleanup(httpClient);                                                        // close all connection releated to this client object 
+    esp_http_client_cleanup(httpClient);
 }

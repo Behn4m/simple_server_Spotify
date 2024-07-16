@@ -76,7 +76,7 @@ void SendTokenRequest(char *Code, HttpClientInfo_t *ClientConfig)
     }
 
     // Set headers for authentication and content type
-    esp_http_client_set_header(httpClient, "Authorization", ClientConfig->base64Credintials);
+    esp_http_client_set_header(httpClient, "Authorization", Base64Credintials);
     esp_http_client_set_header(httpClient, "Content-Type", "application/x-www-form-urlencoded");
     esp_http_client_set_header(httpClient, "Cookie", "__Host-device_id=AQAwmp7jxagopcWw89BjSDAA530mHwIieOZdJ9Im8nI0-70oEsSInx3jkeSO09YQ7sPgPaIUyMEvZ-tct7I6OlshJrzVYOqcgo0; sp_tr=false");
 

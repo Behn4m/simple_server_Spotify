@@ -91,9 +91,6 @@ void SendTokenRequest(char *Code, HttpClientInfo_t *ClientConfig)
     sprintf(Grand, "grant_type=authorization_code&redirect_uri=%s&%s", ClientConfig->redirectURL, Code);
     esp_http_client_set_post_field(httpClient, Grand, strlen(Grand));
 
-    // Enable detailed logging for debugging
-    // esp_http_client_set_debug(client, true);
-
     // Perform HTTP request
     esp_err_t err = esp_http_client_perform(httpClient);
 

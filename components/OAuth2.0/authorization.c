@@ -14,136 +14,6 @@ OAuthPrivateHandler_t AuthPrivateHandler;
 static const char *TAG = "OAuthTask";
 
 /**
- * @brief This function searches for specific patterns ('code' and 'state') within a character 
- *        array and returns a boolean value indicating if either pattern was Found.
- * @param[in] Response The character array to search within, 
- *            and Response is response from first stage from Service athurisiation
- * @param[in] SizeRes The size of the character array.
- * @return Returns true if either the 'code' or 'state' pattern was Found, and false otherwise.
- */
-static bool FindCode(char *Response, uint16_t SizeRes)
-{
-    char *codeString = {"code"};
-    uint16_t codeLength = strlen(codeString);
-
-    if (Response == NULL || SizeRes < codeLength)
-    {
-        // Invalid input, either null pointer or insufficient buffer size
-        return false;
-    }
-
-    for (uint16_t i = 0; i <= SizeRes - codeLength; ++i)
-    {
-        bool Found = true;
-        for (uint16_t j = 0; j < codeLength; ++j)
-        {
-            if (Response[i + j] != codeString[j])
-            {
-                Found = false;
-                break;
-            }
-        }
-        if (Found)
-        {
-            return true; // Found the access token substring
-        }
-    }
-    return false; // Access token substring not Found
-}
-
-/**
- * @brief This function handles the first HTTPS request to Service and 
- *        redirects the user to the authorization page.
- * @param[in] req The HTTP request object.
- * @return Returns ESP_OK if the request is processed successfully.
- */
-static esp_err_t RequestDataAccess(httpd_req_t *HttpdRequest)
-{
-    char *localURL;
-    localURL = (char *)malloc((2 * SMALL_BUF) * sizeof(char));
-    if (localURL == NULL)
-    {
-        ESP_LOGI(TAG, "Failed to allocate memory for the array.\n\n");
-    }
-    memset(localURL, 0x0, SMALL_BUF * 2);
-    ESP_LOGI(TAG, "Starting authorization, sending request for TOKEN");
-    sprintf(localURL, AuthInterfaceHandler->ClientConfig.requestURL, 
-            AuthInterfaceHandler->ClientConfig.clientID, AuthInterfaceHandler->ClientConfig.redirectURL);
-    httpd_resp_set_hdr(HttpdRequest, "Location", localURL);
-    httpd_resp_set_type(HttpdRequest, "text/plain");
-    httpd_resp_set_status(HttpdRequest, "302");
-    httpd_resp_send(HttpdRequest, "", HTTPD_RESP_USE_STRLEN);
-    free(localURL);
-    return ESP_OK;
-}
-
-/**
- * @brief This function handles the callback HTTPS request from Service and processes the response data.
- * @param[in] req The HTTP request object.
- * @return Returns ESP_OK if the request is processed successfully.
- */
-static esp_err_t HttpsCallbackHandler(httpd_req_t *HttpdRequest)
-{
-    int bufferSize = httpd_req_get_url_query_len(HttpdRequest) + 1;     // +1 for null terminator
-    char queryBuffer[bufferSize];                                       // Buffer to store the query string
-    esp_err_t err = httpd_req_get_url_query_str(HttpdRequest, queryBuffer, sizeof(queryBuffer));
-    if (err != ESP_OK)
-    {
-        ESP_LOGE(TAG, "Failed to get the query string from the URL");
-        return ESP_FAIL;
-    }
-
-    bool isCodeFound = FindCode(queryBuffer, sizeof(queryBuffer));
-    if (!isCodeFound)
-    {
-        ESP_LOGE(TAG, "response does not include code at the beginning ");
-        return ESP_FAIL;
-    }
-
-    bool isCodeSent = xQueueSend(SendCodeFromHttpToTask, queryBuffer,  pdMS_TO_TICKS(SEC*15));
-    if (!isCodeSent)
-    {
-        ESP_LOGE(TAG, "Sent data with queue failed!");
-        return ESP_FAIL;
-    }
-
-    ESP_LOGI(TAG, "the CODE found in response");
-    return ESP_OK;
-}
-
-/**
- * @brief Initialize and return an httpd_uri_t structure for the request URI.
- * @param none
- * @return An initialized httpd_uri_t structure with the specified URI, method, and handler.
-*/
-static httpd_uri_t RequestURIInit(void)
-{
-    const httpd_uri_t Request_Access_URI = {
-        .uri = AuthInterfaceHandler->ClientConfig.requestURI,
-        .method = HTTP_GET,
-        .handler = RequestDataAccess
-    };
-
-    return Request_Access_URI;
-}
-
-/**
- * @brief Initialize and return an httpd_uri_t structure for the response URI.
- * @param none
- * @return An initialized httpd_uri_t structure with the specified URI, method, and handler.
- */
-static httpd_uri_t ResponseURIInit(void)
-{
-    const httpd_uri_t Response_Access_URI = {
-        .uri = AuthInterfaceHandler->ClientConfig.responseURI,
-        .method = HTTP_GET,
-        .handler = HttpsCallbackHandler
-    };
-
-    return Response_Access_URI;
-}
-
-/**
  * @brief This function check Time for token validation
  * @return true if token expired, false otherwise
  * */
@@ -268,8 +138,7 @@ static void Oauth_MainTask(void *pvparameters)
         {
             case INIT:
             {
-                bool IsServerInit = Oauth_HttpServerServiceInit(AuthInterfaceHandler->ClientConfig.hostname, 
-                                                                RequestURIInit(), ResponseURIInit());
+                bool IsServerInit = Oauth_HttpServerServiceInit(AuthInterfaceHandler->ClientConfig);
                 if (!IsServerInit)
                 {
                     ESP_LOGE(TAG, "Authorization initialization failed!");

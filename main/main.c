@@ -82,7 +82,8 @@ void app_main(void)//                          OAuthInterfaceHandler.OAuthBuffer
     OAuthInterfaceHandler.ClientConfig.base64Credintials = Spotify_ClientInfo.base64Credintials;
     OAuthInterfaceHandler.ClientConfig.redirectURL = Spotify_ClientInfo.redirectURL;
 
-    Oauth_TaskInit(&OAuthInterfaceHandler);
+    if(!Oauth_TaskInit(&OAuthInterfaceHandler))
+        ESP_LOGE(TAG, "OAuth task initialization failed.");
 
     //after this semaphore you can use playback command function in every where !
     if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)

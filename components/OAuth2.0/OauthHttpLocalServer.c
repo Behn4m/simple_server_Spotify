@@ -1,5 +1,5 @@
 #include "OauthHttpLocalServer.h"
-#include "authorization.h"
+#include "Authorization.h"
 
 HttpClientInfo_t AuthClientInterface;
 static const char *TAG = "OauthTask";

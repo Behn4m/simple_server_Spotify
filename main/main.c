@@ -2,7 +2,7 @@
 #include "GlobalInit.h"
 #include "nvsFlash.h"
 #include "WiFiConfig.h"
-#include "authorization.h"
+#include "Authorization.h"
 #include "SpotifyInterface.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -59,8 +59,8 @@ void app_main(void)//                          OAuthInterfaceHandler.OAuthBuffer
     nvsFlashInit();
     SpiffsGlobalConfig();
 #ifdef WIFI_INIT_STA_MODE
-    // WifiStationMode("Done_IOT_1", "87654321@");
-    WifiStationMode("BELL789", "167271A164A9");
+    WifiStationMode("Done_IOT_1", "87654321@");
+    //WifiStationMode("BELL789", "167271A164A9");
 #else
     wifiConnectionModule();
 #endif

@@ -38,7 +38,7 @@ static httpd_handle_t Oauth_StartWebServer(httpd_uri_t Request_Access_URI, httpd
  * @param HttpdServerHandler The URI handler for the request access.
  * @return Returns the HTTP HttpdServerHandler handle if it is started successfully, or NULL otherwise.
  */
-esp_err_t StopWebServer(httpd_handle_t HttpdServerHandler)
+esp_err_t Oauth_StopWebServer(httpd_handle_t HttpdServerHandler)
 {
     return httpd_stop(HttpdServerHandler);
 }
@@ -90,7 +90,7 @@ static bool Oauth_StartMDNSService(char *hostname)
  * @param Response_Access_URI The URI handler for the response access.
  * @return Returns true if the Http local service is started successfully, or false otherwise.
  */
-bool HttpServerServiceInit(char *hostname, httpd_uri_t Request_Access_URI, httpd_uri_t Response_Access_URI)
+bool Oauth_HttpServerServiceInit(char *hostname, httpd_uri_t Request_Access_URI, httpd_uri_t Response_Access_URI)
 {
     SendCodeFromHttpToTask = 
             xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF]));

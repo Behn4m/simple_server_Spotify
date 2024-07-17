@@ -179,7 +179,7 @@ esp_err_t Oauth_StopWebServer(httpd_handle_t HttpdServerHandler)
  * @param hostname The hostname of the device.
  * @return Returns true if the mDNS service is started successfully, or false otherwise.
  */
-static bool Oauth_StartMDNSService(char *hostname)
+static bool Oauth_StartMDNSService(char *hostnameMDNS)
 {
     esp_err_t err;
     err = mdns_init();
@@ -196,7 +196,7 @@ static bool Oauth_StartMDNSService(char *hostname)
         return false;
     }
 
-    err = mdns_instance_name_set(hostname);
+    err = mdns_instance_name_set(hostnameMDNS);
     if (err != ESP_OK)
     {
         ESP_LOGE(TAG, "mdns_instance_name_set  failed: %d", err);
@@ -236,13 +236,13 @@ bool Oauth_HttpServerServiceInit(HttpClientInfo_t ClientConfig)
         return false;
     }
     
-    bool IsMdnsStarted = Oauth_StartMDNSService(ClientConfig.hostname);
+    bool IsMdnsStarted = Oauth_StartMDNSService(ClientConfig.hostnameMDNS);
     if (!IsMdnsStarted)
     {
         ESP_LOGE(TAG, "Running mDNS failed!");
         return false;
     };
 
-    ESP_LOGI(TAG, "** local server created, %s is running! **", ClientConfig.hostname);
+    ESP_LOGI(TAG, "** local server created, %s is running! **", ClientConfig.hostnameMDNS);
     return true;
 }

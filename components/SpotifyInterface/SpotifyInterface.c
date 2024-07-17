@@ -90,7 +90,7 @@ SpotifyHttpInfo_t Spotify_ClientConfigInit(void)
         .path = "/api/token",
         .requestURI = "/",
         .responseURI = "/callback/",
-        .hostname = "spotify",
+        .hostnameMDNS = "spotify",
         .requestURL = "http://accounts.spotify.com/authorize/?client_id=%s&response_type=code&redirect_uri=%s&scope=user-read-private%%20user-read-currently-playing%%20user-read-playback-state%%20user-modify-playback-state",
         .clientID = "2c2dadbd46244f2cb9f71251bc004caa",
         .base64Credintials = "MmMyZGFkYmQ0NjI0NGYyY2I5ZjcxMjUxYmMwMDRjYWE6MTE3MTFiZDBiNmQ0NGIzNDhhOGRlMDdjYjJjMzgzZGM=",

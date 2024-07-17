@@ -76,7 +76,7 @@ void app_main(void)//                          OAuthInterfaceHandler.OAuthBuffer
     OAuthInterfaceHandler.ClientConfig.path = Spotify_ClientInfo.path;
     OAuthInterfaceHandler.ClientConfig.requestURI = Spotify_ClientInfo.requestURI;
     OAuthInterfaceHandler.ClientConfig.responseURI = Spotify_ClientInfo.responseURI;
-    OAuthInterfaceHandler.ClientConfig.hostname = Spotify_ClientInfo.hostname;
+    OAuthInterfaceHandler.ClientConfig.hostnameMDNS = Spotify_ClientInfo.hostnameMDNS;
     OAuthInterfaceHandler.ClientConfig.requestURL = Spotify_ClientInfo.requestURL; 
     OAuthInterfaceHandler.ClientConfig.clientID = Spotify_ClientInfo.clientID;
     OAuthInterfaceHandler.ClientConfig.base64Credintials = Spotify_ClientInfo.base64Credintials;

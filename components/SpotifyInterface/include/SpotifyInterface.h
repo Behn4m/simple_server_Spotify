@@ -89,7 +89,7 @@ typedef struct SpotifyHttpInfo_t
     char *path;
     char *requestURI;
     char *responseURI;
-    char *hostname;
+    char *hostnameMDNS;
     char *requestURL;
     char *clientID;
     char *base64Credintials;

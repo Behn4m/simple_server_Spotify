@@ -110,7 +110,7 @@ void SendTokenRequest(char *Code, HttpClientInfo_t *ClientConfig)
  * @param  ClientConfig The client configuration.
  * @return This function does not return a value.
  */
-void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken, HttpClientInfo_t *ClientConfig)
+void ExchangeTokenWithRefreshToken(char *RefreshToken, HttpClientInfo_t *ClientConfig)
 {
     esp_http_client_config_t clientConfig = {
         .url = ClientConfig->url,

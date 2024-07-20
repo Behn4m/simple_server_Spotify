@@ -97,7 +97,7 @@ static bool Oauth_TokenRenew(void)
     char receivedData[LONG_BUF];
     ReadTxtFileFromSpiffs(AuthInterfaceHandler->ConfigAddressInSpiffs, 
                             "refresh_token", receivedData, NULL, NULL);
-    SendRequest_ExchangeTokenWithRefreshToken(receivedData, &AuthInterfaceHandler->ClientConfig);
+    ExchangeTokenWithRefreshToken(receivedData, &AuthInterfaceHandler->ClientConfig);
     memset(receivedData, 0x0, LONG_BUF);
     
     bool IsResponseReady = 

@@ -20,7 +20,7 @@ void APICallInit(APIBuffer_t *APIBuffer, char *base64Cred);
  * @param  ClientConfig The client configuration.
  * @return This function does not return a value.
  */
-void SendRequest_ExchangeTokenWithRefreshToken(char *RefreshToken, HttpClientInfo_t *ClientConfig);
+void ExchangeTokenWithRefreshToken(char *RefreshToken, HttpClientInfo_t *ClientConfig);
 
 /**
  * @brief  This function sends a request to the Service login API 

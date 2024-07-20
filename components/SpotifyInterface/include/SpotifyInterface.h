@@ -96,13 +96,6 @@ typedef struct SpotifyHttpInfo_t
     char *redirectURL;
 } SpotifyHttpInfo_t;
 
-/**
- * @brief This function deinitiates the Spotify authorization process.
- * @param SpotifyInterfaceHandler as the handler
- * @return true if task run to the end
- */
-//void Spotify_TaskDeinit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler);
-
 SpotifyHttpInfo_t Spotify_ClientConfigInit(void);
 
 /**

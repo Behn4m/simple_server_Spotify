@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include "cJSON.h"
 #include "esp_crt_bundle.h"
 #include "SpotifyInterface.h"
 #include "JsonExtraction.h"
@@ -15,34 +14,6 @@ SpotifyAPIBuffer_t *SpotifyBuffer;
 
 // ****************************** Local Variables
 static const char *TAG = "SpotifyTask";
-
-/**
- * @brief Deinitiate the Spotify app
- */
-// void Spotify_TaskDeinit(SpotifyInterfaceHandler_t *SpotifyInterfaceHandler)
-// {
-//     if (SpotifyInterfaceHandler->PlaybackInfo != NULL)
-//     {
-//         free(SpotifyInterfaceHandler->PlaybackInfo);
-//     }
-//     if (SpotifyInterfaceHandler->UserInfo != NULL)
-//     {
-//         free(SpotifyInterfaceHandler->UserInfo);
-//     }
-//     if (PrivateHandler.SpotifyBuffer.MessageBuffer != NULL)
-//     {
-//         free(PrivateHandler.SpotifyBuffer.MessageBuffer);
-//     }
-//     if (PrivateHandler.SpotifyBuffer.SpotifyResponseReadyFlag != NULL)
-//     {
-//         vSemaphoreDelete(PrivateHandler.SpotifyBuffer.SpotifyResponseReadyFlag);
-//     }
-//     if (SendCodeFromHttpToSpotifyTask != NULL)
-//     {
-//         vQueueDelete(SendCodeFromHttpToSpotifyTask);
-//     }
-//     ESP_LOGI(TAG, "Spotify app deinitiated successfully");
-// }
 
 static esp_err_t HttpEventHandler(esp_http_client_event_t *evt) 
 {

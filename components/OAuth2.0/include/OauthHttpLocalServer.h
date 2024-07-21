@@ -5,7 +5,7 @@ extern "C"
 #ifndef OAUTH_HTTP_SERVER
 #define OAUTH_HTTP_SERVER
 
-#include "Authorization.h"
+#include "OauthTypedef.h"
 
 extern QueueHandle_t SendCodeFromHttpToTask;
 

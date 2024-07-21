@@ -1,5 +1,4 @@
 #include "OauthHttpLocalServer.h"
-#include "Authorization.h"
 
 HttpClientInfo_t AuthClientInterface;
 static const char *TAG = "OauthHTTPServer";

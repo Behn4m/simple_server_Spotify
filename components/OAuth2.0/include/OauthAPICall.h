@@ -8,7 +8,7 @@ extern "C" {
 #include <string.h>
 #include "cJSON.h"
 #include "esp_http_client.h"
-#include "Authorization.h"
+#include "OauthTypedef.h"
 #include "esp_crt_bundle.h"
 
 void APICallInit(APIBuffer_t *APIBuffer, char *base64Cred);

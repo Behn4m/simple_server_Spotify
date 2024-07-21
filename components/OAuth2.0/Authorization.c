@@ -152,7 +152,6 @@ static void Oauth_MainTask(void *pvparameters)
 {
     while (true)
     {
-        char receivedData[MEDIUM_BUF];
         switch (AuthPrivateHandler.Status)
         {
             case INIT:
@@ -176,6 +175,7 @@ static void Oauth_MainTask(void *pvparameters)
             }
             case LOGIN:
             {
+                char receivedData[MEDIUM_BUF];
                 bool IsCodeReceived = xQueueReceive(SendCodeFromHttpToTask, receivedData, 
                                                     pdMS_TO_TICKS(SEC));
                 if (!IsCodeReceived)

@@ -57,7 +57,7 @@ static bool Oauth_IsTokenExpired()
  * @param[in] token address to save tokin extracted information.
  * @return false if fail, true if finish successful.
  */
-static bool ExtractTokenJson(char *Json, Token_t *token) 
+static bool Oauth_ExtractTokenJson(char *Json, Token_t *token) 
 {
     const char *TAG = "OAuthJsonExTraction";
     cJSON *J_Token = cJSON_Parse(Json);
@@ -129,7 +129,7 @@ static bool Oauth_TokenRenew(void)
     }
 
     bool IsTokenExtracted = 
-            ExtractTokenJson(AuthPrivateHandler.OAuthBuffer.MessageBuffer,
+            Oauth_ExtractTokenJson(AuthPrivateHandler.OAuthBuffer.MessageBuffer,
                                                     &AuthPrivateHandler.token);
     if (!IsTokenExtracted)
     {
@@ -200,7 +200,7 @@ static void Oauth_MainTask(void *pvparameters)
                 }
 
                 bool IsTokenExtracted =
-                 ExtractTokenJson(AuthPrivateHandler.OAuthBuffer.MessageBuffer,&AuthPrivateHandler.token);
+                Oauth_ExtractTokenJson(AuthPrivateHandler.OAuthBuffer.MessageBuffer,&AuthPrivateHandler.token);
                 if (!IsTokenExtracted)
                 {
                     ESP_LOGW(TAG, "Token not found!");

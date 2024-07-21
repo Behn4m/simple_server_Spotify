@@ -236,7 +236,7 @@ bool HttpServerServiceInit(HttpClientInfo_t ClientConfig)
         return false;
     }
     
-    bool IsMdnsStarted = Oauth_StartMDNSService(ClientConfig.hostnameMDNS);
+    bool IsMdnsStarted = StartMDNSService(ClientConfig.hostnameMDNS);
     if (!IsMdnsStarted)
     {
         ESP_LOGE(TAG, "Running mDNS failed!");

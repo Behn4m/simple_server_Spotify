@@ -169,7 +169,7 @@ static httpd_handle_t StartWebServer(httpd_uri_t Request_Access_URI, httpd_uri_t
  * @param HttpdServerHandler The URI handler for the request access.
  * @return Returns the HTTP HttpdServerHandler handle if it is started successfully, or NULL otherwise.
  */
-esp_err_t StopWebServer(httpd_handle_t HttpdServerHandler)
+esp_err_t StopOauthWebServer(httpd_handle_t HttpdServerHandler)
 {
     return httpd_stop(HttpdServerHandler);
 }

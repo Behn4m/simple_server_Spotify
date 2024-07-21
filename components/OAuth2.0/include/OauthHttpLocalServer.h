@@ -14,7 +14,7 @@ extern QueueHandle_t SendCodeFromHttpToTask;
  * @param HttpdServerHandler The URI handler for the request access.
  * @return Returns the HTTP HttpdServerHandler handle if it is started successfully, or NULL otherwise.
  */
-esp_err_t StopWebServer(httpd_handle_t server);
+esp_err_t StopOauthWebServer(httpd_handle_t server);
 
 /**
  * @brief Run Http local service

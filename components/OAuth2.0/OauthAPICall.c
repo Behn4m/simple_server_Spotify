@@ -1,7 +1,7 @@
 #include "OauthAPICall.h"
 #include "Authorization.h"
 
-static const char *TAG = "HTTP";
+static const char *TAG = "OAuthAPICall";
 APIBuffer_t *OAuthBuffer;
 char Base64Credintials[SMALL_BUF] = {0};
 

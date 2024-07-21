@@ -40,7 +40,7 @@ static bool Oauth_IsTokenExpired()
  */
 static bool ExtractTokenJson(char *Json, Token_t *token) 
 {
-    const char *TAG = "JsonExTraction";
+    const char *TAG = "OAuthJsonExTraction";
     cJSON *J_Token = cJSON_Parse(Json);
 
     if (J_Token == NULL) 

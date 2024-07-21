@@ -2,7 +2,7 @@
 #include "Authorization.h"
 
 HttpClientInfo_t AuthClientInterface;
-static const char *TAG = "OauthTask";
+static const char *TAG = "OauthHTTPServer";
 // ******************************
 
 QueueHandle_t SendCodeFromHttpToTask = NULL;

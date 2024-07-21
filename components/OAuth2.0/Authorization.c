@@ -13,6 +13,25 @@ OAuthPrivateHandler_t AuthPrivateHandler;
 // ****************************** Local Variables
 static const char *TAG = "OAuthTask";
 
+static bool Oauth_CheckHandler(void)
+{
+    if (AuthInterfaceHandler->ConfigAddressInSpiffs != NULL &&
+        AuthInterfaceHandler->IsServiceAuthorizedSemaphore != NULL &&
+        AuthInterfaceHandler->ClientConfig.base64Credintials != NULL &&
+        AuthInterfaceHandler->ClientConfig.clientID != NULL &&
+        AuthInterfaceHandler->ClientConfig.host != NULL &&
+        AuthInterfaceHandler->ClientConfig.host != NULL &&
+        AuthInterfaceHandler->ClientConfig.hostnameMDNS != NULL &&
+        AuthInterfaceHandler->ClientConfig.path!= NULL &&
+        AuthInterfaceHandler->ClientConfig.redirectURL!= NULL &&
+        AuthInterfaceHandler->ClientConfig.requestURI!= NULL &&
+        AuthInterfaceHandler->ClientConfig.requestURL!= NULL &&
+        AuthInterfaceHandler->ClientConfig.url!= NULL)
+        return true;
+
+    return false;
+}
+
 /**
  * @brief This function check Time for token validation
  * @return true if token expired, false otherwise
@@ -236,25 +255,6 @@ static void Oauth_MainTask(void *pvparameters)
     }
 }
 
-static bool CheckHandler(void)
-{
-    if (AuthInterfaceHandler->ConfigAddressInSpiffs != NULL &&
-        AuthInterfaceHandler->IsServiceAuthorizedSemaphore != NULL &&
-        AuthInterfaceHandler->ClientConfig.base64Credintials != NULL &&
-        AuthInterfaceHandler->ClientConfig.clientID != NULL &&
-        AuthInterfaceHandler->ClientConfig.host != NULL &&
-        AuthInterfaceHandler->ClientConfig.host != NULL &&
-        AuthInterfaceHandler->ClientConfig.hostnameMDNS != NULL &&
-        AuthInterfaceHandler->ClientConfig.path!= NULL &&
-        AuthInterfaceHandler->ClientConfig.redirectURL!= NULL &&
-        AuthInterfaceHandler->ClientConfig.requestURI!= NULL &&
-        AuthInterfaceHandler->ClientConfig.requestURL!= NULL &&
-        AuthInterfaceHandler->ClientConfig.url!= NULL)
-        return true;
-
-    return false;
-}
-
 /**
  * @brief This function initiates the authorization process.
  * @param InterfaceHandler as the handler
@@ -264,7 +264,7 @@ bool Oauth_TaskInit(OAuthInterfaceHandler_t *InterfaceHandler)
 {
     AuthInterfaceHandler = InterfaceHandler;
     AuthPrivateHandler.Status = INIT;
-    if (CheckHandler())
+    if (Oauth_CheckHandler())
     {
         StaticTask_t *xTaskBuffer = (StaticTask_t *)malloc(sizeof(StaticTask_t));
         StackType_t *xStack = (StackType_t *)malloc(SERVICE_TASK_STACK_SIZE * sizeof(StackType_t));                 

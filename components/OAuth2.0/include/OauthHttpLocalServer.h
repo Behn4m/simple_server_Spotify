@@ -23,7 +23,7 @@ esp_err_t StopOauthWebServer(httpd_handle_t server);
  * @param Response_Access_URI The URI handler for the response access.
  * @return Returns true if the Http local service is started successfully, or false otherwise.
  */
-bool HttpServerServiceInit(HttpClientInfo_t ClientConfig;);
+bool HttpServerServiceInit(HttpClientInfo_t ClientConfig);
 
 #endif
 #ifdef __cplusplus

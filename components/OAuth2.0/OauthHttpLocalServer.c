@@ -143,7 +143,7 @@ static httpd_uri_t ResponseURIInit(char *responseURI)
  * @param Response_Access_URI The URI handler for the response access.
  * @return Returns the HTTP HttpdServerHandler handle if it is started successfully, or NULL otherwise.
  */
-static httpd_handle_t Oauth_StartWebServer(httpd_uri_t Request_Access_URI, httpd_uri_t Response_Access_URI)
+static httpd_handle_t StartWebServer(httpd_uri_t Request_Access_URI, httpd_uri_t Response_Access_URI)
 {
     httpd_handle_t httpdHandler = NULL;
     httpd_config_t httpdConfig = HTTPD_DEFAULT_CONFIG();
@@ -169,7 +169,7 @@ static httpd_handle_t Oauth_StartWebServer(httpd_uri_t Request_Access_URI, httpd
  * @param HttpdServerHandler The URI handler for the request access.
  * @return Returns the HTTP HttpdServerHandler handle if it is started successfully, or NULL otherwise.
  */
-esp_err_t Oauth_StopWebServer(httpd_handle_t HttpdServerHandler)
+esp_err_t StopWebServer(httpd_handle_t HttpdServerHandler)
 {
     return httpd_stop(HttpdServerHandler);
 }
@@ -179,7 +179,7 @@ esp_err_t Oauth_StopWebServer(httpd_handle_t HttpdServerHandler)
  * @param hostname The hostname of the device.
  * @return Returns true if the mDNS service is started successfully, or false otherwise.
  */
-static bool Oauth_StartMDNSService(char *hostnameMDNS)
+static bool StartMDNSService(char *hostnameMDNS)
 {
     esp_err_t err;
     err = mdns_init();
@@ -221,7 +221,7 @@ static bool Oauth_StartMDNSService(char *hostnameMDNS)
  * @param Response_Access_URI The URI handler for the response access.
  * @return Returns true if the Http local service is started successfully, or false otherwise.
  */
-bool Oauth_HttpServerServiceInit(HttpClientInfo_t ClientConfig)
+bool HttpServerServiceInit(HttpClientInfo_t ClientConfig)
 {
     SendCodeFromHttpToTask = 
             xQueueCreate(1, sizeof(char) * sizeof(char[MEDIUM_BUF]));
@@ -229,7 +229,7 @@ bool Oauth_HttpServerServiceInit(HttpClientInfo_t ClientConfig)
     AuthClientInterface = ClientConfig;
     httpd_uri_t Request_Access_URI = RequestURIInit(ClientConfig.requestURI);
     httpd_uri_t Response_Access_URI = ResponseURIInit(ClientConfig.responseURI);
-    httpd_handle_t serviceLocalServer = Oauth_StartWebServer(Request_Access_URI, Response_Access_URI);
+    httpd_handle_t serviceLocalServer = StartWebServer(Request_Access_URI, Response_Access_URI);
     if (serviceLocalServer == NULL)
     {
         ESP_LOGE(TAG, "Creating Service local server failed!");

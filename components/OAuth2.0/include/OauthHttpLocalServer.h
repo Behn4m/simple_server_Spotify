@@ -14,7 +14,7 @@ extern QueueHandle_t SendCodeFromHttpToTask;
  * @param HttpdServerHandler The URI handler for the request access.
  * @return Returns the HTTP HttpdServerHandler handle if it is started successfully, or NULL otherwise.
  */
-esp_err_t Oauth_StopWebServer(httpd_handle_t server);
+esp_err_t StopWebServer(httpd_handle_t server);
 
 /**
  * @brief Run Http local service
@@ -23,7 +23,7 @@ esp_err_t Oauth_StopWebServer(httpd_handle_t server);
  * @param Response_Access_URI The URI handler for the response access.
  * @return Returns true if the Http local service is started successfully, or false otherwise.
  */
-bool Oauth_HttpServerServiceInit(HttpClientInfo_t ClientConfig;);
+bool HttpServerServiceInit(HttpClientInfo_t ClientConfig;);
 
 #endif
 #ifdef __cplusplus

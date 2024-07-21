@@ -157,7 +157,7 @@ static void Oauth_MainTask(void *pvparameters)
         {
             case INIT:
             {
-                bool IsServerInit = Oauth_HttpServerServiceInit(AuthInterfaceHandler->ClientConfig);
+                bool IsServerInit = HttpServerServiceInit(AuthInterfaceHandler->ClientConfig);
                 if (!IsServerInit)
                 {
                     ESP_LOGE(TAG, "Authorization initialization failed!");

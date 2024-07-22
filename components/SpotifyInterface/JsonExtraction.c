@@ -7,67 +7,6 @@
 
 static const char *TAG = "JsonExTraction";
 
-
-/**
- * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a TokenParam structure.
- * @param[in] Json The input JSON string.
- * @param[in] token address to save tokin extracted information.
- * @return false if fail, true if finish successful.
- */
-bool ExtractAccessTokenParamsTokenFromJson(char *Json, Token_t *token) 
-    {
-    cJSON *J_Token = cJSON_Parse(Json);
-    if (J_Token == NULL) 
-    {
-        ESP_LOGE(TAG,"%s",Json);
-        ESP_LOGE(TAG, "Failed to parse JSON\n");
-        return false;
-    }
-
-    cJSON *accessTokenObj = cJSON_GetObjectItem(J_Token, "access_token");
-    if (accessTokenObj != NULL && accessTokenObj->type == cJSON_String) 
-    {
-        strncpy(token->AccessToken, accessTokenObj->valuestring, ACCESS_TOKEN_STR_SIZE - 1);
-        token->AccessToken[ACCESS_TOKEN_STR_SIZE - 1] = '\0';
-    }
-
-    cJSON *tokenTypeObj = cJSON_GetObjectItem(J_Token, "token_type");
-    if (tokenTypeObj != NULL && tokenTypeObj->type == cJSON_String) 
-    {
-        strncpy(token->TokenType, tokenTypeObj->valuestring, TOKEN_TYPE_STR_SIZE - 1);
-        token->TokenType[TOKEN_TYPE_STR_SIZE - 1] = '\0';
-    }
-
-    cJSON *expiresInObj = cJSON_GetObjectItem(J_Token, "expires_in");
-    if (expiresInObj->type == cJSON_Number) 
-    {
-        token->ExpiresInMS = expiresInObj->valueint;
-    }
-
-    cJSON *refreshTokenObj = cJSON_GetObjectItem(J_Token, "refresh_token");
-    if (refreshTokenObj != NULL && refreshTokenObj->type == cJSON_String) 
-    {
-        strncpy(token->RefreshToken, refreshTokenObj->valuestring, REFRESH_TOKEN_STP_SIZE - 1);
-        token->RefreshToken[REFRESH_TOKEN_STP_SIZE - 1] = '\0';
-    }
-
-    cJSON *scopeObj = cJSON_GetObjectItem(J_Token, "scope");
-    if (scopeObj != NULL && scopeObj->type == cJSON_String) 
-    {
-        strncpy(token->GrantedScope, scopeObj->valuestring, GRANTED_SCOP_STR_SIZE - 1);
-        token->GrantedScope[GRANTED_SCOP_STR_SIZE - 1] = '\0';
-    }
-
-    // ESP_LOGI(TAG, "Access Token: %s", AccessToken);
-    // ESP_LOGI(TAG, "Token Type: %s", TokenType);
-    // ESP_LOGI(TAG, "Expires In: %d seconds\n", ExpiresInMS);
-    // ESP_LOGI(TAG, "Refresh Token: %s", RefreshToken);
-    // ESP_LOGI(TAG, "Scope: %s", GrantedScope);
-
-    cJSON_Delete(J_Token);
-    return true;
-}
-
 /**
  * @brief This function extracts specific parameters from a JSON string and assigns them to corresponding fields in a UserInfo structure.
  * @param[in] JsonUserInfo The input JSON string containing user information.

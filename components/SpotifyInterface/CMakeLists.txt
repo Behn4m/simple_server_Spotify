@@ -1,7 +1,10 @@
-idf_component_register(SRCS "SpotifyAPICall.c" "JsonExtraction.c" "SpotifyInterface.c" 
-                            "SpotifyHttpLocalServer.c"
+idf_component_register(SRCS "JsonExtraction.c" "SpotifyInterface.c" 
                     INCLUDE_DIRS "include"
                     
-                    REQUIRES mdns esp_wifi esp_event esp_eth protocol_examples_common
-                    esp_https_server esp_http_client nvs_flash json
-                    GlobalInit esp_psram heap) 
+                    REQUIRES mdns esp_event mbedtls
+                    esp_http_server esp_http_client nvs_flash json
+                    esp_psram heap) 
+
+#                     # REQUIRES Utilities mdns esp_jpeg esp_event mbedtls 
+#                     # esp_http_server esp_http_client nvs_flash json
+#                     # esp_psram heap) 

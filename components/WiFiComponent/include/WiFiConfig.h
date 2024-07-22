@@ -12,7 +12,6 @@ extern "C" {
 #include "esp_netif.h"
 #include "esp_eth.h"
 #include "esp_mac.h"
-#include "esp_tls_crypto.h"
 #include <esp_http_server.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/event_groups.h"

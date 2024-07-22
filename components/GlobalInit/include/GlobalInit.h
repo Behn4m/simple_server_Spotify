@@ -3,13 +3,11 @@ extern "C" {
 #endif
 #ifndef GLOBAL_INIT_H_
 #define GLOBAL_INIT_H_
-#include <esp_wifi.h>
 #include <esp_event.h>
 #include <esp_log.h>
 #include <esp_system.h>
 #include <nvs_flash.h>
 #include <sys/param.h>
-#include "protocol_examples_common.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "freertos/event_groups.h"

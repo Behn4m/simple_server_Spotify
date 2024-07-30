@@ -77,17 +77,17 @@ void GUI_mainTask(void *pvParameter)
  */
 void GUI_UpdateSpotifyScreen(char *Artist, char *Song, char *Album, int DurationMS, int ProgressMS)
 {
-    lv_event_send(guider_ui.Spotify_Page_Artist_name, LV_EVENT_VALUE_CHANGED, Artist);
-    lv_event_send(guider_ui.Spotify_Page_Song_name, LV_EVENT_VALUE_CHANGED, Song);
-    lv_event_send(guider_ui.Spotify_Page_Album_name, LV_EVENT_VALUE_CHANGED, Album);
+    // lv_event_send(guider_ui.Spotify_Page_Artist_name, LV_EVENT_VALUE_CHANGED, Artist);
+    // lv_event_send(guider_ui.Spotify_Page_Song_name, LV_EVENT_VALUE_CHANGED, Song);
+    // lv_event_send(guider_ui.Spotify_Page_Album_name, LV_EVENT_VALUE_CHANGED, Album);
 
-    int minutues = ProgressMS / 60000;
-    int second = (ProgressMS % 60000) / 1000;
-    char time[20];
-    sprintf(time, "%d:%d", minutues, second);
-    ESP_LOGW(TAG, "Time: %s", time);
-    lv_event_send(guider_ui.Spotify_Page_label_time, LV_EVENT_VALUE_CHANGED, time);
+    // int minutues = ProgressMS / 60000;
+    // int second = (ProgressMS % 60000) / 1000;
+    // char time[20];
+    // sprintf(time, "%d:%d", minutues, second);
+    // ESP_LOGW(TAG, "Time: %s", time);
+    // lv_event_send(guider_ui.Spotify_Page_label_time, LV_EVENT_VALUE_CHANGED, time);
 
-    int progress = (ProgressMS * 100) / DurationMS;
-    lv_event_send(guider_ui.Spotify_Page_bar_progress, LV_EVENT_VALUE_CHANGED, progress);
+    // int progress = (ProgressMS * 100) / DurationMS;
+    // lv_event_send(guider_ui.Spotify_Page_bar_progress, LV_EVENT_VALUE_CHANGED, progress);
 }

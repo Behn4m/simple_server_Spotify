@@ -18,20 +18,9 @@ extern "C" {
 typedef struct
 {
   
-	lv_obj_t *Spotify_Page;
-	bool Spotify_Page_del;
-	lv_obj_t *Spotify_Page_cont_Spotify;
-	lv_obj_t *Spotify_Page_label_time;
-	lv_obj_t *Spotify_Page_label_artist;
-	lv_obj_t *Spotify_Page_label_song;
-	lv_obj_t *Spotify_Page_label_album;
-	lv_obj_t *Spotify_Page_img_song;
-	lv_obj_t *Spotify_Page_img_artist;
-	lv_obj_t *Spotify_Page_img_2;
-	lv_obj_t *Spotify_Page_bar_progress;
-	lv_obj_t *Spotify_Page_Album_name;
-	lv_obj_t *Spotify_Page_Song_name;
-	lv_obj_t *Spotify_Page_Artist_name;
+	lv_obj_t *screen;
+	bool screen_del;
+	lv_obj_t *screen_img_1;
 }lv_ui;
 
 typedef void (*ui_setup_scr_t)(lv_ui * ui);
@@ -64,14 +53,10 @@ void setup_ui(lv_ui *ui);
 
 extern lv_ui guider_ui;
 
-void setup_scr_Spotify_Page(lv_ui *ui);
-LV_IMG_DECLARE(_song_cover_alpha_192x192);
-LV_IMG_DECLARE(_artists_alpha_64x64);
-LV_IMG_DECLARE(_Spotify_Logo_RGB_White_alpha_120x35);
 
-LV_FONT_DECLARE(lv_font_arial_16)
-LV_FONT_DECLARE(lv_font_montserratMedium_16)
-LV_FONT_DECLARE(lv_font_montserratMedium_12)
+void setup_scr_screen(lv_ui *ui);
+LV_IMG_DECLARE(_matterIcon_alpha_184x166);
+
 
 
 #ifdef __cplusplus

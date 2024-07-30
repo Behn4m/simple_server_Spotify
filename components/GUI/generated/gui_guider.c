@@ -13,8 +13,7 @@
 #if LV_USE_FREEMASTER
 #include "gg_external_data.h"
 #endif
-
-lv_ui guider_ui;
+ lv_ui guider_ui;
 void ui_init_style(lv_style_t * style)
 {
 	if (style->prop_cnt > 1)
@@ -27,22 +26,20 @@ void ui_load_scr_animation(lv_ui *ui, lv_obj_t ** new_scr, bool new_scr_del, boo
                            lv_scr_load_anim_t anim_type, uint32_t time, uint32_t delay, bool is_clean, bool auto_del)
 {
 	lv_obj_t * act_scr = lv_scr_act();
-	lv_disp_t * d = lv_obj_get_disp(act_scr);
-	if (d->prev_scr == NULL && (d->scr_to_load == NULL || d->scr_to_load == act_scr)) {
-	#if LV_USE_FREEMASTER
-		if(auto_del) {
+
+#if LV_USE_FREEMASTER
+	if(auto_del) {
 		gg_edata_task_clear(act_scr);
-		}
-	#endif
-		if (auto_del && is_clean) {
-		lv_obj_clean(act_scr);
-		}
-		if (new_scr_del) {
-		setup_scr(ui);
-		}
-		lv_scr_load_anim(*new_scr, anim_type, time, delay, auto_del);
-		*old_scr_del = auto_del;
 	}
+#endif
+	if (auto_del && is_clean) {
+		lv_obj_clean(act_scr);
+	}
+	if (new_scr_del) {
+		setup_scr(ui);
+	}
+	lv_scr_load_anim(*new_scr, anim_type, time, delay, auto_del);
+	*old_scr_del = auto_del;
 }
 
 void ui_move_animation(void * var, int32_t duration, int32_t delay, int32_t x_end, int32_t y_end, lv_anim_path_cb_t path_cb,
@@ -145,12 +142,12 @@ void ui_img_rotate_animation(void * var, int32_t duration, int32_t delay, lv_coo
 void init_scr_del_flag(lv_ui *ui)
 {
   
-	ui->Spotify_Page_del = true;
+	ui->screen_del = true;
 }
 
 void setup_ui(lv_ui *ui)
 {
 	init_scr_del_flag(ui);
-	setup_scr_Spotify_Page(ui);
-	lv_scr_load(ui->Spotify_Page);
+	setup_scr_screen(ui);
+	lv_scr_load(ui->screen);
 }

@@ -68,8 +68,9 @@ void setup_scr_screen(lv_ui *ui)
 	// //if(events_init())
 	// lv_obj_set_style_img_opa(ui->screen_img_1, 100, LV_PART_MAIN|LV_STATE_DEFAULT);
 	//Update current screen layout.
-	events_init(ui);
+	
 	lv_obj_update_layout(ui->screen);
 
+	events_init(ui);
 
 }

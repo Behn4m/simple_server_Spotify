@@ -25,7 +25,7 @@ void GUI_TaskInit(void);
  * @return void
  */
 void GUI_UpdateSpotifyScreen(char *Artist, char *Song, char *Album, int DurationMS, int ProgressMS);
-
+void GUI_Screen(void);
 #ifdef __cplusplus
 }
 #endif

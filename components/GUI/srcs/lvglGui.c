@@ -4,6 +4,7 @@
 static const char *TAG = "LVGL_GUI";
 void GUI_mainTask(void *pvParameter);
 
+lv_ui guider_ui;
 /**
  * @brief Function to creat GUI task in staticly
  */
@@ -90,4 +91,9 @@ void GUI_UpdateSpotifyScreen(char *Artist, char *Song, char *Album, int Duration
 
     // int progress = (ProgressMS * 100) / DurationMS;
     // lv_event_send(guider_ui.Spotify_Page_bar_progress, LV_EVENT_VALUE_CHANGED, progress);
+}
+
+void GUI_Screen(void)
+{
+	lv_event_send(guider_ui.screen_btn_1, LV_EVENT_VALUE_CHANGED, NULL);
 }

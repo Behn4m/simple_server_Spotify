@@ -1,0 +1,1 @@
+GEN_CSRCS += _matterIcon_alpha_200x200.c

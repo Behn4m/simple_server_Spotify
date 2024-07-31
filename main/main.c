@@ -29,6 +29,7 @@ void app_main(void)
 #else
     wifiConnectionModule();
 #endif
+GUI_Screen();
 
 #ifdef SpotifyEnable
 

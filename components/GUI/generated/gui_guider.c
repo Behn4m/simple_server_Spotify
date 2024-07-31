@@ -13,7 +13,7 @@
 #if LV_USE_FREEMASTER
 #include "gg_external_data.h"
 #endif
- lv_ui guider_ui;
+
 void ui_init_style(lv_style_t * style)
 {
 	if (style->prop_cnt > 1)

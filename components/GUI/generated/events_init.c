@@ -15,9 +15,22 @@
 #include "freemaster_client.h"
 #endif
 
+static void event_handler(lv_event_t *e)
+{
+	lv_event_code_t code = lv_event_get_code(e);
+	lv_obj_t *object = lv_event_get_current_target(e);
 
+	switch (code)
+	{
+    case LV_EVENT_VALUE_CHANGED:
+        lv_obj_set_style_img_opa(object, 100, LV_PART_MAIN|LV_STATE_DEFAULT);
+        lv_refr_now(NULL);
+	default:
+		break;
+	}   
+}
 
 void events_init(lv_ui *ui)
 {
-
+    	lv_obj_add_event_cb(ui->screen_btn_1, event_handler, LV_EVENT_ALL, NULL);
 }

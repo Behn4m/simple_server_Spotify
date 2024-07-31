@@ -23,8 +23,11 @@ static void event_handler(lv_event_t *e)
 	switch (code)
 	{
     case LV_EVENT_VALUE_CHANGED:
+	{
         lv_obj_set_style_img_opa(object, 100, LV_PART_MAIN|LV_STATE_DEFAULT);
         lv_refr_now(NULL);
+		break;
+	}
 	default:
 		break;
 	}   

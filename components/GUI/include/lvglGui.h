@@ -16,6 +16,7 @@ extern "C" {
  */
 void GUI_TaskInit(void);
 
+void send_event_test();
 /**
  * @brief Function to update the LVGL screen
  * @param Artist: Artist name
@@ -25,7 +26,6 @@ void GUI_TaskInit(void);
  * @return void
  */
 void GUI_UpdateSpotifyScreen(char *Artist, char *Song, char *Album, int DurationMS, int ProgressMS);
-void GUI_Screen(void);
 #ifdef __cplusplus
 }
 #endif

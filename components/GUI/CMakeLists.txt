@@ -5,8 +5,6 @@ idf_component_register(
 "srcs/lvglGui.c"
 "generated/widgets_init.c"
 "generated/events_init.c"
-"generated/guider_fonts/lv_font_montserratMedium_12.c"
-"generated/guider_fonts/lv_font_montserratMedium_16.c"
 "generated/setup_scr_screen.c"
 "generated/gui_guider.c"
 "generated/images/_matterIcon_alpha_200x200.c"
@@ -15,4 +13,4 @@ idf_component_register(
 "generated"
 "generated/guider_customer_fonts"
 "include"
-     REQUIRES lvgl__lvgl lvgl_esp32_drivers  driver esp_timer GlobalInit driver espressif__button)
+     REQUIRES lvgl__lvgl lvgl_esp32_drivers  driver esp_timer GlobalInit driver espressif__button) 

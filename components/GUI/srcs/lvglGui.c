@@ -1,5 +1,6 @@
 #include "lvglGui.h"
 #include "gui_guider.h"
+#include "events_init.h"
 
 static const char *TAG = "LVGL_GUI";
 void GUI_mainTask(void *pvParameter);
@@ -92,8 +93,8 @@ void GUI_UpdateSpotifyScreen(char *Artist, char *Song, char *Album, int Duration
     // int progress = (ProgressMS * 100) / DurationMS;
     // lv_event_send(guider_ui.Spotify_Page_bar_progress, LV_EVENT_VALUE_CHANGED, progress);
 }
-
-void GUI_Screen(void)
+void send_event_test()
 {
-	lv_event_send(guider_ui.screen_btn_1, LV_EVENT_VALUE_CHANGED, NULL);
+    lv_obj_t *obj = lv_obj_get_child(lv_scr_act(), 0); // Assuming the button is the first child
+    test_lvgl_send_event(obj);
 }

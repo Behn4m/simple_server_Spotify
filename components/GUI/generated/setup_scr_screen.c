@@ -34,43 +34,19 @@ void setup_scr_screen(lv_ui *ui)
 	lv_img_set_src(ui->screen_img_1, &_matterIcon_alpha_200x200);
 	lv_img_set_pivot(ui->screen_img_1, 50,50);
 	lv_img_set_angle(ui->screen_img_1, 0);
-	lv_obj_set_pos(ui->screen_img_1, 27, 16);
+	lv_obj_set_pos(ui->screen_img_1, 168, 20);
 	lv_obj_set_size(ui->screen_img_1, 200, 200);
 
 	//Write style for screen_img_1, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
 	lv_obj_set_style_img_opa(ui->screen_img_1, 255, LV_PART_MAIN|LV_STATE_DEFAULT);
 
-	//Write codes screen_btn_1
-	ui->screen_btn_1 = lv_btn_create(ui->screen);
-	ui->screen_btn_1_label = lv_label_create(ui->screen_btn_1);
-	lv_label_set_text(ui->screen_btn_1_label, "transparency");
-	lv_label_set_long_mode(ui->screen_btn_1_label, LV_LABEL_LONG_WRAP);
-	lv_obj_align(ui->screen_btn_1_label, LV_ALIGN_CENTER, 0, 0);
-	lv_obj_set_style_pad_all(ui->screen_btn_1, 0, LV_STATE_DEFAULT);
-	lv_obj_set_width(ui->screen_btn_1_label, LV_PCT(100));
-	lv_obj_set_pos(ui->screen_btn_1, 290, 43);
-	lv_obj_set_size(ui->screen_btn_1, 146, 50);
-
-	//Write style for screen_btn_1, Part: LV_PART_MAIN, State: LV_STATE_DEFAULT.
-	lv_obj_set_style_bg_opa(ui->screen_btn_1, 255, LV_PART_MAIN|LV_STATE_DEFAULT);
-	lv_obj_set_style_bg_color(ui->screen_btn_1, lv_color_hex(0x2195f6), LV_PART_MAIN|LV_STATE_DEFAULT);
-	lv_obj_set_style_bg_grad_dir(ui->screen_btn_1, LV_GRAD_DIR_NONE, LV_PART_MAIN|LV_STATE_DEFAULT);
-	lv_obj_set_style_border_width(ui->screen_btn_1, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
-	lv_obj_set_style_radius(ui->screen_btn_1, 5, LV_PART_MAIN|LV_STATE_DEFAULT);
-	lv_obj_set_style_shadow_width(ui->screen_btn_1, 0, LV_PART_MAIN|LV_STATE_DEFAULT);
-	lv_obj_set_style_text_color(ui->screen_btn_1, lv_color_hex(0xffffff), LV_PART_MAIN|LV_STATE_DEFAULT);
-	lv_obj_set_style_text_font(ui->screen_btn_1, &lv_font_montserratMedium_16, LV_PART_MAIN|LV_STATE_DEFAULT);
-	lv_obj_set_style_text_opa(ui->screen_btn_1, 255, LV_PART_MAIN|LV_STATE_DEFAULT);
-	lv_obj_set_style_text_align(ui->screen_btn_1, LV_TEXT_ALIGN_CENTER, LV_PART_MAIN|LV_STATE_DEFAULT);
-
 	//The custom code of screen.
-	// lv_obj_add_event_cb(ui->screen_btn_1, btn_event_handler, LV_EVENT_ALL, NULL);
-	// //if(events_init())
-	// lv_obj_set_style_img_opa(ui->screen_img_1, 100, LV_PART_MAIN|LV_STATE_DEFAULT);
-	//Update current screen layout.
 	
+
+	//Update current screen layout.
 	lv_obj_update_layout(ui->screen);
 
-	events_init(ui);
-
+	//Init events for screen.
+	events_init_screen(ui);
+	//lv_obj_update_layout(ui->screen);
 }

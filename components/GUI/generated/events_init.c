@@ -15,25 +15,42 @@
 #include "freemaster_client.h"
 #endif
 
-static void event_handler(lv_event_t *e)
-{
-	lv_event_code_t code = lv_event_get_code(e);
-	lv_obj_t *object = lv_event_get_current_target(e);
 
-	switch (code)
-	{
-    case LV_EVENT_VALUE_CHANGED:
-	{
-        lv_obj_set_style_img_opa(object, 100, LV_PART_MAIN|LV_STATE_DEFAULT);
-        lv_refr_now(NULL);
-		break;
-	}
-	default:
-		break;
-	}   
+static void screen_event_handler (lv_event_t *e)
+{
+	//lv_event_code_t code = lv_event_get_code(e);
+	//_lv_obj_t *obj = lv_event_get_target(e);
+
+	// switch (code) {
+	// case LV_EVENT_VALUE_CHANGED:
+	// {
+	// 	lv_obj_set_style_img_opa(lv_event_get_target(e), 80, LV_PART_MAIN|LV_STATE_DEFAULT);
+	// 	//lv_obj_set_style_img_opa(obj, 80, LV_PART_MAIN|LV_STATE_DEFAULT);
+	// 	lv_refr_now(NULL);
+	// 	break;
+	// }
+	// default:
+	// {	lv_obj_set_style_img_opa(lv_event_get_target(e), 80, LV_PART_MAIN|LV_STATE_DEFAULT);
+	// 	//lv_refr_now(NULL);
+	// 	break;
+	// }
+	// }
+	//if(code == LV_EVENT_VALUE_CHANGED) 
+		lv_obj_set_style_img_opa(lv_event_get_target(e), 80, LV_PART_MAIN|LV_STATE_DEFAULT);
+}
+void events_init_screen(lv_ui *ui)
+{
+	// lv_obj_set_style_img_opa(ui->screen_img_1, 80, LV_PART_MAIN|LV_STATE_DEFAULT);
+	// lv_refr_now(NULL);
+	lv_obj_add_event_cb(ui->screen, screen_event_handler, LV_EVENT_ALL, ui);
+}
+
+void test_lvgl_send_event(lv_obj_t *obj)
+{
+	lv_event_send(obj, LV_EVENT_ALL, NULL);
 }
 
 void events_init(lv_ui *ui)
 {
-    	lv_obj_add_event_cb(ui->screen_btn_1, event_handler, LV_EVENT_ALL, NULL);
+
 }

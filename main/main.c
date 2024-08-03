@@ -22,38 +22,11 @@ void app_main(void)
     GUI_TaskInit();
     GlobalInit();
     nvsFlashInit();
-    SpiffsGlobalConfig();
-#ifdef WIFI_INIT_STA_MODE
-    WifiStationMode("Done_IOT_1", "87654321@");
-    //WifiStationMode("BELL789", "167271A164A9");
-#else
-    wifiConnectionModule();
-#endif
-GUI_Screen();
-
-#ifdef SpotifyEnable
-
-//TODO merge all in a static function
-    OAuthInterfaceHandler.IsServiceAuthorizedSemaphore = &IsSpotifyAuthorizedSemaphore;
-    OAuthInterfaceHandler.ConfigAddressInSpiffs = SpotifyConfigAddressInSpiffs;
-    Spotify_ClientInfo = Spotify_ClientConfigInit();
-    OAuthInterfaceHandler.ClientConfig.url = Spotify_ClientInfo.url;
-    OAuthInterfaceHandler.ClientConfig.host = Spotify_ClientInfo.host;
-    OAuthInterfaceHandler.ClientConfig.path = Spotify_ClientInfo.path;
-    OAuthInterfaceHandler.ClientConfig.requestURI = Spotify_ClientInfo.requestURI;
-    OAuthInterfaceHandler.ClientConfig.responseURI = Spotify_ClientInfo.responseURI;
-    OAuthInterfaceHandler.ClientConfig.hostnameMDNS = Spotify_ClientInfo.hostnameMDNS;
-    OAuthInterfaceHandler.ClientConfig.requestURL = Spotify_ClientInfo.requestURL; 
-    OAuthInterfaceHandler.ClientConfig.clientID = Spotify_ClientInfo.clientID;
-    OAuthInterfaceHandler.ClientConfig.base64Credintials = Spotify_ClientInfo.base64Credintials;
-    OAuthInterfaceHandler.ClientConfig.redirectURL = Spotify_ClientInfo.redirectURL;
-
-    if(!Oauth_TaskInit(&OAuthInterfaceHandler))
-        ESP_LOGE(TAG, "OAuth task initialization failed.");
-
-    if (xSemaphoreTake(IsSpotifyAuthorizedSemaphore, portMAX_DELAY) == pdTRUE)
-    {
-        ESP_LOGW(TAG, "Access Token: %s", Oauth_GetAccessToken());
-    }
-#endif
+    // lv_obj_t *obj = lv_obj_get_child(lv_scr_act(), 0); // Assuming the button is the first child
+    // test_lvgl_send_event(obj);
+    send_event_test();
+    // while (1) {
+    //     lv_task_handler();
+    //     vTaskDelay(5000); // Sleep for 5 ms
+    // }
 }

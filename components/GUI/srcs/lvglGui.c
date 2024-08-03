@@ -70,33 +70,7 @@ void GUI_mainTask(void *pvParameter)
     }
 }
 
-/**
- * @brief Function to update the LVGL screen
- * @param Artist: Artist name
- * @param Title: Title of the song
- * @param Album: Album name
- * @return void
- */
-void GUI_UpdateSpotifyScreen(char *Artist, char *Song, char *Album, int DurationMS, int ProgressMS)
-{
-    // lv_event_send(guider_ui.Spotify_Page_Artist_name, LV_EVENT_VALUE_CHANGED, Artist);
-    // lv_event_send(guider_ui.Spotify_Page_Song_name, LV_EVENT_VALUE_CHANGED, Song);
-    // lv_event_send(guider_ui.Spotify_Page_Album_name, LV_EVENT_VALUE_CHANGED, Album);
-
-    // int minutues = ProgressMS / 60000;
-    // int second = (ProgressMS % 60000) / 1000;
-    // char time[20];
-    // sprintf(time, "%d:%d", minutues, second);
-    // ESP_LOGW(TAG, "Time: %s", time);
-    // lv_event_send(guider_ui.Spotify_Page_label_time, LV_EVENT_VALUE_CHANGED, time);
-
-    // int progress = (ProgressMS * 100) / DurationMS;
-    // lv_event_send(guider_ui.Spotify_Page_bar_progress, LV_EVENT_VALUE_CHANGED, progress);
-}
 void send_event_test()
 {
- //   lv_obj_t *obj = lv_obj_get_child(lv_scr_act(), 0); // Assuming the button is the first child
-    //test_lvgl_send_event(obj);
-
  	lv_event_send(guider_ui.screen_img_1, LV_EVENT_ALL, NULL);
 }

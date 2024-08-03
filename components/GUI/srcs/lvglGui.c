@@ -95,6 +95,8 @@ void GUI_UpdateSpotifyScreen(char *Artist, char *Song, char *Album, int Duration
 }
 void send_event_test()
 {
-    lv_obj_t *obj = lv_obj_get_child(lv_scr_act(), 0); // Assuming the button is the first child
-    test_lvgl_send_event(obj);
+ //   lv_obj_t *obj = lv_obj_get_child(lv_scr_act(), 0); // Assuming the button is the first child
+    //test_lvgl_send_event(obj);
+
+ 	lv_event_send(guider_ui.screen_img_1, LV_EVENT_ALL, NULL);
 }

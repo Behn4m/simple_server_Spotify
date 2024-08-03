@@ -18,7 +18,7 @@ extern "C" {
 
 void events_init(lv_ui *ui);
 
-void test_lvgl_send_event(lv_obj_t *obj);
+//void test_lvgl_send_event(lv_obj_t *obj);
 
 void events_init_screen(lv_ui *ui);
 
